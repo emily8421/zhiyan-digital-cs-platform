@@ -6,6 +6,48 @@
 
 模板版本采用三段式 `vMAJOR.MINOR.PATCH`，以根目录 `VERSION` 为单一审计入口。任何会影响下游同步判断的模板合并都应递增版本；`ai/global-rules.md` 顶部仅记录全局规则自身版本。
 
+## v1.22.4（2026-07-02）
+
+- `README.md` 开头通俗化：重写首段（「用 AI 按软件工程规范开发软件」+ 解决"AI 代码难维护"的目的），新增「它能做什么」能力段（6 条：生成工程文档体系 / 文档约束代码 + 六维度合规审查 / 分阶段交付 Demo→MVP→产品 / 场景引导 / 跨项目复用 + 经验回流 / 多 AI 工具 + 会话续接），基于模板实际能力梳理。
+- `template-docs/beginner-guide.md`：15 章 → 5 章精简（适合谁 + 预期 / 起步 / 准备 / 文档与目录理解 / 常见错误与问题）；删 v1.22.3 精简后变空的操作/路由章节（§3/§6/§10/§11/§12/§15）；§4 路径 A 简化为直接引导 scenario-guides；保留环境 keyword。
+- 提案：`_proposals/TEMPLATE-UPGRADE-refine-readme-beginner-v1.22.4.md`。
+
+## v1.22.3（2026-07-02）
+
+文档整理（v1.22.0–2 入口简化后的连带）：
+
+- `README.md` 目录速览补缺失：`_archive/`、`tasks/`、骨架目录（`frontend/ backend/ tests/ docker/`）、`ai/prompts/`、`ai/doc-standards/`、`.github/`。
+- `git-guide.md` §7 命令速查加交叉引用（脚本命令见 SOP 常用命令）。
+- `CONTRIBUTING.md` / `MAINTAINERS.md`：修陈旧引用（5 分钟路径→快速开始、README 方法论同步 section→`template-sync.json`）；提案组织建议去重（归 `CONTRIBUTING.md` §3.1，MAINTAINERS 改引用）。
+- `template-docs/beginner-guide.md`：操作/路由章节（§3/§10/§11/§12/§15）精简为指向 scenario-guides/SOP/README，强化「理解手册」定位（预期/准备/目录心智/常见错误）。
+- `SOP.md` 场景索引标注为速查（完整剧本见 scenario-guides）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-cleanup-docs-v1.22.3.md`。
+
+## v1.22.2（2026-07-01）
+
+- `INIT-PROMPT.md` 简化为指针：删「场景→命令→Prompt」明细表（与 SOP 场景索引重复），改为指向 scenario-guides / SOP 场景索引 / commands-README / prompts-README 的入口指针；~13 处引用不动（文件保留，向下兼容派生项目）。
+- `scripts/check-template.sh` 删 INIT-PROMPT 的 3 个 Prompt 明细断言（内容由 SOP 场景索引 + prompts/README 承担），保留 `require_file` 与「指向 commands-README」断言。
+- 提案：`_proposals/TEMPLATE-UPGRADE-simplify-init-prompt.md`。
+
+## v1.22.1（2026-07-01）
+
+- 入口文档简化：README 瘦身到 1 屏（开头简介 + 快速开始三入口「说场景 / 找命令 / 理解设计」+ 当前版本 + 目录速览），删除「5 分钟最小路径」「我该看哪个文件」大表、常用命令、轻量项目路径等冗余 section。
+- `SOP.md` 接收 README 的「常用命令」（派生使用者 / 模板维护者 / Windows 脚本入口矩阵），定位为速查表。
+- `docs/README.md` 接收「轻量项目路径」。
+- `template-docs/beginner-guide.md` 删冗余「路径 B」手动命令，路径 A 收拢环境入口 keyword，定位为「理解手册」；起步动作统一指向 scenario-guides。
+- `scripts/check-template.sh` 配套调整断言：README 改为入口指引断言，详细命令断言移到 SOP，环境/烟测入口由 beginner-guide 断言覆盖。
+- 提案：`_proposals/TEMPLATE-UPGRADE-simplify-entry-docs.md`。
+
+## v1.22.0（2026-07-01）
+
+- 新增场景引导编排层 `template-docs/scenario-guides.md` 与元命令 `ai/commands/scenario.md`（`/run scenario`）：按角色（A 使用者 / C 维护者）组织 23 个端到端场景剧本，用户说一个具体场景意图，AI 即按契约产出「做什么 + 为什么」引导计划，确认后逐步执行；含 cwd 路由入口（零资产 / 模板仓库 / 派生项目三分支）、A7 PLM 文档精修转换子场景、A9 阶段规划与 M1 元场景；每个场景步骤三层一一对应（做什么 / 为什么 / 机器执行）。
+- `scenario-guides.md` 含前提条件声明：零资产（只有仓库链接）时 AI 读不到本文件，A0 冷启动需先手动获取资产（给出模板仓库 clone 地址与 `new-project.sh` 派生路径），拿到本地项目后才进入 AI 场景引导。
+- 收敛 `README.md`、`template-docs/beginner-guide.md`、`template-docs/ai-cli-setup.md` 三处重复的新手 7 步话术，统一指向 `scenario-guides.md` 为唯一源；`ai/commands/README.md` 加「场景优先」约定与 `scenario` 命令行。
+- 新增设计文档图表规范（`ai/document-lifecycle-rules.md §13`，默认 mermaid、可选 plantuml）与 `ai/project-rules.md §2.6` 图表格式偏好填项。
+- 把 `project-review`(03) 实现合规审查补进 A10 场景；17 个 command 全部被场景编排覆盖。
+- `template-sync.json` 纳入 `scenario-guides.md` 与 `scenario.md`；`SOP.md`、`README.md` 补场景引导入口；`scripts/check-template.sh` / `.ps1` 加场景引导、去账户化、防漂移断言（含新增 `require_absent_contains` 函数）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-scenario-guides.md`。
+
 ## v1.21.3（2026-07-01）
 
 - `scripts/sync-template.ps1` 增加原生 PowerShell fallback：Git Bash / MSYS 无法从 PowerShell 启动时，仍可执行模板抓取、dry-run 差异预览、`--commit` 同步清单文件与 `ai/doc-standards/00-09` 规范镜像，并保留脏工作区保护。

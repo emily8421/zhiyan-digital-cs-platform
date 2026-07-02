@@ -268,3 +268,5 @@ git push -u origin <分支>                 # 推分支并设上游
 bash scripts/new-project.sh <name>        # 一键起新项目
 bash scripts/sync-template.sh --dry-run   # 同步预览
 ```
+
+> 脚本命令（`check-prereqs.ps1` / `sync-template.ps1` / `check-template.ps1` / `collect-env.ps1` 等 PowerShell/Bash 入口与 Windows 脚本矩阵）见 `SOP.md` 常用命令。

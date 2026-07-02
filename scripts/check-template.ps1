@@ -151,6 +151,7 @@ function Invoke-NativeTemplateCheck {
   foreach ($path in @(
       "README.md",
       "template-docs/beginner-guide.md",
+      "template-docs/scenario-guides.md",
       "template-docs/env-setup.md",
       "template-docs/ai-cli-setup.md",
       "template-docs/smoke-test.md",
@@ -166,6 +167,7 @@ function Invoke-NativeTemplateCheck {
       "ai/global-rules.md",
       "ai/document-lifecycle-rules.md",
       "ai/project-rules.md",
+      "ai/commands/scenario.md",
       "docs/README.md",
       "docs/env/README.md",
       "docs/inputs/README.md",
@@ -229,6 +231,10 @@ function Invoke-NativeTemplateCheck {
   Require-Contains "template-docs/derived-sync-report-template.md" "PowerShell fallback" "sync report records PowerShell fallback"
   Require-Contains "scripts/bootstrap-dev-env.ps1" "Git\.Git" "bootstrap script installs Git for Windows"
   Require-Contains "scripts/bootstrap-dev-env.ps1" "GitHub\.cli" "bootstrap script installs GitHub CLI"
+  Require-Contains "ai/commands/scenario.md" "scenario-guides\.md" "scenario command routes to scenario-guides"
+  Require-Contains "README.md" "scenario-guides" "README points to scenario-guides"
+  Require-Contains "ai/document-lifecycle-rules.md" "mermaid" "document-lifecycle defaults diagrams to mermaid"
+  Require-Contains "ai/project-rules.md" "mermaid" "project-rules includes diagram format preference"
 
   $syncFiles = Get-SyncFiles
   if ($syncFiles.Count -gt 0) {

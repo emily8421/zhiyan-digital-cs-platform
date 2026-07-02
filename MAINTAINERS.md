@@ -21,19 +21,16 @@
 3. 判断版本影响，更新根目录 `VERSION`。
 4. 更新 `CHANGELOG.md`，确保包含当前 `VERSION`。
 5. 若新增 / 删除下行同步方法论文件，更新 `template-sync.json`；若改动 `docs/00-09` 撰写规范，确认 `check-template.sh` 的 `doc-standards` 镜像自检（`require_doc_standards_mirror`）通过。
-6. 若改变用户入口，保持 `README.md` 的 5 分钟路径可读，不塞入维护者细节。
+6. 若改变用户入口，保持 `README.md` 的「快速开始」三入口可读，不塞入维护者细节。
 7. 运行：`git diff --check`。
 8. 运行：`powershell -ExecutionPolicy Bypass -File scripts/check-template.ps1`。
 9. push 分支并创建 PR，等待 GitHub Actions `Template Check` 通过后再合并。
 
 ## 提案组织建议
 
-- 若模板修改来自 `_proposals/` 中现有提案，优先沿用原提案并在 PR 中处理完成后归档。
-- 若模板修改来自人工在当前会话中陆续提出的建议，应在本轮维护分支里同步维护一份 `TEMPLATE-UPGRADE-*.md` 作为记录。
-- 同一轮目标、同一条 PR、同一版本窗口内的多条新增建议，优先合并进同一份提案，而不是机械地“一条建议一份提案”。
-- 只有当建议明显属于不同主题、不同版本节奏或不同 PR 时，才拆成多份提案。
-- 提案应在修改过程中持续补充，不要全部改完后再统一回忆补写。
-- 长任务或多提案维护应按 `ai/session-rules.md` 持续维护本地续接文件；真实续接文件不得提交。
+提案组织（优先沿用现有提案、同一轮目标/同一 PR/同一版本窗口合并一份、持续补充而非事后回忆等）见 `CONTRIBUTING.md` §3.1，本节不重复。
+
+长任务或多提案维护应按 `ai/session-rules.md` 持续维护本地续接文件；真实续接文件不得提交。
 
 ## 下行同步清单
 

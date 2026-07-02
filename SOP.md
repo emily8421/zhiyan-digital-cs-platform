@@ -7,6 +7,7 @@
 
 ## 使用原则
 
+- 不确定该走哪个场景、或想让 AI 先给引导计划再执行：用 `/run scenario`（见 `template-docs/scenario-guides.md`）。
 - 新手第一次使用模板：先看 `README.md` 与 `template-docs/beginner-guide.md`。
 - 新手第一次准备开发环境：看 `template-docs/env-setup.md`，先检测再安装。
 - 要单独安装 `Claude CLI` / `Codex CLI`：看 `template-docs/ai-cli-setup.md`。
@@ -19,10 +20,11 @@
 - 模板治理规则：`CONTRIBUTING.md`。
 - 项目快速入口：`README.md`；完整版本记录：`CHANGELOG.md`。
 
-## 场景索引
+## 场景索引（速查；完整场景剧本见 `template-docs/scenario-guides.md`）
 
 | 场景 | 快捷命令 | 权威操作文档 | 详细 Prompt | 备注 |
 |---|---|---|---|---|
+| 任意场景意图 / 新手首次打开 AI CLI | `/run scenario` | `template-docs/scenario-guides.md` | 无 | 先产出「做什么+为什么」引导计划，确认后再路由到具体 command |
 | 第一次使用模板 | `/run new-project` | `README.md`、`template-docs/beginner-guide.md` | `ai/prompts/setup/14-new-project.md` | 先建立最小路径、文件边界和初始化顺序 |
 | 第一次准备开发环境 | 无 | `template-docs/env-setup.md` | 无 | 先运行 `scripts/check-prereqs.ps1`，再决定是否运行 `scripts/bootstrap-dev-env.ps1` |
 | 安装 AI CLI 工具 | 无 | `template-docs/ai-cli-setup.md` | 无 | 用于单独处理 `Claude CLI` / `Codex CLI` 安装，以及与公司中转站配置的衔接顺序 |
@@ -50,6 +52,7 @@
 
 ## 常见选择
 
+- “我不确定该用哪个命令 / 我想让 AI 带我一步步做” → 用 `/run scenario`，AI 按 `template-docs/scenario-guides.md` 先给引导计划再执行。
 - “我是第一次用这套模板” → 先看 `README.md` 与 `template-docs/beginner-guide.md`，再用 `/run new-project`。
 - “我的机器还没装好开发环境” → 先看 `template-docs/env-setup.md`，再运行 `scripts/check-prereqs.ps1`。
 - “我要单独安装 Claude CLI 或 Codex CLI” → 看 `template-docs/ai-cli-setup.md`。
@@ -61,3 +64,44 @@
 - “我要让 AI 生成文档体系” → 输入不确定先用 `/run review-inputs`；评审通过后用 `/run generate-docs`。
 - “我要改模板本身” → 先看 `CONTRIBUTING.md`，先写 `TEMPLATE-UPGRADE-*.md` 提案；已有提案时用 `/run template-proposal-summary`。
 - “我重新打开了 CLI 窗口” → 先按 `ai/session-rules.md` 读取 `.ai/session-handoff.md` / `NEXT-STEPS.md` 和 Git 状态。
+
+## 常用命令
+
+### 派生项目使用者
+
+```bash
+# 检查新手环境前置项
+powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
+# 一键安装基础开发环境
+powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-env.ps1
+# 新建正式项目（默认创建远端仓库；需要 gh auth login）
+bash scripts/new-project.sh my-demo --visibility private
+bash scripts/new-project.sh my-demo --account <GitHub账号> --visibility private
+# 派生项目同步模板方法论（在派生项目仓库运行；v1.6.8+ 后续同步）
+powershell -ExecutionPolicy Bypass -File scripts/sync-template.ps1 --dry-run
+powershell -ExecutionPolicy Bypass -File scripts/sync-template.ps1 --commit
+powershell -ExecutionPolicy Bypass -File scripts/check-derived-sync.ps1
+```
+
+旧项目首次同步见 `git-guide.md` §5；派生项目同步验收使用 `check-derived-sync`，不要用完整模板自检替代。真实派生同步完成后，建议用 `template-docs/derived-sync-report-template.md` 记录同步运行结果。
+
+### 模板维护者
+
+```bash
+# 新建本地烟测项目（只用于验证模板链路，不是正式项目起步默认命令）
+bash scripts/new-project.sh smoke-demo --local --no-remote
+# 模板仓库完整性自检（仅在 ai-project-template 模板仓库运行）
+powershell -ExecutionPolicy Bypass -File scripts/check-template.ps1
+# Bash 完整自检入口（CI 使用同类路径）
+bash scripts/check-template.sh
+```
+
+### Windows 脚本入口选择
+
+| 入口 | 运行位置 | Git Bash 依赖 | 失败时优先排查 |
+|---|---|---|---|
+| `scripts/check-template.ps1` | 模板仓库 | 可 fallback 到 PowerShell 结构检查 | 若 Bash 启动失败，先看输出中的 fallback 结果 |
+| `scripts/sync-template.ps1` | 派生项目仓库 | 优先 Git Bash；失败时可 PowerShell fallback | 输出中的 fallback 标识；若 fallback 也失败再修 Git for Windows / MSYS |
+| `scripts/check-derived-sync.ps1` | 派生项目仓库 | 优先 Git Bash；失败时可 PowerShell fallback | 输出中的 fallback 标识；若 fallback 也失败再修 Git for Windows / MSYS |
+
+远端建仓默认优先使用当前 `gh` 已登录账号；只有需要切换账号时，才显式传 `--account`。

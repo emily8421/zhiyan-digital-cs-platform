@@ -134,25 +134,7 @@ codex
 
 > Keyword for template checks: newbie AI CLI onboarding path.
 
-当 `claude` 或 `codex` 命令已经能启动，并且你位于 `ai-project-template` 模板仓库或派生项目根目录时，可以直接把下面这段话发给 AI CLI：
-
-```text
-我是第一次使用这个 ai-project-template。请先读取 ai/index.md 和相关规则，
-然后按新手 AI CLI 引导路径带我完成：
-1. 检查基础环境
-2. 判断是否需要安装/补齐工具
-3. 新建本地项目
-4. 采集本机环境
-5. 准备上游输入
-6. 评审输入材料
-7. 生成文档体系
-
-每一步执行命令前先说明目的和影响范围，需要我确认后再运行。
-```
-
-如果你已经在派生项目里，不需要重新新建项目，可把第 3 步改成：`确认当前项目目录和 Git 状态`。
-
-这段提示词的作用是让 AI 自己读取 `ai/commands/`、`ai/prompts/` 和规则文件，不要求新手手工复制多个 Prompt。
+当 `claude` 或 `codex` 命令已经能启动，并且你位于 `ai-project-template` 模板仓库或派生项目根目录时，不用记具体步骤，直接对 AI 说一个具体场景（如「我想用这个模板新建项目」「帮我准备输入材料」）。AI 会读取 `template-docs/scenario-guides.md`，按场景剧本先给你「做什么 + 为什么」的引导计划，确认后再路由到具体命令执行；也可 `/run scenario`。它会自动判断你是新建项目还是在已有项目里，给出对应步骤（完整场景目录与契约见 `template-docs/scenario-guides.md`）。
 
 ## 7. 推荐操作顺序
 

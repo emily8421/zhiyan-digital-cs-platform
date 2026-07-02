@@ -97,7 +97,7 @@
 
 ## 5. 下行同步（模板 → 项目）
 
-操作 SOP 以 `git-guide.md` §5 为准；README「方法论同步（模板 ⇄ 项目）」记录同步文件清单，`ai/prompts/maintainers/12-sync-template.md` 提供可复制给 AI 执行的 Prompt。提交信息：`sync template vX.Y.Z`。审计：比对各项目根目录 `VERSION`。
+操作 SOP 以 `git-guide.md` §5 为准；同步文件清单见 `template-sync.json`，`ai/prompts/maintainers/12-sync-template.md` 提供可复制给 AI 执行的 Prompt。提交信息：`sync template vX.Y.Z`。审计：比对各项目根目录 `VERSION`。
 
 > 注：`sync-template.sh` 是**下行获取**：派生项目拉取模板最新方法论并覆盖本地同步清单；派生项目是接收方，不会修改模板仓库。模板的改进只通过 §3 / §4 的模板仓库 PR 产生。
 

@@ -78,3 +78,13 @@ AI 判断需要新增文档时，必须按以下顺序处理：
 | 消息通道内交互 / 不需演示 | `docs/04-05` 不强制写前端 | 通常删除 `frontend/` | 若后续变更演示形态，再补前端设计 |
 | 暂无自动化测试 | `docs/09-verification.md` 仍保留 | 可暂删 `tests/` | 09 至少记录人工验证和本机资源验证 |
 | 需要容器 / 外部服务 | `docs/04-05` 写明运行拓扑 | 保留 `docker/` | Demo 优先本机；资源不足再写服务器预案 |
+
+## 轻量项目路径
+
+若项目是小脚本、一次性实验或纯工具库，仍保留基本边界与验证口径即可：
+
+1. 写最小 `docs/vision/product-vision.md`。
+2. 运行 `scripts/collect-env.ps1`，确认本机可运行边界。
+3. 按上面的裁剪表决定是否省略 `docs/06`、`docs/07` 和代码目录。
+4. 保留最小版 `docs/03-prd.md`、`04-architecture.md`、`05-tech-spec.md`、`08-dev-plan.md`、`09-verification.md`。
+5. 每次只实现一个小任务；验证结果记录到 `docs/09-verification.md` 或当前 Sprint。
