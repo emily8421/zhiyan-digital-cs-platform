@@ -1,89 +1,132 @@
-# 05 技术方案（Technical Specification）
-
-> **文档定位**：定义技术栈、版本、依赖、关键技术决策、运行资源和编码约定。本文回答“用什么技术以及如何落地”，不重复 04 的架构图，不写 DB/API 细节。
->
-> **上游输入**：`docs/04-architecture.md`、`docs/03-prd.md`、`docs/env/local-env.md`、`ai/project-rules.md`。
->
-> **下游输出**：约束 `docs/06-db-design.md`、`docs/07-api-spec.md`、`docs/08-dev-plan.md`、代码目录、依赖文件和验证方式。
+# 05 Tech Spec（技术方案）
 
 ## 0. 文档元信息
 
 | 项 | 内容 |
 |---|---|
-| 输入来源 |  |
-| 覆盖架构组件 | COMP-001... |
-| 当前状态 | 草稿 / 待人工确认 / 已确认 |
-| 最后更新 | YYYY-MM-DD |
+| 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
+| 当前状态 | 草稿，待人工确认 |
+| 最后更新 | 2026-07-03 |
+| 当前阶段 | Phase1 本机 Demo |
 
-## 1. 技术栈与版本
+## 1. 技术栈
 
-**撰写提要**：列出已确认使用的语言、框架、运行时、数据库、模型、工具和最低版本。候选或预留技术必须标明“未启用”。
-
-| 类别 | 技术 / 版本 | 状态 | 用途 | 约束来源 |
-|---|---|---|---|---|
-| 语言 / 框架 / 数据库 / AI / 工具 |  | 已用 / 预留·未启用 / 候选 |  |  |
-
-## 2. 关键技术决策
-
-**撰写提要**：解释为什么选择这些技术，以及不选哪些替代方案。横切事实引用权威源。
-
-| 决策 ID | 决策 | 理由 | 替代方案 | 影响范围 | 权威源 |
-|---|---|---|---|---|---|
-| TDR-001 |  |  |  |  |  |
-
-## 3. 依赖与配置
-
-**撰写提要**：说明依赖来源、配置文件、环境变量、密钥管理方式。不要把真实密钥写入文档。
-
-| 项 | 路径 / 名称 | 用途 | 当前状态 | 备注 |
-|---|---|---|---|---|
-| 依赖文件 |  |  |  |  |
-| 配置文件 |  |  |  |  |
-| 环境变量 |  |  |  |  |
-
-## 4. 运行环境与资源评估
-
-**撰写提要**：读取 `docs/env/local-env.md`，说明本机 Demo 是否可运行、资源瓶颈、降级策略和服务器预案。
-
-| 运行项 | 本机要求 | 当前本机是否满足 | 降级 / Mock | 服务器预案 |
-|---|---|---|---|---|
-|  |  | 是 / 否 / 待确认 |  |  |
-
-## 5. Phase 技术约束
-
-**撰写提要**：说明当前 Phase 允许 / 禁止的技术能力；必须与 `ai/project-rules.md` §1、§2、§3 一致。
-
-| Phase | 允许 | 禁止 | 技术状态说明 |
+| 层 | 技术 | 状态 | 说明 |
 |---|---|---|---|
-| Phase1 |  |  |  |
+| 客户 H5 | React + Vite + TypeScript | 建议，待确认 | 独立 Web 页面，快速演示交互。 |
+| Web 控制台 | React + Vite + TypeScript | 建议，待确认 | 可与 H5 共享 API client 和类型。 |
+| 后端 | Python + FastAPI | 已列入项目规则草稿 | REST API、服务层、适配层。 |
+| 数据库 | PostgreSQL + pgvector | 计划方向，Phase1 可降级 | Docker 不可用时先 Mock / 本地临时数据。 |
+| 向量检索 | pgvector / TEI | 预留，默认关闭 | Phase1 不强制向量服务。 |
+| 通知 | 飞书机器人适配 | 预留，Phase1 Mock | 默认不真实发送。 |
+| 外部业务系统 | CRM / ERP / OA / 工单适配 | 预留，Phase3 | Phase1 仅 Mock。 |
+| LLM | 待确认 | 默认关闭 | 启用前需补成本、不编造、兜底、审计。 |
 
-## 6. 编码约定
+## 2. 本机环境约束
 
-**撰写提要**：定义命名、目录、分层、错误处理、日志、测试和格式化约定。若项目尚未编码，可给最小约定并标待回填。
+依据 `docs/env/local-env.md`：当前本机为 Windows 10 / PowerShell 5.1，约 31.73 GB 内存，Python 3.14.3，Node.js 22.17.1，Docker 已安装但当前不可用，未检测到 GPU。
 
-- 命名：
-- 目录 / 分层：
-- 错误处理：
-- 日志：
-- 测试：
-- 格式化 / Lint：
+Phase1 必须能本机运行：
 
-## 7. 安全、隐私与合规考虑
+- H5 对话页。
+- FastAPI 后端。
+- Web 控制台。
+- Mock 数据与基础手工验证。
 
-**撰写提要**：列出敏感数据、权限、审计、合规、数据留存、第三方服务等要求；无则写“当前阶段无已确认要求”。
+允许降级 / Mock：
 
-| 项 | 要求 | 阶段 | 状态 | 权威源 |
-|---|---|---|---|---|
-|  |  |  |  |  |
+- PostgreSQL / pgvector。
+- Embedding / 向量检索。
+- 飞书通知。
+- 订单 / 项目 / 售后等外部业务系统。
+- LLM 能力。
 
-## 8. 技术风险与验证计划
+禁止本机运行：本地大模型推理、模型训练、生产规模向量索引、真实生产数据处理。
 
-**撰写提要**：列出需要 Spike、PoC 或资源验证的风险，并映射到 `docs/09-verification.md`。
+## 3. 关键技术决策
 
-| 风险 ID | 风险 | 影响 | 验证方式 | 对应用例 / 任务 |
-|---|---|---|---|---|
-| RISK-001 |  |  |  |  |
+| 决策 | 当前口径 | 原因 | 风险 |
+|---|---|---|---|
+| 前端单仓多入口 | `frontend/customer-h5` 与 `frontend/console` 分目录 | H5 与控制台职责不同，但共享类型和 API client | 前端框架待确认 |
+| 后端分层 | API / Service / Adapter / Data / Schema / Core | 避免外部系统与业务逻辑耦合 | 初期目录较多 |
+| 场景包配置化 | 使用数据文件表达产品型 / 项目型场景 | 支持复用与追溯 | 需要设计校验规则 |
+| Mock 优先 | Phase1 所有外部系统走 Mock | 保证本机可跑与安全 | 与真实系统差异需标明 |
+| 不编造策略 | 无依据 / 高风险转人工 | 保护售后和承诺风险 | 演示时可能不够“智能” |
+| 数据库目标设计保留 | `docs/06` 写 PostgreSQL 目标结构 | 为后续 MVP / 集成铺路 | Phase1 实现可能降级 |
 
-## 9. 待人工确认项
+## 4. 后端技术方案
 
--
+- 使用 FastAPI 提供 REST API。
+- 使用 Pydantic 模型定义请求 / 响应 / 内部 DTO。
+- 服务层包含 `conversation_service`、`intent_router`、`knowledge_service`、`handoff_service`、`gap_service`、`summary_service`。
+- 适配层包含 `mock_business_adapter`、`notification_adapter`，未来新增 `crm_adapter`、`erp_adapter`、`oa_adapter`。
+- 数据层 Phase1 可先加载 JSON / YAML / Python seed 数据；若 PostgreSQL 可用则按 `docs/06-db-design.md` 实现。
+- 日志必须脱敏，禁止输出 token、真实联系方式、真实订单或合同信息。
+
+## 5. 前端技术方案
+
+### 5.1 H5 对话页
+
+- 核心页面：会话入口、消息列表、输入框、依据 / Mock 标识、转人工提示。
+- 核心状态：`conversationId`、`messages`、`scenarioPackId`、`loading`、`error`。
+- 样式目标：手机浏览器可读、演示屏幕可展示。
+
+### 5.2 Web 控制台
+
+- 核心页面：概览、会话列表、待跟进、知识缺口、通知记录、场景包 / Mock 数据查看。
+- 控制台 Phase1 不做复杂权限；仅用于本机 Demo。
+- 所有外部数据必须标明 Mock。
+
+## 6. 数据与存储方案
+
+| 数据 | Phase1 默认 | 目标结构 |
+|---|---|---|
+| 会话 / 消息 | 本地临时存储或 PostgreSQL | `zycs_conversations`、`zycs_messages` |
+| 知识 / 规则 | JSON / seed 数据 | `zycs_knowledge_items`、`zycs_rule_items` |
+| 场景包 | JSON / YAML | `zycs_scenario_packs` |
+| Mock 业务数据 | JSON / seed 数据 | `zycs_mock_business_records` |
+| 转人工 / 缺口 | 本地临时存储或 PostgreSQL | `zycs_human_handoffs`、`zycs_knowledge_gaps` |
+| 通知 / 摘要 / 审计 | 本地临时存储或 PostgreSQL | `zycs_notifications`、`zycs_daily_summaries`、`zycs_audit_logs` |
+
+数据库表前缀 `zycs_` 仍待人工确认。
+
+## 7. 接口方案
+
+- REST API 前缀：`/api/v1`。
+- 响应统一包含 `request_id`，错误响应包含 `code`、`message`、`details`。
+- H5 和 Web 控制台均只调用后端 API，不直接读取本地数据文件。
+- 外部通知 API 默认不真实发送，只记录 payload。
+- API 契约见 `docs/07-api-spec.md`。
+
+## 8. 安全与合规
+
+- 不保存真实客户隐私数据；样例数据必须标明 Mock。
+- 不把 token、密钥、账号密码写入日志、文档或测试数据。
+- 不自动承诺价格、交期、赔付、合同、法律责任或售后结论。
+- 默认不访问外部网络和付费服务。
+- 如后续启用 LLM，必须新增安全评审：提示词边界、检索证据、成本上限、失败兜底、人工复核。
+
+## 9. 资源评估与降级策略
+
+| 项 | 正常方案 | 降级方案 | 触发条件 |
+|---|---|---|---|
+| PostgreSQL | Docker 启动本地数据库 | JSON / SQLite / 内存 Mock | Docker 不可用或安装未确认 |
+| pgvector | PostgreSQL 扩展 | 关键词 / 规则匹配 | 向量服务不可用 |
+| TEI / Embedding | 远程或容器服务 | 不启用 | 无 GPU / 无服务器 / 未确认成本 |
+| 飞书通知 | 真实机器人 webhook | Mock payload + 日志 | 未授权外部联网 / 无凭据 |
+| LLM | 受控 API 调用 | 不启用 | 未确认成本、安全、准确性 |
+
+## 10. 编码约定
+
+- Python 使用 `snake_case`，前端变量 / 函数使用 `camelCase`，组件使用 `PascalCase`。
+- 外部系统访问必须走适配层，不得在服务逻辑中直接调用外部 API。
+- 场景包、Mock 数据和客户叙事必须以可追溯配置或数据文件表达。
+- 错误处理不得吞掉高风险状态；高风险问题要显式进入转人工。
+
+## 11. 待确认项
+
+1. 前端框架是否确认 React + Vite + TypeScript。
+2. Phase1 存储降级策略选择：JSON / SQLite / 内存 / PostgreSQL。
+3. 是否允许安装依赖和 Docker 镜像。
+4. 是否允许真实飞书机器人通知。
+5. 是否使用公司服务器；若使用，需确认 CPU / 内存 / GPU / 端口 / 成本。
