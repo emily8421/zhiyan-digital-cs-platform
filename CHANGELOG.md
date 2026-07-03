@@ -6,6 +6,227 @@
 
 模板版本采用三段式 `vMAJOR.MINOR.PATCH`，以根目录 `VERSION` 为单一审计入口。任何会影响下游同步判断的模板合并都应递增版本；`ai/global-rules.md` 顶部仅记录全局规则自身版本。
 
+## v1.26.0（2026-07-03）
+
+会话续接场景化 + 被动中断裁决优先级（session-resume）：让「读取续接点 / 继续上次 / 换 CLI 接手」在多 CLI + 被动中断下更稳。
+
+- **`ai/session-rules.md` §1 加固**：新增「裁决优先级」链（Git 客观事实 > `.ai/session-handoff.md` > `NEXT-STEPS.md` > 冲突停下问用户）+「主动 vs 被动中断」表（被动中断含跨 CLI 接手，handoff 缺失/过时时以 Git 为唯一锚点）；「兼容旧文件」收紧为「仅读旧项目时兜底，新项目不再创建 `NEXT-STEPS.md`」。
+- **`ai/session-rules.md` §2 调整**：恢复流程改为「先取 Git 客观事实，再读续接文件」（原顺序反，易被过时 handoff 先入为主）；第 4 步显式「交叉核对判主动 / 被动中断」，被动中断以 Git 为唯一锚点重建并标注不确定项。
+- **新场景 A16**（scenario-guides + 速查索引）：「会话续接 / 中断恢复（跨 CLI 接手）」——跨 Claude / Codex / Cursor 的统一恢复入口，换 CLI 不丢上下文；顺带修正已有索引 bug（标题 A0–A14 / A0–A15 → A0–A16）。
+- **`ai/commands/README.md`**：自然语言示例加「读取续接点 / 继续上次」，让 AI 识别该短语时路由到 scenario → A16。
+- 动机：多 CLI 实际使用中，撞 token / 时间上限被迫换 CLI、窗口中断重开是高频场景；原规范裁决优先级散落、被动中断未显式命名、场景层无入口。
+- housekeeping：删除本仓库根目录过时的 `NEXT-STEPS.md`（v1.21.3 旧记录，已 gitignore，不进版本库）。
+- check-template 全过。
+- 起草自 `_proposals/TEMPLATE-UPGRADE-session-resume.md`。
+
+## v1.25.0（2026-07-03）
+
+派生 → 模板反馈与提案回流渠道（标准化 + 半自动）。回流自派生提案 `derived-feedback-channel`。
+
+- **来源标识规则**（`ai/global-rules.md` §9 增补）：回流提案 / 反馈头部标 `> 来源：<派生>(owner/repo)`，解决来源不可识别（曾导致回流 PR 被误判为「另一会话并发」）。
+- **2 新命令**（跨仓库开 issue，免 fork）：
+  - `submit-proposal`（`/run submit-proposal` + `ai/prompts/maintainers/17-submit-proposal.md`）：成熟提案校验（去项目化 + 来源 + 字段）后 `gh issue create`（label `proposal`）。
+  - `submit-feedback`（`/run submit-feedback` + `ai/prompts/maintainers/18-submit-feedback.md`）：半自动汇集候选问题（sync 运行记录 / audit / check 告警 / 草稿）+ 人工勾选 + 开 issue（label `feedback`）。
+- **Issue 模板** `.github/ISSUE_TEMPLATE/derived-feedback.md`（template-local）：预填来源 / 类型 / 去项目化确认。
+- **`template-proposal-summary`（11）扩展**：除 `_proposals/`，也读模板仓带 `proposal`/`feedback` 标签的 issue。
+- **新场景 A15**（scenario-guides + 速查索引 + SOP 场景索引）：「回流提案 / 反馈到模板」——派生使用者上报侧（C1 是维护者收侧）。
+- 动机：团队场景（多成员 / 多机器 / 多派生）回流摩擦 + 来源混淆；半自动（非全自动）保留人工判断。
+- check-template 加断言（§9 来源标识 + commands/README `submit-proposal` + 命令循环含 2 新命令 + 4 新文件入 sync 清单）；全过。
+- 回流自 `_proposals/TEMPLATE-UPGRADE-derived-feedback-channel.md`。
+
+## v1.24.5（2026-07-03）
+
+多会话并发操作规范：git-guide + MAINTAINERS + session-rules 记录「独立 worktree」约定，防并发 commit 落错分支。
+
+- `git-guide.md` §4（场景 B）：加「多会话并发操作」小节——`git worktree add` 命令 + why（共用工作区 = 共用 HEAD，`先确认分支再 commit` 非原子，必然偶发落错）+ 完成清理。
+- `MAINTAINERS.md` §2：加「多会话并发」指针 bullet（→ git-guide §4）。
+- `ai/session-rules.md`：加 §7「多会话并发操作」AI 行为约定（并发前先确认是否开独立 worktree）。
+- 动机：多次 AI 会话并发操作模板仓导致 commit 落错分支（3 起）；git 无自动机制，须靠每会话独立目录这一约定。
+- check-template 全过。
+
+## v1.24.4（2026-07-03）
+
+INIT-PROMPT reframe：标题 + 定位行对齐「启动入口」定位（#17 子问）。
+
+- `INIT-PROMPT.md`：标题「常用 Prompt 模板索引」→「**AI 任务启动入口**」（原标题 v1.22.2 后 stale——索引已迁到 `ai/prompts/README` + `commands-README`）；正文首行改为定位声明「首次在本模板项目里启动 AI 工作时，从这里入手」。
+- 解决名 / 题 / 内容不一致：文件名 `INIT-PROMPT` + 新标题「启动入口」+ 内容（4 入口指针 + 原则）现在三者一致。
+- 不改规则、不挪位、不断引用 / 断言（`ai/commands/README.md` 指针保留）；check-template 全过。
+- 回应 #17 子问（INIT-PROMPT 定位评估）。
+
+## v1.24.3（2026-07-03）
+
+`check-derived-sync` 加非阻断「README 模板版本号 vs VERSION」一致性告警（回流自派生项目提案 readme-version-check）。
+
+- `scripts/check-derived-sync.sh` + `.ps1`：同步边界检查后加一项**非阻断**告警——读 `VERSION` + 扫 README 里「当前 / 已同步」语义的模板版本声明，与 `VERSION` 不一致就告警（不计入失败、不改退出码）；README 无版本声明则跳过。
+- 动机：根 README 是项目专属（sync 不碰），其「同步至 vX.Y.Z」声明全靠人工维护，sync 后易滞后且无提示（实测某派生项目跨多版同步 README 仍标旧版本）。
+- 非阻断设计：README 可能有历史 / 叙事性版本引用，硬阻断会误伤；告警 + 人工核对是正确粒度。
+- check-template 加防滞后断言（`check-derived-sync` 含「README 模板版本」）。
+- 回流自派生项目提案 `TEMPLATE-UPGRADE-readme-version-check`；非破坏；check-template 全过。
+
+## v1.24.2（2026-07-03）
+
+global-rules §8.1 加「双维度总览表」撰写推荐（回流自派生项目提案 phase-overview-table，另一 AI 起草）。
+
+- `ai/global-rules.md` §8.1：加推荐——`docs/03-prd.md` §3 路线图顶部用「双维度总览表」集中呈现阶段 × 交付物形态（Demo/MVP/产品），避免交付物形态被要素级 `[P1]`/`[P2]`/`[愿景]` 标签淹没。Lean 剖面可裁剪列集；非强制。
+- `docs/03-prd.md` §3：加「双维度总览表」标注，显式说明下方表是双维度总览、与要素级标签形成「全景 ↔ 要素」对照（呼应 §8.1）。
+- 动机：交付物形态是阶段级属性（少数点声明），功能范围是要素级标签（遍布 04-09，上百次），前者易被后者淹没；总览表让 Demo→MVP→产品 演进线一目了然。
+- cherry-pick 自 `change/phase-overview-table`（去项目化提案）；非破坏、不改双维度定义；check-template 全过。
+- 提案：`_proposals/TEMPLATE-UPGRADE-phase-overview-table.md`。
+
+## v1.24.1（2026-07-02）
+
+v1.24 infrastructure release 收官。**PR-7 测试基础设施（#9）**。
+
+- **L3 端到端回归机制**：
+  - `template-docs/e2e-regression-checklist.md`（随模板同步）：6 项回归（R1 同步链路 / R2 check-derived-sync / R3 sync-all-derived 批量 / R4 场景引导路由 / R5 文档生成 / R6 PowerShell fallback），可自动化 + 人工 + 通过标准。
+  - `scripts/e2e-sync-check.sh`（随模板同步）：L3 发布门，聚合 `check-template`（含 doc-standards 镜像 + 新项目烟测）+ `sync-all-derived` 批量烟测，人工项指向 checklist。运行通过。
+  - `template-docs/e2e-report-template.md`（随模板同步）：回归报告模板。
+  - `MAINTAINERS` 发布 Checklist 补：MINOR / MAJOR 发布前跑 L3 + 报告确认（PATCH 可豁免）。
+- 专用测试派生项目 `ai-project-template-e2e` 是**外部 repo**（维护者 `gh repo create` + `new-project` 派生），模板仓内只给文档 + 命令。
+- check-template 加 5 断言（3 `require_file` + MAINTAINERS L3 + 回归清单 R6）。
+- **同步归属修订（含 PR-6）**：`scripts/sync-all-derived.sh` + `scripts/e2e-sync-check.sh` + `template-docs/e2e-regression-checklist.md` + `template-docs/e2e-report-template.md` 改为**随模板下行同步**（加入 `template-sync.json` + `sync-template.sh` 兜底清单 + Sync notice），消除 synced 文档（MAINTAINERS / scenario-guides / SOP / git-guide）对 template-local 文件的悬空引用；去掉 template-local 表述。
+- 覆盖用户诉求 **#9**（最小测试清单 + 回归机制 + 专用测试派生项目 + 报告）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-test-infra-pr7-v1.24.1.md`。
+- **#1–#16 + #9 全部完成；v1.23 文档重构 + v1.24 infrastructure release 收官。**
+
+## v1.24.0（2026-07-02）
+
+v1.24 infrastructure release 启动。**PR-6 批量同步派生项目（#15）**。
+
+- **新增 `scripts/sync-all-derived.sh`**（template-local 维护者脚本，不进 sync 清单）：一条指令批量同步父目录下所有派生项目——遍历子目录、判定派生项目（`VERSION`+`scripts/sync-template.sh`+`docs/`，排除模板本体 `_examples/`）、逐个跑该项目的 `sync-template` + `check-derived-sync`、汇总成功 / 跳过 / 失败。默认 `--dry-run`，`--commit` 才写；工作区有未提交跟踪改动 / 非派生 / 同步失败 自动跳过，绝不强行写入。最小自测通过（2 假派生 + 非派生 + 模板本体）。
+- **新场景 C8 批量同步所有派生项目**（`scenario-guides.md`，C 维护者）：触发「批量同步 / sync all derived」；步骤 确认目录版本账户 → dry-run 全预览 → commit 批量 → 看汇总。`--commit` 在每个派生当前分支提交；要 PR-per-project 可审计流程改用 A13。
+- **交叉引用**：scenario-guides（C8 + 速查索引 C1–C8 + §5 C 头 C1–C8）、SOP（场景索引 C8 行）、MAINTAINERS（下行同步节批量 bullet）、git-guide §5（批量同步 note）。
+- **check-template 新断言**：`require_file scripts/sync-all-derived.sh` + scenario-guides C8 + SOP / MAINTAINERS `sync-all-derived` 引用。
+- 覆盖用户诉求 **#15**（23 场景未覆盖的「一条指令批量更新派生项目」缺口）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-batch-sync-pr6-v1.24.0.md`。
+
+## v1.23.7（2026-07-02）
+
+文档体系重构 PR-5（ai/ 规则件）：document-lifecycle-rules 读者导向 + global-rules 去重，覆盖用户诉求 #12 + #14。
+
+- `ai/document-lifecycle-rules.md`（#12）：顶部加**阅读地图**（是什么 / 为什么 / 怎么做 / 规范 / 图表 → §1–§13 映射）；§1 加「文档体系是什么 + 为什么需要这套规则」framing。**不重组、不重编号**（§2 / §3 / §5 / §6 / §13 被 7 处跨引用）；6 锚点全保留。
+- `ai/global-rules.md`（#14）：§6「最佳实践流程总览」改为 stub 指针（指向 §1.1，删重复的 Scenario→Code 链，保留「避免想法→AI→代码」）；**保留 §6 号**（§7 / §8 / §9 被 6 处跨引用，不能重编号）。§8 阶段双维度不动（与 doc-lifecycle §4 文档剖面是不同概念，非重复——纠正 #13 评估误判）。
+- 11 个 global-rules 锚点 + 全部跨引用保留；check-template 全过。
+- 提案：`_proposals/TEMPLATE-UPGRADE-ai-rules-pr5-v1.23.7.md`。
+
+## v1.23.6（2026-07-02）
+
+文档体系重构 PR-5b（导航衔接）：SOP 场景索引 ↔ scenario-guides 场景码对齐，覆盖用户诉求 #16。
+
+- `SOP.md`：顶部加**分工声明**（SOP = 命令速查 vs scenario-guides = 场景剧本，场景码对齐、互补不重复）；场景索引加**场景码列**（A0–A14 / C1–C7 / M1 对齐 scenario-guides）；拆「操作场景（带码 + 命令）」与「文档入口（看哪）」两区。
+- 解决 SOP 与 scenario-guides「各说各的」：两边现在用同一套场景码，可双向跳（找命令看 SOP，看剧本看 scenario-guides 对应码）。
+- ~24 个 SOP 断言锚点全保留（场景名 + 命令 + PowerShell fallback 等）；check-template 全过。
+- 提案：`_proposals/TEMPLATE-UPGRADE-sop-scenario-coordination-v1.23.6.md`。
+
+## v1.23.5（2026-07-02）
+
+文档体系重构 PR-4b（scenario-guides 导航）：加场景速查索引，覆盖用户诉求 #11（scenario-guides 部分）。
+
+- `template-docs/scenario-guides.md`：§5 顶部加**场景速查索引**（A0–A14 / C1–C7 / M1 共 23 场景的「触发说法 + 一句话」表，按角色分组）；§5 目录正文不动；§1 入口提示加「§5 顶部有速查索引」。
+- 5 个断言锚点全保留（场景路由入口 / 引导计划输出契约 / A0 冷启动 / mermaid / 当前 `gh` 登录账户）；check-template 全过。
+- 提案：`_proposals/TEMPLATE-UPGRADE-docs-restructure-pr4b-v1.23.5.md`。
+
+## v1.23.4（2026-07-02）
+
+文档体系重构 PR-4a（template-docs 可读性）：3 份手册结构优化，覆盖用户诉求 #11。
+
+- `template-docs/env-setup.md`：15 节 → 10 节——合并 3 个「顺序 / 路径」节（§6 建议顺序 + §7 一键安装 + §8 三种路径）+ 2 个「脚本行为」节（§9 check-prereqs + §10 bootstrap）+ §1/§2 合并 + §5 折入 §4；§4 加速览表；§15 改导航表。
+- `template-docs/ai-cli-setup.md`：9 节 → 8 节——§7「推荐操作顺序」并入 §2「推荐顺序」。
+- `template-docs/template-methodology.md`：17 节碎片 → 6 主题（①定位 ②权威源 ③问题+目标 ④核心原则 ⑤各子系统设计 why ⑥演进+历史）。
+- 全部断言锚点保留（env-setup 8 / ai-cli-setup 5+1 absent / template-methodology 仅 file-existence）；check-template 全过。
+- 提案：`_proposals/TEMPLATE-UPGRADE-docs-restructure-pr4a-v1.23.4.md`。
+
+## v1.23.3（2026-07-02）
+
+文档体系重构 PR-3b（导航）：关键文件夹补 README，覆盖用户诉求 #7。
+
+- 新增 7 个文件夹 README（template-local，不进 sync 清单）：`template-docs/README`（手册导航）、`scripts/README`（脚本说明 + 模板/派生检查区别）、`ai/README`（ai/ 目录概览）、`frontend/` / `backend/` / `tests/` / `docker/` README（用途 + 裁剪提示，指向 `project-rules` §3）。
+- 派生项目的目录指引已由同步的 `beginner-guide` §5 三层结构覆盖；本批 README 为模板仓可读性增强。
+- check-template 全过；无脚本 / 同步清单 / 断言变更。
+- 提案：`_proposals/TEMPLATE-UPGRADE-docs-restructure-pr3b-v1.23.3.md`。
+
+## v1.23.2（2026-07-02）
+
+文档体系重构 PR-3（操作）：`git-guide.md` 分场景重构，覆盖用户诉求 #6。
+
+- `git-guide.md`：从「按主题」改为「**按场景**」组织——§1 先准备（gh 账号 + 身份）+ §2 场景速查表 + §3 场景 A 派生日常提交 + §4 场景 B 模板维护 + §5 场景 C 派生同步 + §6 场景 D 新建项目 + §7 踩坑 + §8 命令速查。下行同步保持在 §5（CONTRIBUTING / sync-methodology 的 `§5` 引用不断）；新建项目 §2 → §6。
+- 跨引用同步：`ai/commands/new-project.md`、`ai/prompts/setup/14-new-project.md` 的 `git-guide §2` → `§6（场景 D）`。
+- SOP 细节与 ~15 个断言锚点全保留；check-template 全过。
+- 提案：`_proposals/TEMPLATE-UPGRADE-docs-restructure-pr3-v1.23.2.md`。
+
+## v1.23.1（2026-07-02）
+
+文档体系重构 PR-2（治理文档）：覆盖用户诉求 #3（MAINTAINERS）/ #4（CONTRIBUTING）/ #5（README 目录速览）/ #10（同步回流闭环显化）。
+
+- `MAINTAINERS.md`：开头简化（使用者只看 README + beginner-guide）+ 板块重构为「维护者怎么干活」递进（①你是谁 ②改模板全流程 ③发布 checklist ④下行同步清单 ⑤自检与CI ⑥README边界 ⑦文档分区维护）。
+- `CONTRIBUTING.md`：修编号（去 0/2.5）+ 重构为「贡献流程」递进 1-9（什么算模板改动→双向闭环→改模板流程→版本号纪律→回流→下行同步→分支命名→禁止→治理变更记录）。
+- `README.md`：开头加两类读者划分（使用者/维护者）；目录速览补 `CONTRIBUTING.md` / `MAINTAINERS.md` / `INIT-PROMPT.md` / `template-sync.json` 4 行。
+- 同步回流闭环显化（#10）：`CONTRIBUTING.md` §2「观察·回流」+ `MAINTAINERS.md` §1 点名完整链路（`sync-methodology` 生成运行记录 → `post-sync-cleanup` 归纳 → 去项目化提案）。
+- 与 PR-1（#54，v1.23.0）文件无重叠；check-template 全过，无脚本/同步清单变更。
+- 提案：`_proposals/TEMPLATE-UPGRADE-docs-restructure-pr2-v1.23.1.md`。
+
+## v1.23.0（2026-07-02）
+
+文档体系重构 PR-1（核心全貌）：模板文档从「规则堆砌」转向「读者导向 + 通俗 + 条理 + 互相导航」。覆盖用户最初诉求 #1（docs 输入/输出区分）、#2（beginner-guide 全貌）、#8（docs 文档体系介绍 + 规范）。
+
+- `template-docs/beginner-guide.md` 全貌重构（5 章 → 7 节）：①是什么/能干啥 ②准备啥（工具/输入/决策三类合一）③怎么用（指 scenario-guides）④输入材料→文档体系→实现代码关系（新增核心心智图）⑤目录结构三层（模板方法/文档事实/代码骨架）⑥常见错误/问题 ⑦导航。
+- `docs/README.md` 重构（「文档分区规则」→「项目文档体系与分区规则」）：新增 §1 输入/输出二分（人工输入 vision/inputs vs AI 输出 00-09+design）、§2 00-09 各自干什么、§3 规范约束（编号/追溯/阶段标签/只增不删/撰写见 doc-standards）；保留分区/裁剪/根目录约束等。
+- `docs/vision/README.md`（新增）：标「人工输入区」定位，呼应 docs/README §1（#1 机制主力为已同步的 docs/README §1；本文件为模板仓本地增强）。
+- `docs/inputs/README.md`：顶部补「人工输入区」显式标注 + 指向 docs/README §1。
+- 后续 PR-2（MAINTAINERS/CONTRIBUTING/README 目录速览）、PR-3（git-guide/文件夹 README）另轮落地。
+- 提案：`_proposals/TEMPLATE-UPGRADE-docs-restructure-pr1-v1.23.0.md`。
+
+## v1.22.5（2026-07-02）
+
+端到端验证（`zhiyan-digital-cs-platform` 同步 v1.22.4）发现并修复的灰色地带：
+
+- **#1 修复 PowerShell fallback Null bug**（`sync-template.ps1` / `check-template.ps1` / `check-derived-sync.ps1`）：`Test-TemplateBash` 在 `Start-Process` 返回 Null（Git Bash 启动失败）时对 `$proc.ExitCode` 调用报 InvokeMethodOnNull，脚本在 probe 阶段终止未进 fallback；加 `$proc` Null 防御 → `Ready=$false` → 正常进 fallback。
+- **#2 修复 check-derived-sync 工作区干净过严 + 误导提示**（`.sh` / `.ps1`）：工作区检查改为只看已跟踪改动（未跟踪项目内容如 `docs/inputs` 不阻塞）；失败提示精准化（见上方失败项，不再固定"scripts/check-template"）。
+- **派生 README 规范**：`MAINTAINERS.md` 明确派生 README section 结构（简介 / 它能做什么 / 快速开始 / 当前阶段 / 目录速览 / 文档入口 / 模板关系）+ 约束（不照搬模板通用能力、保留模板关系 + VERSION、new-project 生成 + sync 不覆盖）；`new-project.sh` README 模板对齐（「当前能力」→「它能做什么」+ AI CLI 引导段收敛指 scenario-guides）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-fix-sync-derived-readme-v1.22.5.md`。
+
+## v1.22.4（2026-07-02）
+
+- `README.md` 开头通俗化：重写首段（「用 AI 按软件工程规范开发软件」+ 解决"AI 代码难维护"的目的），新增「它能做什么」能力段（6 条：生成工程文档体系 / 文档约束代码 + 六维度合规审查 / 分阶段交付 Demo→MVP→产品 / 场景引导 / 跨项目复用 + 经验回流 / 多 AI 工具 + 会话续接），基于模板实际能力梳理。
+- `template-docs/beginner-guide.md`：15 章 → 5 章精简（适合谁 + 预期 / 起步 / 准备 / 文档与目录理解 / 常见错误与问题）；删 v1.22.3 精简后变空的操作/路由章节（§3/§6/§10/§11/§12/§15）；§4 路径 A 简化为直接引导 scenario-guides；保留环境 keyword。
+- 提案：`_proposals/TEMPLATE-UPGRADE-refine-readme-beginner-v1.22.4.md`。
+
+## v1.22.3（2026-07-02）
+
+文档整理（v1.22.0–2 入口简化后的连带）：
+
+- `README.md` 目录速览补缺失：`_archive/`、`tasks/`、骨架目录（`frontend/ backend/ tests/ docker/`）、`ai/prompts/`、`ai/doc-standards/`、`.github/`。
+- `git-guide.md` §7 命令速查加交叉引用（脚本命令见 SOP 常用命令）。
+- `CONTRIBUTING.md` / `MAINTAINERS.md`：修陈旧引用（5 分钟路径→快速开始、README 方法论同步 section→`template-sync.json`）；提案组织建议去重（归 `CONTRIBUTING.md` §3.1，MAINTAINERS 改引用）。
+- `template-docs/beginner-guide.md`：操作/路由章节（§3/§10/§11/§12/§15）精简为指向 scenario-guides/SOP/README，强化「理解手册」定位（预期/准备/目录心智/常见错误）。
+- `SOP.md` 场景索引标注为速查（完整剧本见 scenario-guides）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-cleanup-docs-v1.22.3.md`。
+
+## v1.22.2（2026-07-01）
+
+- `INIT-PROMPT.md` 简化为指针：删「场景→命令→Prompt」明细表（与 SOP 场景索引重复），改为指向 scenario-guides / SOP 场景索引 / commands-README / prompts-README 的入口指针；~13 处引用不动（文件保留，向下兼容派生项目）。
+- `scripts/check-template.sh` 删 INIT-PROMPT 的 3 个 Prompt 明细断言（内容由 SOP 场景索引 + prompts/README 承担），保留 `require_file` 与「指向 commands-README」断言。
+- 提案：`_proposals/TEMPLATE-UPGRADE-simplify-init-prompt.md`。
+
+## v1.22.1（2026-07-01）
+
+- 入口文档简化：README 瘦身到 1 屏（开头简介 + 快速开始三入口「说场景 / 找命令 / 理解设计」+ 当前版本 + 目录速览），删除「5 分钟最小路径」「我该看哪个文件」大表、常用命令、轻量项目路径等冗余 section。
+- `SOP.md` 接收 README 的「常用命令」（派生使用者 / 模板维护者 / Windows 脚本入口矩阵），定位为速查表。
+- `docs/README.md` 接收「轻量项目路径」。
+- `template-docs/beginner-guide.md` 删冗余「路径 B」手动命令，路径 A 收拢环境入口 keyword，定位为「理解手册」；起步动作统一指向 scenario-guides。
+- `scripts/check-template.sh` 配套调整断言：README 改为入口指引断言，详细命令断言移到 SOP，环境/烟测入口由 beginner-guide 断言覆盖。
+- 提案：`_proposals/TEMPLATE-UPGRADE-simplify-entry-docs.md`。
+
+## v1.22.0（2026-07-01）
+
+- 新增场景引导编排层 `template-docs/scenario-guides.md` 与元命令 `ai/commands/scenario.md`（`/run scenario`）：按角色（A 使用者 / C 维护者）组织 23 个端到端场景剧本，用户说一个具体场景意图，AI 即按契约产出「做什么 + 为什么」引导计划，确认后逐步执行；含 cwd 路由入口（零资产 / 模板仓库 / 派生项目三分支）、A7 PLM 文档精修转换子场景、A9 阶段规划与 M1 元场景；每个场景步骤三层一一对应（做什么 / 为什么 / 机器执行）。
+- `scenario-guides.md` 含前提条件声明：零资产（只有仓库链接）时 AI 读不到本文件，A0 冷启动需先手动获取资产（给出模板仓库 clone 地址与 `new-project.sh` 派生路径），拿到本地项目后才进入 AI 场景引导。
+- 收敛 `README.md`、`template-docs/beginner-guide.md`、`template-docs/ai-cli-setup.md` 三处重复的新手 7 步话术，统一指向 `scenario-guides.md` 为唯一源；`ai/commands/README.md` 加「场景优先」约定与 `scenario` 命令行。
+- 新增设计文档图表规范（`ai/document-lifecycle-rules.md §13`，默认 mermaid、可选 plantuml）与 `ai/project-rules.md §2.6` 图表格式偏好填项。
+- 把 `project-review`(03) 实现合规审查补进 A10 场景；17 个 command 全部被场景编排覆盖。
+- `template-sync.json` 纳入 `scenario-guides.md` 与 `scenario.md`；`SOP.md`、`README.md` 补场景引导入口；`scripts/check-template.sh` / `.ps1` 加场景引导、去账户化、防漂移断言（含新增 `require_absent_contains` 函数）。
+- 提案：`_proposals/TEMPLATE-UPGRADE-scenario-guides.md`。
+
 ## v1.21.3（2026-07-01）
 
 - `scripts/sync-template.ps1` 增加原生 PowerShell fallback：Git Bash / MSYS 无法从 PowerShell 启动时，仍可执行模板抓取、dry-run 差异预览、`--commit` 同步清单文件与 `ai/doc-standards/00-09` 规范镜像，并保留脏工作区保护。

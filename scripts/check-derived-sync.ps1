@@ -58,6 +58,14 @@ function Test-TemplateBash {
       -RedirectStandardOutput $stdoutFile `
       -RedirectStandardError $stderrFile
 
+    if ($null -eq $proc) {
+      return [pscustomobject]@{
+        Ready    = $false
+        ExitCode = -1
+        StdErr   = 'Start-Process returned null (bash failed to start from PowerShell)'
+      }
+    }
+
     $stderr = if (Test-Path $stderrFile) { (Get-Content $stderrFile -Raw).Trim() } else { "" }
     return [pscustomobject]@{
       Ready    = ($proc.ExitCode -eq 0)
@@ -154,11 +162,11 @@ function Invoke-NativeDerivedSyncCheck {
   & git status --short --branch | ForEach-Object { Write-Host $_ }
   Write-Host ""
 
-  $porcelain = @(& git status --porcelain)
-  if ($porcelain.Count -gt 0) {
-    Fail "working tree is not clean; review uncommitted changes before checking sync boundary"
+  $trackedChanges = @(& git status --porcelain | Where-Object { $_ -notlike '?? *' })
+  if ($trackedChanges.Count -gt 0) {
+    Fail "tracked changes uncommitted; review before checking sync boundary (untracked project content does not block)"
   } else {
-    Pass "working tree clean"
+    Pass "working tree clean (untracked project content does not block)"
   }
 
   Require-File "template-sync.json"
@@ -211,6 +219,27 @@ function Invoke-NativeDerivedSyncCheck {
   }
 
   Write-Host ""
+  Write-Host "==> 根 README 模板版本号一致性（非阻断）"
+  if ((Test-Path -LiteralPath "VERSION") -and (Test-Path -LiteralPath "README.md")) {
+    $curVer = (Get-Content -Raw -Encoding UTF8 VERSION).Trim()
+    $readmeVer = ""
+    foreach ($line in (Get-Content -Encoding UTF8 README.md)) {
+      if (($line -match '当前|已同步') -and ($line -match 'v[0-9]+\.[0-9]+\.[0-9]+')) {
+        $readmeVer = $matches[0]
+      }
+    }
+    if (-not $readmeVer) {
+      Write-Host "INFO  README 未声明当前模板版本号，跳过（README 不强制写版本号）"
+    } elseif ($readmeVer -ne $curVer) {
+      Write-Host "WARN  README 模板版本声明 $readmeVer 与 VERSION $curVer 不一致，请人工核对（非阻断）"
+    } else {
+      Write-Host "OK    README 模板版本声明 $readmeVer 与 VERSION 一致"
+    }
+  } else {
+    Write-Host "INFO  缺少 VERSION 或 README.md，跳过版本号一致性检查"
+  }
+
+  Write-Host ""
   if ($script:Failures -eq 0) {
     Write-Host "OK derived sync boundary check passed."
     Write-Host "   Next: if project cleanup is needed, use ai/prompts/maintainers/15-post-sync-cleanup.md on a separate branch."
@@ -218,7 +247,7 @@ function Invoke-NativeDerivedSyncCheck {
   }
 
   Write-Error "FAIL derived sync boundary check failed: $script:Failures issue(s)." -ErrorAction Continue
-  Write-Error "   Do not use scripts/check-template.sh/.ps1 for derived project validation; it is a template-repo self-check." -ErrorAction Continue
+  Write-Error "   See FAIL items above; derived sync validation uses check-derived-sync, not check-template (template self-check)." -ErrorAction Continue
   return 1
 }
 

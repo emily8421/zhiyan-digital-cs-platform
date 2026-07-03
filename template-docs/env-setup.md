@@ -11,13 +11,15 @@
 powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 ```
 
-## 1. 适用范围
+## 1. 这页帮你做什么 + 先检测
+
+### 适用范围
 
 - 默认面向 Windows 10 / 11。
 - 目标是让你能顺利运行本模板的核心脚本、同步方法论、采集环境并开始文档驱动开发。
 - Linux / macOS 用户可参考同样的软件清单，但本仓库当前提供的是 PowerShell 安装与检测脚本。
 
-## 2. 新手先判断要走哪条路
+### 新手先判断要走哪条路
 
 | 你看到的情况 | 说明 | 该做什么 |
 |---|---|---|
@@ -30,7 +32,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 | 缺 Claude CLI / Codex CLI | 不影响纯本地烟测和文档阅读 | 真正让 AI CLI 执行任务前，至少安装并登录一种 |
 | `collect-env.ps1` 已生成 `docs/env/local-env.md` | 自动采集完成，但项目边界还没确认 | 补齐“人工确认项”，再生成技术方案 |
 
-## 3. 最小安装目标
+## 2. 最小安装目标
 
 ### 必备
 
@@ -64,139 +66,107 @@ powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 - Java
 - 其他项目专属运行时、数据库或 SDK
 
-## 4. 每个工具是什么，为什么要装
+## 3. 每个工具是什么，为什么要装
+
+速览（详见下方分述）：
+
+| 工具 | 类别 | 一句话 |
+|---|---|---|
+| Git for Windows | 必备 | Windows 上的 Git，新建 / 同步 / 提交都依赖它 |
+| Git Bash | 必备 | 跑 `.sh` 脚本（new-project / sync-template / check-template） |
+| PowerShell | 必备 | 跑 `.ps1` 脚本（检测 / 采集 / 一键安装） |
+| Claude CLI / Codex CLI | AI CLI（至少一种） | 把文档 / Prompt / 任务交给 AI 执行 |
+| GitHub CLI（`gh`） | 条件必需 | 远端建仓 / 推送 / PR |
+| Node.js + npm | 推荐 | 前端 / JS 工具链常用运行时 |
+| Python | 推荐 | AI / 脚本 / 后端小工具常用 |
+| Visual Studio Code | 推荐 | 编辑器 |
+| Docker Desktop | 可选 | 容器 / 外部服务 |
+| Java | 可选 | 仅当依赖工具 / 中间件需要 |
+
+这些是核心依赖的原因：`new-project.sh`、`sync-template.sh`、`check-template.sh` 依赖 Bash（Windows 上用 Git Bash）；Git 用于派生 / 同步 / 提交，`gh` 用于远端建仓 / 推送 / PR；PowerShell 跑 `collect-env.ps1`、检测和一键安装；Node.js、Python 是多数 AI 编程项目常见运行时，`collect-env.ps1` 也检测它们；Docker、Java 非模板必需，但很多派生项目会用到。
 
 ### Git for Windows
 
-- 它是什么：
-  Windows 上的 Git 命令行工具，负责版本控制。
-- 为什么要装：
-  模板的新建项目、同步模板、提交代码都依赖 Git。
-- 不装会怎样：
-  无法运行 `new-project.sh`、无法做版本提交，也无法正常同步模板方法论。
+- 它是什么：Windows 上的 Git 命令行工具，负责版本控制。
+- 为什么要装：模板的新建项目、同步模板、提交代码都依赖 Git。
+- 不装会怎样：无法运行 `new-project.sh`、无法做版本提交，也无法正常同步模板方法论。
 
 ### Git Bash
 
-- 它是什么：
-  Git for Windows 自带的 Bash 终端和常见 Unix 命令环境。
-- 为什么要装：
-  模板里有一批 `.sh` 脚本，例如 `scripts/new-project.sh`、`scripts/sync-template.sh`、`scripts/check-template.sh`。
-- 不装会怎样：
-  这些 Bash 脚本无法运行。
-- 新手容易混淆的点：
-  “Git Bash 已安装”不等于“PowerShell 里能直接敲 `bash`”。有些机器需要用完整路径调用。
+- 它是什么：Git for Windows 自带的 Bash 终端和常见 Unix 命令环境。
+- 为什么要装：模板里有一批 `.sh` 脚本，例如 `scripts/new-project.sh`、`scripts/sync-template.sh`、`scripts/check-template.sh`。
+- 不装会怎样：这些 Bash 脚本无法运行。
+- 新手容易混淆的点：“Git Bash 已安装”不等于“PowerShell 里能直接敲 `bash`”。有些机器需要用完整路径调用。
 
 ### PowerShell
 
-- 它是什么：
-  Windows 自带的命令行和脚本环境。
-- 为什么要装 / 为什么需要它：
-  模板里的环境检测、环境采集和部分 Windows 入口脚本都用 PowerShell。
-- 不装会怎样：
-  `collect-env.ps1`、`check-prereqs.ps1`、`bootstrap-dev-env.ps1` 这些脚本无法运行。
+- 它是什么：Windows 自带的命令行和脚本环境。
+- 为什么要装 / 为什么需要它：模板里的环境检测、环境采集和部分 Windows 入口脚本都用 PowerShell。
+- 不装会怎样：`collect-env.ps1`、`check-prereqs.ps1`、`bootstrap-dev-env.ps1` 这些脚本无法运行。
 
 ### Claude CLI
 
-- 它是什么：
-  面向终端工作的 Claude 命令行工具。
-- 为什么建议至少准备一种 AI CLI：
-  这套模板的日常使用方式，本来就包含“把文档、Prompt、任务边界交给 AI CLI 工具执行”。
-- 为什么可能选它：
-  如果你的个人习惯或团队工作流偏向 Claude CLI，就应该在开工前先装好并登录。
-- 安装来源应看哪里：
-  优先看 Claude CLI / Claude Code 的官方安装与登录文档。
-- 什么时候可以先不装：
-  只做模板环境烟测、还没开始真正用 AI 编码时，可以先不装；但正式进入 AI 协作开发前，最好至少准备一种 AI CLI。
-- 更完整的安装与配置顺序：
-  见 `template-docs/ai-cli-setup.md`
+- 它是什么：面向终端工作的 Claude 命令行工具。
+- 为什么建议至少准备一种 AI CLI：这套模板的日常使用方式，本来就包含“把文档、Prompt、任务边界交给 AI CLI 工具执行”。
+- 为什么可能选它：如果你的个人习惯或团队工作流偏向 Claude CLI，就应该在开工前先装好并登录。
+- 安装来源应看哪里：优先看 Claude CLI / Claude Code 的官方安装与登录文档。
+- 什么时候可以先不装：只做模板环境烟测、还没开始真正用 AI 编码时，可以先不装；但正式进入 AI 协作开发前，最好至少准备一种 AI CLI。
+- 更完整的安装与配置顺序：见 `template-docs/ai-cli-setup.md`
 
 ### Codex CLI
 
-- 它是什么：
-  面向终端工作的 Codex 命令行工具。
-- 为什么建议至少准备一种 AI CLI：
-  它和 Claude CLI 一样，属于这套模板的实际执行终端之一。
-- 为什么可能选它：
-  如果你准备直接在终端里用 Codex 跑任务、读规则、执行 Sprint，就应该提前完成安装和登录。
-- 安装来源应看哪里：
-  优先看 Codex / OpenAI 官方安装与登录文档。
-- 什么时候可以先不装：
-  和 Claude CLI 一样，纯本地烟测阶段可以暂时不装；但真正开始 AI 协作开发前，建议至少准备一种。
-- 更完整的安装与配置顺序：
-  见 `template-docs/ai-cli-setup.md`
+- 它是什么：面向终端工作的 Codex 命令行工具。
+- 为什么建议至少准备一种 AI CLI：它和 Claude CLI 一样，属于这套模板的实际执行终端之一。
+- 为什么可能选它：如果你准备直接在终端里用 Codex 跑任务、读规则、执行 Sprint，就应该提前完成安装和登录。
+- 安装来源应看哪里：优先看 Codex / OpenAI 官方安装与登录文档。
+- 什么时候可以先不装：和 Claude CLI 一样，纯本地烟测阶段可以暂时不装；但真正开始 AI 协作开发前，建议至少准备一种。
+- 更完整的安装与配置顺序：见 `template-docs/ai-cli-setup.md`
 
 ### GitHub CLI (`gh`)
 
-- 它是什么：
-  GitHub 官方命令行工具。
-- 为什么要装：
-  当你要创建远端 GitHub 仓库、推送、创建 PR，或者走某些模板同步场景时会用到。
-- 什么时候可以不装：
-  只做本地烟测、本地起步、暂时不建远端仓库时，可以先不装。
+- 它是什么：GitHub 官方命令行工具。
+- 为什么要装：当你要创建远端 GitHub 仓库、推送、创建 PR，或者走某些模板同步场景时会用到。
+- 什么时候可以不装：只做本地烟测、本地起步、暂时不建远端仓库时，可以先不装。
 
 ### Node.js
 
-- 它是什么：
-  JavaScript 的常见运行时。
-- 为什么推荐装：
-  很多前端、脚本工具、AI 编程项目会依赖它；模板也会在环境采集里检查它。
-- 什么时候可能用不到：
-  纯 Python、小型 CLI、或暂时不涉及前端的项目，短期内可能用不到。
+- 它是什么：JavaScript 的常见运行时。
+- 为什么推荐装：很多前端、脚本工具、AI 编程项目会依赖它；模板也会在环境采集里检查它。
+- 什么时候可能用不到：纯 Python、小型 CLI、或暂时不涉及前端的项目，短期内可能用不到。
 
 ### npm
 
-- 它是什么：
-  Node.js 常见的包管理器，通常随 Node.js 一起安装。
-- 为什么推荐装：
-  很多 JavaScript / TypeScript 项目安装依赖时会用到。
-- 不装会怎样：
-  即使装了 Node.js，也可能没法安装对应的 JS 依赖包。
+- 它是什么：Node.js 常见的包管理器，通常随 Node.js 一起安装。
+- 为什么推荐装：很多 JavaScript / TypeScript 项目安装依赖时会用到。
+- 不装会怎样：即使装了 Node.js，也可能没法安装对应的 JS 依赖包。
 
 ### Python
 
-- 它是什么：
-  很常见的通用开发语言和运行时。
-- 为什么推荐装：
-  很多 AI、脚本、自动化、后端小工具都会依赖 Python。
-- 什么时候可能用不到：
-  如果你的项目明确只用 Node.js 或其他技术栈，短期内可以不依赖它。
+- 它是什么：很常见的通用开发语言和运行时。
+- 为什么推荐装：很多 AI、脚本、自动化、后端小工具都会依赖 Python。
+- 什么时候可能用不到：如果你的项目明确只用 Node.js 或其他技术栈，短期内可以不依赖它。
 
 ### Visual Studio Code
 
-- 它是什么：
-  常见的代码编辑器。
-- 为什么推荐装：
-  新手最容易快速打开、浏览和修改模板文件；很多 AI 工具也会和它配合使用。
-- 不装会怎样：
-  模板本身仍可运行，但新手的阅读和修改体验会差很多。
+- 它是什么：常见的代码编辑器。
+- 为什么推荐装：新手最容易快速打开、浏览和修改模板文件；很多 AI 工具也会和它配合使用。
+- 不装会怎样：模板本身仍可运行，但新手的阅读和修改体验会差很多。
 
 ### Docker Desktop
 
-- 它是什么：
-  Windows 上常见的容器运行环境。
-- 为什么列为可选：
-  有些项目需要容器、数据库、外部服务模拟，才会用到它。
-- 什么时候可以不装：
-  只做模板烟测、本地文档驱动起步、纯脚本或纯前端项目时，通常可以先不装。
+- 它是什么：Windows 上常见的容器运行环境。
+- 为什么列为可选：有些项目需要容器、数据库、外部服务模拟，才会用到它。
+- 什么时候可以不装：只做模板烟测、本地文档驱动起步、纯脚本或纯前端项目时，通常可以先不装。
 
 ### Java
 
-- 它是什么：
-  Java 运行时 / 开发环境。
-- 为什么列为可选：
-  只有当你的派生项目、依赖工具或中间件明确需要 Java 时才需要。
-- 什么时候可以不装：
-  模板本身不依赖 Java，本地烟测也不依赖。
+- 它是什么：Java 运行时 / 开发环境。
+- 为什么列为可选：只有当你的派生项目、依赖工具或中间件明确需要 Java 时才需要。
+- 什么时候可以不装：模板本身不依赖 Java，本地烟测也不依赖。
 
-## 5. 为什么这些工具是当前模板的核心依赖
+## 4. 怎么装：三种路径
 
-- `scripts/new-project.sh`、`scripts/sync-template.sh`、`scripts/check-template.sh` 依赖 Bash；在 Windows 上默认使用 Git Bash。
-- Git 用于派生新项目、同步模板和提交代码；`gh` 主要用于远端 GitHub 建仓、推送和 PR。
-- PowerShell 用于运行 `collect-env.ps1`、检测脚本和一键安装脚本。
-- Node.js、Python 是当前多数 AI 编程项目最常见的基础运行时，`collect-env.ps1` 也会检测它们。
-- Docker、Java 不是模板本身必需，但很多派生项目会用到。
-
-## 6. 最简单的建议顺序
+### 最简单的建议顺序
 
 1. 先运行 `scripts/check-prereqs.ps1`，确认缺什么。
 2. 如果缺必备项，再运行 `scripts/bootstrap-dev-env.ps1` 或按本文手工安装。
@@ -207,43 +177,37 @@ powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 
 若当前只是跑本地烟测，`gh auth login` 可以暂时跳过。
 
-## 7. 一键安装入口
+### 一键安装入口
 
-### 先安装核心工具
+先安装核心工具：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-env.ps1
 ```
 
-默认会尽量安装：
+默认会尽量安装：Git for Windows、GitHub CLI、Node.js LTS、Python 3.11、Visual Studio Code。
 
-- Git for Windows
-- GitHub CLI
-- Node.js LTS
-- Python 3.11
-- Visual Studio Code
-
-### 连可选工具一起装
+连可选工具一起装：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/bootstrap-dev-env.ps1 -WithDocker -WithJava
 ```
 
-### 只检测，不安装
+只检测，不安装：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 ```
 
-### 安装完成后采集本机环境
+安装完成后采集本机环境：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/collect-env.ps1
 ```
 
-## 8. 新手最常见的三种路径
+### 新手最常见的三种路径
 
-### 路径 A：完全不确定机器状态
+**路径 A：完全不确定机器状态**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
@@ -253,7 +217,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 
 如果要创建远端仓库，再执行 `gh auth login`。如果只做本地烟测，可直接进入项目流程。
 
-### 路径 B：机器上已有大部分开发工具
+**路径 B：机器上已有大部分开发工具**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
@@ -261,7 +225,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
 
 看报告里哪些是缺失项，再决定是否运行安装脚本补齐。
 
-### 路径 C：只想做本地烟测
+**路径 C：只想做本地烟测**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/check-prereqs.ps1
@@ -275,32 +239,20 @@ bash scripts/new-project.sh smoke-demo --local --no-remote
 
 这条路径可以暂时跳过 `gh auth login`、Docker、Java、Claude CLI / Codex CLI。
 
-## 9. `check-prereqs.ps1` 会检查什么
+## 5. 脚本会做什么
 
-- `winget` 是否可用
-- Git / Git Bash
-- PowerShell
-- `gh`
-- Node.js / npm
-- Python
-- VS Code
-- Docker
-- Java
+### `check-prereqs.ps1` 会检查什么
 
-它会把结果分成：
+检查：`winget` 是否可用、Git / Git Bash、PowerShell、`gh`、Node.js / npm、Python、VS Code、Docker、Java。
 
-- 必备缺失
-- 推荐缺失
-- 可选缺失
-- 已安装项
-- 下一步建议
+它把结果分成：必备缺失、推荐缺失、可选缺失、已安装项、下一步建议。
 
 新手重点看两处：
 
 - `Summary`：判断是否还有必备项缺失。
 - `Suggested next steps`：决定是运行安装脚本、跳过 `gh` 继续本地烟测，还是进入项目后运行 `collect-env.ps1`。
 
-## 10. `bootstrap-dev-env.ps1` 会做什么
+### `bootstrap-dev-env.ps1` 会做什么
 
 - 检测 `winget` 是否存在
 - 跳过已安装的软件，不重复安装
@@ -319,15 +271,9 @@ bash scripts/new-project.sh smoke-demo --local --no-remote
 
 若 `gh` 下载失败且你当前只做本地烟测，可以先跳过；若你要远端建仓或依赖 `gh` 的流程，再回头解决网络 / 代理 / 防火墙问题。
 
-## 11. AI 工具建议
+## 6. AI CLI 与公司中转站
 
-本模板本身支持多入口：
-
-- Codex / AGENTS
-- Claude Code
-- Cursor
-
-但它们的安装和登录方式差异较大，也可能经常变化，所以这里建议只在文档中说明“至少准备一种”，不在一键脚本里强装。
+本模板本身支持多入口：Codex / AGENTS、Claude Code、Cursor。但它们的安装和登录方式差异较大，也可能经常变化，所以这里建议只在文档中说明“至少准备一种”，不在一键脚本里强装。
 
 建议做法：
 
@@ -374,7 +320,7 @@ bash scripts/new-project.sh smoke-demo --local --no-remote
 
 模板这里只做入口提醒，不复制其中可能频繁变化的地址、鉴权或代理细节。
 
-## 12. 常见限制
+## 7. 常见限制与排障
 
 - `winget` 不可用时，一键安装脚本会失败；这时需要先安装 App Installer 或改为手工安装。
 - Docker Desktop 往往需要管理员权限，部分机器还需要开启虚拟化或额外系统组件。
@@ -396,7 +342,7 @@ bash scripts/new-project.sh smoke-demo --local --no-remote
 - `scripts/sync-template.ps1` 与 `scripts/check-derived-sync.ps1` 优先调用 Git Bash；如果它们报 `Win32 error 5`、`E_ACCESSDENIED` 或类似 MSYS 启动错误，会明确标注并进入 PowerShell fallback。fallback 也失败时，才优先判断为本机 Git Bash / MSYS、权限策略或网络环境问题。
 - 这类问题通常不意味着“新手少做了模板规定的某个初始化步骤”；fallback 已覆盖同步 / 边界检查的最小能力，若仍失败，先检查本机 Git for Windows、终端宿主、权限策略或安全软件限制。
 
-## 13. 当前支持边界与跨平台计划
+## 8. 跨平台边界
 
 - 当前正式提供并验证的是 Windows 路径：`check-prereqs.ps1`、`bootstrap-dev-env.ps1`、`collect-env.ps1`。
 - Linux / macOS 目前只有文档层面的软件清单参考，尚未提供仓库内的正式安装脚本。
@@ -404,7 +350,7 @@ bash scripts/new-project.sh smoke-demo --local --no-remote
 - 后续若要补跨平台安装脚本，建议单独新增并单独验证，例如 `scripts/bootstrap-dev-env.sh`，再补入同步清单、自检脚本和环境手册。
 - 在那之前，Linux / macOS 用户可以参考本手册的软件清单手工安装，但不应把这视为模板已经正式支持的一键能力。
 
-## 14. 安装完成后的最小验收
+## 9. 安装后验收
 
 至少确认以下命令能运行：
 
@@ -424,9 +370,13 @@ bash --version
 powershell -ExecutionPolicy Bypass -File scripts/collect-env.ps1
 ```
 
-## 15. 与其他文档的关系
+## 10. 去哪看什么（导航）
 
-- 第一次整体上手看 `template-docs/beginner-guide.md`
-- 想知道为什么模板这样分层看 `template-docs/template-methodology.md`
-- 想看完整项目流程看 `README.md` 与 `SOP.md`
-- 想采集本机资源看 `docs/env/README.md` 和 `scripts/collect-env.ps1`
+| 想做的事 | 看哪 |
+|---|---|
+| 第一次整体上手 | `template-docs/beginner-guide.md` + `README.md` |
+| 知道为什么模板这样分层 | `template-docs/template-methodology.md` |
+| 装 AI CLI | `template-docs/ai-cli-setup.md` |
+| 具体场景怎么操作 | `template-docs/scenario-guides.md`（23 场景） |
+| 找命令速查 | `SOP.md`、`ai/commands/README.md` |
+| 采集本机资源 | `docs/env/README.md`、`scripts/collect-env.ps1` |

@@ -4,9 +4,9 @@
 > Do not edit it directly in derived projects; propose reusable changes in `_proposals/` and upstream them to the template repository.
 
 
-本项目（及所有派生自 `ai-project-template` 的项目）的 git 工作流。模板变更治理见 `CONTRIBUTING.md`。
+本文件是 `ai-project-template` 及其派生项目的 git 工作流，**按场景组织**——你要做哪件事，就查哪个场景（见 §2 速查表）。模板变更治理见 `CONTRIBUTING.md`。
 
-## 1. 账号体系
+## 1. 先准备（gh 账号 + 身份）
 
 本模板只保留通用 GitHub / Git 身份操作，不记录具体维护者账号、邮箱或 Token 类型。若某个维护者需要保存本机账号备忘，请写入本地临时文件（如被 `.gitignore` 排除的 `NEXT-STEPS.md`），不要提交到模板同步文档。
 
@@ -24,58 +24,20 @@
 
 > ⚠️ Token / OAuth 权限取决于登录方式与授权范围。若 `gh` 报 scope 不足，优先运行 `gh auth status` 确认活跃账号，再按 GitHub 官方流程刷新授权、重新登录或更换具备对应权限的账号。
 
-## 2. 新建项目（模板 → 派生项目）
+## 2. 场景速查（你要做哪件事？）
 
-本节是新建派生项目的**操作 SOP 权威文档**；`INIT-PROMPT.md` 索引与 `ai/prompts/` 可提供可复制给 AI 执行的 Prompt。正式起项目推荐使用 `scripts/new-project.sh`，不要先人工复制模板文件夹再运行脚本。
+| 你想做 | 你是 | 去哪节 |
+|---|---|---|
+| 在派生项目里日常提交代码 | 使用者 | §3 场景 A |
+| 维护模板仓库（改方法论 / 脚本 / 治理） | 维护者 | §4 场景 B |
+| 把模板更新同步到派生项目 | 使用者 | §5 场景 C |
+| 从模板新建一个派生项目 | 使用者 / 维护者 | §6 场景 D |
 
-### 2.1 推荐流程
+找不到场景 → 看 §7 踩坑 / §8 命令速查。
 
-在本地 `ai-project-template` 仓库或任意能访问该脚本的位置执行：
+## 3. 场景 A：派生项目日常提交（使用者）
 
-```powershell
-bash scripts/new-project.sh <项目名>
-```
-
-默认行为：
-
-- 从 GitHub `ai-project-template` 的 `main` 拉取最新模板（事实来源）。
-- 创建新项目目录。
-- 移除模板仓库 `.git`，初始化新项目 Git。
-- 创建首提交。
-- 创建 GitHub 仓库并推送。
-
-### 2.2 常用选项
-
-```powershell
-bash scripts/new-project.sh <项目名> --no-remote          # 只创建本地项目，不建远端
-bash scripts/new-project.sh <项目名> --local --no-remote  # 用当前本地模板副本烟测
-bash scripts/new-project.sh <项目名> --account <账号> --visibility public
-```
-
-正式项目优先不要使用 `--local`，除非你能确认本地模板已同步到 GitHub `main` 最新版本。
-
-### 2.3 新项目创建后
-
-```powershell
-cd <项目名>
-powershell -ExecutionPolicy Bypass -File scripts/collect-env.ps1
-```
-
-随后填写：
-
-- `docs/00-scenario.md` ~ `docs/02-srs.md`
-- `docs/env/local-env.md` 的人工确认项
-- `ai/project-rules.md` 的 Phase 边界、技术栈、运行环境与资源约束、项目形态裁剪
-
-再使用 `ai/prompts/docs/01-review-inputs.md` 评审输入材料，并用 `ai/prompts/docs/00-generate-or-complete-docs.md` 生成 / 补齐 docs 文档体系。
-
-### 2.4 不推荐做法
-
-- 不推荐手工复制整个模板文件夹。
-- 不推荐自己先 `git clone ai-project-template` 再手动改成新项目。
-- 不推荐复制后再运行 `new-project.sh`，因为脚本本身就是“创建新项目”的入口。
-
-## 3. 日常提交规范
+你在派生项目里写代码、提交、提 PR。
 
 - **一功能 = 一任务 = 一提交**（见 `ai/global-rules.md` §1.2），禁止一次提交整个系统。
 - Commit message 用「完成 XX」式，避免「修改 / update / test」等模糊词；跨模块改动拆成多条（见 `ai/prompts/git/06-commit-message.md`）。
@@ -118,17 +80,40 @@ git branch -d <已合并分支名>
 - `refactor:` 重构但不改变行为
 - `test:` 增加或修正测试
 
-## 4. 模板变更流程
+## 4. 场景 B：模板维护提交（维护者）
+
+你要改 `ai-project-template` 模板仓库本身（方法论 / 脚本 / 治理文档）。
 
 见 `CONTRIBUTING.md`：模板仓库一律**提案 → 分支 → PR → 评审 → 合并 → 归档**，`main` 受分支保护、禁止直推。
 
 派生项目里日常开发是否也走 PR 由项目自行决定；模板仓库强制走 PR。
 
-## 5. 下行同步（模板 → 项目）
+### 多会话并发操作（重要）
+
+多个 AI 会话（或终端）**同时操作同一仓库**时，共用一个工作目录 = 共用一个 HEAD；`先确认分支再 commit` 是非原子操作，**必然偶发 commit 落错分支**。git 本身没有「自动防多会话切分支」的机制——必须靠**每会话一个独立 worktree**：
+
+```bash
+# 会话 A 在主仓
+cd /path/ai-project-template
+
+# 会话 B 开独立 worktree（建 + 进；各工作区、各 HEAD，共享同一 .git）
+git worktree add ../ai-tpl-wt2 -b change/B的分支
+cd ../ai-tpl-wt2          # B 在这里改 / 提交 / 推送，完全不碰 A 的工作区
+# 完成后回主仓清理
+cd /path/ai-project-template && git worktree remove ../ai-tpl-wt2
+```
+
+> 详见 `ai/session-rules.md` §7（AI 行为约定）。
+
+## 5. 场景 C：派生项目同步模板（使用者）
+
+你要把模板方法论的更新拉到派生项目（**模板 → 派生，下行获取，不回传**）。
 
 本节是派生项目同步模板方法论的**操作 SOP 权威文档**；`ai/prompts/maintainers/12-sync-template.md` 只是把本节整理成可复制给 AI 执行的 Prompt，`CONTRIBUTING.md` 只记录治理要求。
 
 派生项目同步模板方法论更新时，优先使用同步脚本，不要手动逐文件复制。该流程是**模板 → 派生项目**的下行获取，不会把派生项目内容提交回模板。
+
+> **批量同步（维护者）**：发新版后要一次更新父目录下所有派生项目，用 `bash scripts/sync-all-derived.sh <父目录> --dry-run`（场景 C8），不用逐个进派生项目终端；确认后 `--commit`。
 
 ### 5.1 路径判定
 
@@ -247,7 +232,60 @@ powershell -ExecutionPolicy Bypass -File scripts/check-template.ps1       # 仅�
 - 用途：同步后用 `ai/prompts/review/16-docs-system-audit.md` 对照 `ai/doc-standards`（规范基线）回溯审计整条 PLM 链路（见 §5.5 末尾闭环）。
 - 兼容：v1.18.x 旧路径 `docs/_scaffold/00-09` 不再是主路径；迁移期审计提示词和边界检查会 fallback / 放行该旧路径，但 `sync-template` 不主动删除旧目录。
 
-## 6. 常见踩坑
+## 6. 场景 D：新建派生项目（使用者 / 维护者）
+
+你要从模板创建一个新项目。
+
+本节是新建派生项目的**操作 SOP 权威文档**；`INIT-PROMPT.md` 索引与 `ai/prompts/` 可提供可复制给 AI 执行的 Prompt。正式起项目推荐使用 `scripts/new-project.sh`，不要先人工复制模板文件夹再运行脚本。
+
+### 6.1 推荐流程
+
+在本地 `ai-project-template` 仓库或任意能访问该脚本的位置执行：
+
+```powershell
+bash scripts/new-project.sh <项目名>
+```
+
+默认行为：
+
+- 从 GitHub `ai-project-template` 的 `main` 拉取最新模板（事实来源）。
+- 创建新项目目录。
+- 移除模板仓库 `.git`，初始化新项目 Git。
+- 创建首提交。
+- 创建 GitHub 仓库并推送。
+
+### 6.2 常用选项
+
+```powershell
+bash scripts/new-project.sh <项目名> --no-remote          # 只创建本地项目，不建远端
+bash scripts/new-project.sh <项目名> --local --no-remote  # 用当前本地模板副本烟测
+bash scripts/new-project.sh <项目名> --account <账号> --visibility public
+```
+
+正式项目优先不要使用 `--local`，除非你能确认本地模板已同步到 GitHub `main` 最新版本。
+
+### 6.3 新项目创建后
+
+```powershell
+cd <项目名>
+powershell -ExecutionPolicy Bypass -File scripts/collect-env.ps1
+```
+
+随后填写：
+
+- `docs/00-scenario.md` ~ `docs/02-srs.md`
+- `docs/env/local-env.md` 的人工确认项
+- `ai/project-rules.md` 的 Phase 边界、技术栈、运行环境与资源约束、项目形态裁剪
+
+再使用 `ai/prompts/docs/01-review-inputs.md` 评审输入材料，并用 `ai/prompts/docs/00-generate-or-complete-docs.md` 生成 / 补齐 docs 文档体系。
+
+### 6.4 不推荐做法
+
+- 不推荐手工复制整个模板文件夹。
+- 不推荐自己先 `git clone ai-project-template` 再手动改成新项目。
+- 不推荐复制后再运行 `new-project.sh`，因为脚本本身就是"创建新项目"的入口。
+
+## 7. 常见踩坑
 
 | 现象 | 原因 / 处理 |
 |---|---|
@@ -257,7 +295,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-template.ps1       # 仅�
 | 两个账号 credential 串 | `git config --global --get credential.helper` 看 GCM；多账号优先用 gh 管理的 credential helper |
 | `git push origin main` 被拒（模板仓库） | 预期行为：`main` 受分支保护，改走分支 + PR |
 
-## 7. 命令速查
+## 8. 命令速查
 
 ```
 gh auth status                            # 账号总览
@@ -268,3 +306,5 @@ git push -u origin <分支>                 # 推分支并设上游
 bash scripts/new-project.sh <name>        # 一键起新项目
 bash scripts/sync-template.sh --dry-run   # 同步预览
 ```
+
+> 脚本命令（`check-prereqs.ps1` / `sync-template.ps1` / `check-template.ps1` / `collect-env.ps1` 等 PowerShell/Bash 入口与 Windows 脚本矩阵）见 `SOP.md` 常用命令。
