@@ -101,9 +101,9 @@ cat > "$TARGET/README.md" <<EOF
 - 阶段目标：（说明当前阶段要演示、上线或生产化到什么程度）
 - 非目标：（说明当前阶段明确不做什么）
 
-## 当前能力
+## 它能做什么
 
-- （列出当前 Phase 已确认要实现的核心能力）
+- （列出当前 Phase 已确认要实现的核心能力——本项目自己的能力，不照搬模板通用能力）
 
 ## 快速开始
 
@@ -120,20 +120,7 @@ cat > "$TARGET/README.md" <<EOF
 
 > Keyword for template checks: newbie AI CLI onboarding path.
 
-如果已经安装并登录 \`Claude CLI\` 或 \`Codex CLI\`，在本项目根目录打开 AI CLI，然后说：
-
-\`\`\`text
-我是第一次使用这个 ai-project-template。请先读取 ai/index.md 和相关规则，
-然后按新手 AI CLI 引导路径带我完成当前项目初始化：
-1. 检查基础环境
-2. 确认当前项目目录和 Git 状态
-3. 采集本机环境
-4. 准备上游输入
-5. 评审输入材料
-6. 生成文档体系
-
-每一步执行命令前先说明目的和影响范围，需要我确认后再运行。
-\`\`\`
+如果已经安装并登录 \`Claude CLI\` 或 \`Codex CLI\`，在本项目根目录打开 AI CLI，不用记具体步骤——直接说一个具体场景（如「帮我准备输入材料」「帮我生成文档体系」），或 \`/run scenario\`。AI 会读取 \`template-docs/scenario-guides.md\`，先给你「做什么 + 为什么」的引导计划，确认后再执行。
 
 ### \`ai/project-rules.md\` 首次必填 checklist
 

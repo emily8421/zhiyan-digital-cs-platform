@@ -22,6 +22,7 @@
 做文档体系审核
 同步后整理项目
 执行当前 Sprint
+读取续接点 / 继续上次
 ```
 
 > **场景优先**：当用户说出的是**具体场景意图**（如「帮我新建项目」「帮我准备输入」「帮我规划阶段」「帮我打磨文档」）而非某个具体 command 时，AI 应先走 `/run scenario`（见 `ai/commands/scenario.md`），由 `template-docs/scenario-guides.md` 先产出「做什么 + 为什么」引导计划，确认后再路由到具体 command 执行。新手首次打开 AI CLI 也走此路径。
@@ -68,6 +69,8 @@ AI 识别到命令意图后，应：
 | `collect-env` | 采集本机环境 | `ai/prompts/setup/13-collect-env.md`、`scripts/collect-env.ps1` |
 | `new-project` | 新建派生项目 | `ai/prompts/setup/14-new-project.md`、`scripts/new-project.sh` |
 | `commit-message` | 生成提交信息 | `ai/prompts/git/06-commit-message.md` |
+| `submit-proposal` | 提交提案给维护者 / 回流模板 | `ai/prompts/maintainers/17-submit-proposal.md`（跨仓库开 issue） |
+| `submit-feedback` | 收集使用问题反馈给模板 | `ai/prompts/maintainers/18-submit-feedback.md`（半自动汇集 + 开 issue） |
 
 ## 维护规则
 

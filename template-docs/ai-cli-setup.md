@@ -29,6 +29,13 @@
 4. 如果公司要求走中转站，再按内网手册处理 `LeMesh / CC-Switch / 代理配置`
 5. 最后再回到项目里运行模板流程
 
+如果你要用公司代理配置 `Claude CLI` 或 `Codex CLI`，建议顺序如下：
+
+1. 按官方文档安装 CLI
+2. 确认 `claude --version` 或 `codex --version` 可运行
+3. 根据公司手册完成 LeMesh / CC-Switch / 密钥 / 模型代理配置
+4. 回到项目目录，开始用模板执行任务
+
 ## 3. Claude CLI
 
 ### 它适合谁
@@ -136,16 +143,7 @@ codex
 
 当 `claude` 或 `codex` 命令已经能启动，并且你位于 `ai-project-template` 模板仓库或派生项目根目录时，不用记具体步骤，直接对 AI 说一个具体场景（如「我想用这个模板新建项目」「帮我准备输入材料」）。AI 会读取 `template-docs/scenario-guides.md`，按场景剧本先给你「做什么 + 为什么」的引导计划，确认后再路由到具体命令执行；也可 `/run scenario`。它会自动判断你是新建项目还是在已有项目里，给出对应步骤（完整场景目录与契约见 `template-docs/scenario-guides.md`）。
 
-## 7. 推荐操作顺序
-
-如果你要用公司代理配置 `Claude CLI` 或 `Codex CLI`，建议顺序如下：
-
-1. 按官方文档安装 CLI
-2. 确认 `claude --version` 或 `codex --version` 可运行
-3. 根据公司手册完成 LeMesh / CC-Switch / 密钥 / 模型代理配置
-4. 回到项目目录，开始用模板执行任务
-
-## 8. 可复制给 AI 的提示词
+## 7. 可复制给 AI 的提示词
 
 ### 安装 Claude CLI
 
@@ -194,7 +192,7 @@ codex
 4. 如果具体参数以内网手册为准，就明确说明“以内网手册为准”，不要猜。
 ```
 
-## 9. 这份文档不做什么
+## 8. 这份文档不做什么
 
 - 不提供公司中转站的镜像参数抄录
 - 不提供 `Claude CLI` / `Codex CLI` 的自动安装脚本

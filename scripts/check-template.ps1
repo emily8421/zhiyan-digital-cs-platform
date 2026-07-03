@@ -53,6 +53,10 @@ function Test-TemplateBash {
       -RedirectStandardOutput $stdoutFile `
       -RedirectStandardError $stderrFile
 
+    if ($null -eq $proc) {
+      return [pscustomobject]@{ Ready = $false; ExitCode = -1; StdOut = ''; StdErr = 'Start-Process returned null (bash failed to start from PowerShell)' }
+    }
+
     $stdout = ""
     if (Test-Path $stdoutFile) {
       $stdoutRaw = Get-Content $stdoutFile -Raw
