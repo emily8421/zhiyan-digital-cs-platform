@@ -41,10 +41,17 @@ Phase1 默认按规则和关键词匹配：
 
 ## 5. 知识缺口生命周期
 
-```text
-new -> reviewing -> accepted -> active knowledge
-                 -> rejected
-                 -> closed
+```mermaid
+stateDiagram-v2
+  [*] --> new
+  new --> reviewing
+  reviewing --> accepted
+  accepted --> active_knowledge
+  reviewing --> rejected
+  reviewing --> closed
+  active_knowledge --> [*]
+  rejected --> [*]
+  closed --> [*]
 ```
 
 Phase1 可实现到 `new`、`reviewing`、`closed`，`accepted` 后入库可作为 Sprint-4 或 Phase2 强化。

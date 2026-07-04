@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/00-scenario.md`、`docs/vision/product-vision.md`、`docs/inputs/*` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | 阶段标签说明 | `[P1]` Phase1 Demo；`[P2]` MVP；`[P3]` 真实集成；`[P4]` 产品化；`[愿景]` 待技术 / 商业验证 |
 
@@ -61,10 +61,10 @@
 | U-011 | REQ-005、REQ-012、REQ-016 |
 | U-012 | REQ-012、REQ-015、REQ-016 |
 
-## 5. 待人工确认
+## 5. 人工确认记录
 
-1. `zycs` / `zycs_` 是否确认为项目缩写与数据库表前缀。
-2. Phase1 前端框架是否采用 React + Vite + TypeScript，或改为其他方案。
-3. Phase1 是否允许真实调用飞书机器人；默认不调用外部服务。
-4. Docker / PostgreSQL / pgvector 是否必须纳入 Phase1 本机演示；默认可 Mock。
-5. Demo 是否确认不启用 LLM；默认不启用。
+1. `zycs` / `zycs_` 已确认为项目缩写与数据库表前缀。
+2. Phase1 前端框架已确认采用 React + Vite + TypeScript。
+3. Phase1 已确认不真实调用飞书机器人，仅记录 Mock payload。
+4. Docker / PostgreSQL / pgvector 已确认不强制纳入 Phase1 本机演示，默认可 Mock / 本地临时数据降级。
+5. Phase1 已确认不启用 LLM，仅使用规则 / 知识 / Mock 数据与转人工兜底。

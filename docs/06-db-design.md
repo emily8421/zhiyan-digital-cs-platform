@@ -6,33 +6,37 @@
 |---|---|
 | 保留 / 省略决策 | 保留；项目有持久化存储计划 |
 | 上游输入 | `docs/02-srs.md`、`docs/05-tech-spec.md` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | 当前阶段 | Phase1 可降级为 Mock / 本地临时数据 |
 
 ## 1. 设计原则
 
 - 数据库目标方案为 PostgreSQL + pgvector；Phase1 若 Docker / DB 不可用，可先使用 JSON / SQLite / 内存 Mock。
-- 表名前缀暂用 `zycs_`，需人工确认。
+- 表名前缀使用已确认的 `zycs_`。
 - 不存真实客户隐私、真实联系方式、真实订单、真实合同或生产会话。
 - 所有 Mock 数据必须有 `is_mock` 或来源标识。
 - 未来真实业务系统数据只保存必要摘要和引用 ID，不复制敏感原始数据。
 
 ## 2. 概念模型
 
-```text
-ScenarioPack 1 ── n KnowledgeItem
-ScenarioPack 1 ── n RuleItem
-ScenarioPack 1 ── n MockBusinessRecord
+```mermaid
+erDiagram
+  ZYCS_SCENARIO_PACKS ||--o{ ZYCS_KNOWLEDGE_ITEMS : contains
+  ZYCS_SCENARIO_PACKS ||--o{ ZYCS_RULE_ITEMS : contains
+  ZYCS_SCENARIO_PACKS ||--o{ ZYCS_MOCK_BUSINESS_RECORDS : contains
 
-Conversation 1 ── n Message
-Conversation 1 ── n HumanHandoff
-Conversation 1 ── n KnowledgeGap
-Conversation 1 ── n AuditLog
+  ZYCS_CONVERSATIONS ||--o{ ZYCS_MESSAGES : records
+  ZYCS_CONVERSATIONS ||--o{ ZYCS_HUMAN_HANDOFFS : creates
+  ZYCS_CONVERSATIONS ||--o{ ZYCS_KNOWLEDGE_GAPS : creates
+  ZYCS_CONVERSATIONS ||--o{ ZYCS_AUDIT_LOGS : audits
 
-HumanHandoff 1 ── n Notification
-KnowledgeGap 1 ── n Notification
-DailySummary 汇总 Conversation / HumanHandoff / KnowledgeGap / Notification
+  ZYCS_HUMAN_HANDOFFS ||--o{ ZYCS_NOTIFICATIONS : triggers
+  ZYCS_KNOWLEDGE_GAPS ||--o{ ZYCS_NOTIFICATIONS : triggers
+  ZYCS_DAILY_SUMMARIES }o--o{ ZYCS_CONVERSATIONS : summarizes
+  ZYCS_DAILY_SUMMARIES }o--o{ ZYCS_HUMAN_HANDOFFS : summarizes
+  ZYCS_DAILY_SUMMARIES }o--o{ ZYCS_KNOWLEDGE_GAPS : summarizes
+  ZYCS_DAILY_SUMMARIES }o--o{ ZYCS_NOTIFICATIONS : summarizes
 ```
 
 ## 3. 表清单
@@ -254,8 +258,8 @@ Phase1 种子数据至少包含：
 | REQ-015 | 不适用，运行与验证需求 |
 | REQ-016 | `zycs_audit_logs`、全部含 `is_mock` 的表 |
 
-## 9. 待确认
+## 9. 人工确认记录
 
-1. 表前缀 `zycs_` 是否确认。
-2. Phase1 是否必须使用 PostgreSQL；若否，开发计划可先用 JSON / SQLite / 内存实现。
-3. 是否需要在 Phase1 引入 pgvector；默认不引入。
+1. 表前缀已确认为 `zycs_`。
+2. Phase1 已确认不强制使用 PostgreSQL，开发计划可先用 JSON / SQLite / 内存实现。
+3. Phase1 已确认不强制引入 pgvector，默认使用关键词 / 规则匹配降级。

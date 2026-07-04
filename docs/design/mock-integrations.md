@@ -10,6 +10,22 @@ Phase1 不连接真实 CRM / ERP / OA / 工单 / 飞书组织 / 企业微信会�
 
 ## 2. Mock 适配器
 
+```mermaid
+flowchart TD
+  request[API 请求 / 业务事件] --> classify{类型}
+  classify -- 订单进度 --> order_adapter[mock_order_adapter]
+  classify -- 项目阶段 --> project_adapter[mock_project_adapter]
+  classify -- 售后工单 --> ticket_adapter[mock_ticket_adapter]
+  classify -- 转人工 / 知识缺口 --> notification_adapter[notification_adapter]
+
+  order_adapter --> mock_record[返回 Mock 业务记录\nmock: true]
+  project_adapter --> mock_record
+  ticket_adapter --> mock_record
+  notification_adapter --> payload[生成通知 payload\nsend_status: mocked\nmock: true]
+  mock_record --> response[API 响应]
+  payload --> response
+```
+
 | 适配器 | 真实系统候选 | Phase1 行为 |
 |---|---|---|
 | `mock_order_adapter` | ERP / 订单系统 | 按 Mock 订单号返回状态 |
@@ -50,7 +66,7 @@ Phase1 不连接真实 CRM / ERP / OA / 工单 / 飞书组织 / 企业微信会�
 
 ## 5. 真实集成升级条件
 
-进入 Phase2 / Phase3 前需确认：
+进入 Phase2 / Phase3 前需另行确认：
 
 - 外部系统授权方式和测试环境。
 - 数据最小化策略。

@@ -6,14 +6,14 @@
 >
 > 当前内容为 `post-sync-cleanup` 后的项目草稿，依据 `docs/meetings/2026-07-01-input-review.md`、
 > `docs/inputs/platform-vision-brief.md`、`docs/inputs/agent-delivery-modes.md` 与
-> `docs/env/local-env.md` 起草；标注“待确认”的项目需人工确认后再进入开发实现。
+> `docs/env/local-env.md` 起草；Phase1 关键口径已于 2026-07-04 人工确认。
 
 ## 初始化必填检查（生成 docs/03-09 前）
 
-- `项目名称` 与 `代号/缩写`：已起草，缩写待人工确认。
-- `§1 Phase边界`：已起草 Phase1 Demo 边界，需人工最终确认。
-- `§2 技术栈约束`：已按输入评审默认值起草，前端框架与 Docker 可用性待确认。
-- `§2.5 运行环境与资源约束`：已生成 `docs/env/local-env.md`，人工资源边界仍待确认。
+- `项目名称` 与 `代号/缩写`：已确认，缩写为 `zycs`，数据库表前缀为 `zycs_`。
+- `§1 Phase边界`：已确认 Phase1 本机 Demo 边界。
+- `§2 技术栈约束`：已确认 React + Vite + TypeScript、Python + FastAPI；Docker / PostgreSQL 不强制纳入 Phase1。
+- `§2.5 运行环境与资源约束`：已生成 `docs/env/local-env.md`，Phase1 默认本机 Demo，不使用公司服务器。
 - `§3 项目形态与文档裁剪`：已起草保留 `docs/06`、`docs/07` 与主要代码目录。
 - 新增项目文档必须继续遵守 `docs/README.md` 分区规则，不得直接堆到 `docs/` 根目录。
 
@@ -21,7 +21,7 @@
 
 项目名称：知衍数字客服统一平台（zy-digital-cs）
 
-代号/缩写：zycs（待确认；若用于数据库表前缀，建议使用 `zycs_`）
+代号/缩写：zycs；数据库表前缀：`zycs_`。
 
 ## 1. Phase边界
 
@@ -50,12 +50,12 @@
 
 ## 2. 技术栈约束
 
-- 客户侧前端：H5 对话页；具体框架待确认。
-- 员工侧前端：Web 控制台；具体框架待确认。
+- 客户侧前端：H5 对话页，React + Vite + TypeScript。
+- 员工侧前端：Web 控制台，React + Vite + TypeScript。
 - 员工通知入口：飞书机器人；仅用于 Demo 通知 / 转交，不替代完整工单系统。
 - 后端：Python + FastAPI。
-- 数据库：PostgreSQL + pgvector。
-- 向量 / Embedding：Docker TEI 方案作为候选；本机 Docker 当前不可用，需修复或降级 Mock。
+- 数据库：PostgreSQL + pgvector 为计划方向；Phase1 不强制运行，优先 JSON / SQLite / 内存 Mock 降级。
+- 向量 / Embedding：Docker TEI 方案作为候选；Phase1 默认关闭，使用关键词 / 规则匹配降级。
 - 外部业务数据：Phase1 使用 Mock 数据，不接真实订单、项目、CRM、ERP 或工单系统。
 - LLM：Demo 阶段默认不启用；如后续启用，必须先补充不编造、可追溯、转人工兜底与成本边界。
 - 新依赖：任何新依赖、Docker 镜像或外部 API 调用必须先人工确认。
@@ -64,13 +64,13 @@
 
 > 本节用于约束架构与技术方案选择。Demo / MVP 阶段优先保证本机可运行；若本机资源不足，必须在 `docs/05-tech-spec.md` 中明确降级策略或服务器资源预案。
 
-- 本机环境文档：`docs/env/local-env.md`（已由 `scripts/collect-env.ps1` 生成，人工确认项未全部补齐）
+- 本机环境文档：`docs/env/local-env.md`（已由 `scripts/collect-env.ps1` 生成，Phase1 关键资源口径已确认）
 - 当前本机概要：Windows 10 / PowerShell 5.1 / 约 31.73 GB 内存 / Python 3.14.3 / Node.js 22.17.1 / Docker 已安装但当前不可用 / 未检测到 GPU 信息。
-- Demo 阶段必须能在本机运行的部分：H5 对话页、FastAPI 后端、Web 控制台、Mock 数据、基础手工验证；数据库与向量服务是否本机完整运行待确认。
-- 允许降级 / Mock / 远程运行的部分：订单 / 项目进度等外部业务系统、Embedding / 向量检索、飞书通知、LLM 能力。
+- Demo 阶段必须能在本机运行的部分：H5 对话页、FastAPI 后端、Web 控制台、Mock 数据、基础手工验证；数据库与向量服务不作为 Phase1 前置。
+- 允许降级 / Mock / 远程运行的部分：订单 / 项目进度等外部业务系统、Embedding / 向量检索、飞书通知；LLM 默认关闭。
 - 禁止在本机运行的重资源部分：本地大模型推理、模型训练、生产规模向量索引、真实生产数据处理。
-- 是否允许使用公司服务器：待确认；Phase1 默认不依赖公司服务器。
-- 若需服务器，资源申请口径：仅当本机 Docker / PostgreSQL / TEI 无法支撑 Demo 时再申请；CPU / 内存 / GPU / 端口 / 成本待确认。
+- 是否允许使用公司服务器：Phase1 默认不使用公司服务器。
+- 若需服务器，资源申请口径：仅当本机无法支撑 Demo 时另行确认触发条件、CPU / 内存 / GPU / 端口 / 成本 / 安全边界。
 
 ## 3. 项目形态与文档裁剪
 
@@ -100,7 +100,7 @@
 > Phase 级功能禁止见 §1，技术栈替代品禁止见 §2，本节只管代码层。
 
 ### 5.1 既有约定（新代码必须向其看齐）
-- 命名：后端 Python 使用 `snake_case`；前端变量 / 函数使用 `camelCase`，组件使用 `PascalCase`；数据库表建议使用 `zycs_` 前缀（待确认）。
+- 命名：后端 Python 使用 `snake_case`；前端变量 / 函数使用 `camelCase`，组件使用 `PascalCase`；数据库表使用 `zycs_` 前缀。
 - 分层与目录：后端至少区分 API 层、服务层、数据 / Mock 层、集成适配层；前端至少区分客户 H5、员工 Web 控制台、共享组件 / API 客户端。
 - 场景包：产品型与项目型客户场景应以可追溯配置或数据文件表达，不得把客户叙事硬编码散落在业务逻辑中。
 - 外部系统：所有订单、项目进度、CRM、ERP、工单等外部系统访问必须走适配层；Phase1 仅实现 Mock 适配。

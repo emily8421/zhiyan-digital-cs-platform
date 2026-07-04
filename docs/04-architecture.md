@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | 当前阶段 | Phase1 本机 Demo |
 
@@ -21,24 +21,18 @@ Phase1 架构目标是用最少可控模块跑通数字客服 Demo 闭环，同�
 
 ## 2. 系统上下文图
 
-```text
-外部客户
-  │ H5 对话页
-  ▼
-Frontend: Customer H5 ───────┐
-                              │ REST
-员工 / 运营 / 老板             ▼
-  │ Web 控制台           Backend: FastAPI 服务
-  ▼                          │
-Frontend: Console ───────────┤
-                              ├─ Knowledge & Policy Store（Phase1 可 Mock / 本地数据）
-                              ├─ Scenario Pack Store（产品型 / 项目型）
-                              ├─ Mock Business Adapter（订单 / 项目 / 售后）
-                              ├─ Notification Adapter（飞书 Mock / payload）
-                              └─ Audit & Summary Store
-
-未来外部系统（Phase2+ / Phase3）
-  CRM / ERP / OA / 工单 / 飞书项目 / 公众号 / 小程序 / API 嵌入
+```mermaid
+flowchart LR
+  external_customer[外部客户] -->|H5 对话页| customer_h5[Frontend: Customer H5]
+  staff[员工 / 运营 / 老板] -->|Web 控制台| console[Frontend: Console]
+  customer_h5 -->|REST| backend[Backend: FastAPI 服务]
+  console -->|REST| backend
+  backend --> knowledge_store[Knowledge & Policy Store\nPhase1 可 Mock / 本地数据]
+  backend --> scenario_store[Scenario Pack Store\n产品型 / 项目型]
+  backend --> mock_adapter[Mock Business Adapter\n订单 / 项目 / 售后]
+  backend --> notification_adapter[Notification Adapter\n飞书 Mock / payload]
+  backend --> audit_store[Audit & Summary Store]
+  future_systems[未来外部系统\nPhase2+ / Phase3\nCRM / ERP / OA / 工单 / 飞书项目 / 公众号 / 小程序 / API 嵌入] -.后续集成.-> backend
 ```
 
 ## 3. 组件视图
@@ -60,24 +54,41 @@ Frontend: Console ───────────┤
 
 ## 4. 模块划分
 
-```text
-frontend/
-  customer-h5/       # 客户 H5 对话页
-  console/           # 员工 / 运营 Web 控制台
-  shared/            # API client、类型、通用 UI
+```mermaid
+flowchart TB
+  subgraph frontend[frontend/]
+    customer_h5_dir[customer-h5/\n客户 H5 对话页]
+    console_dir[console/\n员工 / 运营 Web 控制台]
+    shared_dir[shared/\nAPI client、类型、通用 UI]
+  end
 
-backend/
-  app/api/           # REST API 路由
-  app/services/      # 会话、意图、知识、转人工、缺口、摘要
-  app/adapters/      # Mock 业务系统、飞书通知、未来外部系统适配
-  app/data/          # 场景包、知识、Mock 数据加载
-  app/schemas/       # 请求响应模型
-  app/core/          # 配置、错误、日志、隐私保护
+  subgraph backend[backend/]
+    api_dir[app/api/\nREST API 路由]
+    services_dir[app/services/\n会话、意图、知识、转人工、缺口、摘要]
+    adapters_dir[app/adapters/\nMock 业务系统、飞书通知、未来外部系统适配]
+    data_dir[app/data/\n场景包、知识、Mock 数据加载]
+    schemas_dir[app/schemas/\n请求响应模型]
+    core_dir[app/core/\n配置、错误、日志、隐私保护]
+  end
 
-tests/
-  api/               # API 契约验证
-  scenarios/         # 场景包样例验证
-  acceptance/        # Phase1 验收脚本 / 手工清单
+  subgraph tests[tests/]
+    api_tests[api/\nAPI 契约验证]
+    scenario_tests[scenarios/\n场景包样例验证]
+    acceptance_tests[acceptance/\nPhase1 验收脚本 / 手工清单]
+  end
+
+  customer_h5_dir --> shared_dir
+  console_dir --> shared_dir
+  shared_dir --> api_dir
+  api_dir --> schemas_dir
+  api_dir --> services_dir
+  services_dir --> adapters_dir
+  services_dir --> data_dir
+  services_dir --> core_dir
+  api_tests --> api_dir
+  scenario_tests --> data_dir
+  acceptance_tests --> customer_h5_dir
+  acceptance_tests --> console_dir
 ```
 
 ## 5. 关键流程
@@ -116,34 +127,48 @@ tests/
 
 ### 6.1 Phase1 本机拓扑
 
-```text
-Windows 本机
-  ├─ Node.js 前端开发服务（H5 + Console）
-  ├─ FastAPI 后端服务
-  ├─ 本地 Mock / JSON / 临时数据 或 PostgreSQL（待确认）
-  └─ 浏览器手工验证
+```mermaid
+flowchart TB
+  subgraph local[Windows 本机]
+    browser[浏览器手工验证]
+    node_dev[Node.js 前端开发服务\nH5 + Console]
+    fastapi[FastAPI 后端服务]
+    local_data[本地 Mock / JSON / 临时数据\nPostgreSQL 可选]
+  end
+
+  browser --> node_dev
+  node_dev -->|REST| fastapi
+  fastapi --> local_data
 ```
 
 ### 6.2 Phase2+ 候选拓扑
 
-```text
-公司服务器 / 云主机
-  ├─ 前端静态资源
-  ├─ FastAPI 应用服务
-  ├─ PostgreSQL + pgvector
-  ├─ 向量 / Embedding 服务（可选）
-  ├─ 飞书机器人 / 公众号 / 小程序入口
-  └─ CRM / ERP / OA / 工单系统适配器
+```mermaid
+flowchart TB
+  subgraph server[公司服务器 / 云主机]
+    static_assets[前端静态资源]
+    app_service[FastAPI 应用服务]
+    postgres[PostgreSQL + pgvector]
+    embedding[向量 / Embedding 服务（可选）]
+    channels[飞书机器人 / 公众号 / 小程序入口]
+    adapters[CRM / ERP / OA / 工单系统适配器]
+  end
+
+  channels --> static_assets
+  static_assets --> app_service
+  app_service --> postgres
+  app_service -.可选.-> embedding
+  app_service -.Phase3.-> adapters
 ```
 
 ## 7. 架构决策
 
 | ADR | 决策 | 状态 | 理由 |
 |---|---|---|---|
-| ADR-0001 | Phase1 客户侧入口采用 H5，不采用企业微信客户群自动回复。 | 草稿，待确认 | 客户群机器人自动对外回复前提已被证伪，H5 交付门槛低。 |
-| ADR-0002 | Phase1 外部系统全部走 Mock 适配层。 | 草稿，待确认 | 避免真实凭据、生产数据和接口授权风险。 |
-| ADR-0003 | 场景包以配置 / 数据表达，不硬编码客户叙事。 | 草稿，待确认 | 支持产品型与项目型客户复用。 |
-| ADR-0004 | 不编造优先于演示顺滑。 | 草稿，待确认 | 保护售后、价格、交期、投诉等高风险边界。 |
+| ADR-0001 | Phase1 客户侧入口采用 H5，不采用企业微信客户群自动回复。 | 已确认 | 客户群机器人自动对外回复前提已被证伪，H5 交付门槛低。 |
+| ADR-0002 | Phase1 外部系统全部走 Mock 适配层。 | 已确认 | 避免真实凭据、生产数据和接口授权风险。 |
+| ADR-0003 | 场景包以配置 / 数据表达，不硬编码客户叙事。 | 已确认 | 支持产品型与项目型客户复用。 |
+| ADR-0004 | 不编造优先于演示顺滑。 | 已确认 | 保护售后、价格、交期、投诉等高风险边界。 |
 
 ## 8. REQ 到模块矩阵
 
@@ -166,9 +191,9 @@ Windows 本机
 | REQ-015 | 全部 | 全部 | 本机环境 | `docs/05-tech-spec.md`、`docs/09-verification.md` |
 | REQ-016 | 全部 | Core Security | AuditLog | `docs/05-tech-spec.md` |
 
-## 9. 风险与待确认
+## 9. 风险与延后确认
 
-- Docker 当前不可用，若强制 PostgreSQL + pgvector 会影响 Phase1 进度。
-- React + Vite + TypeScript 是默认建议，仍需人工确认。
-- 飞书真实通知是否允许联网和凭据配置待确认。
+- Docker 当前不可用；Phase1 已确认不强制 PostgreSQL + pgvector，优先走 Mock / 本地临时数据降级。
+- React + Vite + TypeScript 已确认为 Phase1 前端技术栈。
+- 飞书真实通知默认不允许，Phase1 仅 Mock payload；真实联网和凭据配置延后到 Phase2+ 单独确认。
 - 未来真实业务系统适配需单独设计权限、审计、错误重试和数据脱敏。

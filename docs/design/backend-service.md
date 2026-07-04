@@ -10,13 +10,20 @@
 
 ## 2. 分层
 
-```text
-app/api        REST 路由与请求校验
-app/schemas    请求响应模型
-app/services   业务服务
-app/adapters   外部 / Mock 适配
-app/data       场景包、知识、规则、Mock 数据加载
-app/core       配置、日志、错误、脱敏
+```mermaid
+flowchart TB
+  api[app/api\nREST 路由与请求校验]
+  schemas[app/schemas\n请求响应模型]
+  services[app/services\n业务服务]
+  adapters[app/adapters\n外部 / Mock 适配]
+  data[app/data\n场景包、知识、规则、Mock 数据加载]
+  core[app/core\n配置、日志、错误、脱敏]
+
+  api --> schemas
+  api --> services
+  services --> adapters
+  services --> data
+  services --> core
 ```
 
 ## 3. 服务职责
@@ -36,18 +43,24 @@ app/core       配置、日志、错误、脱敏
 
 ## 4. 消息处理伪流程
 
-```text
-receive message
-  -> sanitize input
-  -> save customer message
-  -> route intent
-  -> if high risk: create handoff + notification
-  -> else if mock business query: lookup mock record
-  -> else if knowledge / rule matched: answer with source_ref
-  -> else: create knowledge gap + notification
-  -> save assistant message
-  -> write audit log
-  -> return response
+```mermaid
+flowchart TD
+  receive[receive message] --> sanitize[sanitize input]
+  sanitize --> save_customer[save customer message]
+  save_customer --> route[route intent]
+  route --> high_risk{high risk?}
+  high_risk -- yes --> handoff[create handoff + notification]
+  high_risk -- no --> mock_query{mock business query?}
+  mock_query -- yes --> lookup[lookup mock record]
+  mock_query -- no --> matched{knowledge / rule matched?}
+  matched -- yes --> answer[answer with source_ref]
+  matched -- no --> gap[create knowledge gap + notification]
+  handoff --> save_assistant[save assistant message]
+  lookup --> save_assistant
+  answer --> save_assistant
+  gap --> save_assistant
+  save_assistant --> audit[write audit log]
+  audit --> response[return response]
 ```
 
 ## 5. 错误处理
