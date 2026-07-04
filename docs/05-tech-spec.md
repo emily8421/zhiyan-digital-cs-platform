@@ -13,8 +13,8 @@
 
 | 层 | 技术 | 状态 | 说明 |
 |---|---|---|---|
-| 客户 H5 | React + Vite + TypeScript | 建议，待确认 | 独立 Web 页面，快速演示交互。 |
-| Web 控制台 | React + Vite + TypeScript | 建议，待确认 | 可与 H5 共享 API client 和类型。 |
+| 客户 H5 | React + Vite + TypeScript | Phase1 确认 | 独立 Web 页面，快速演示交互。 |
+| Web 控制台 | React + Vite + TypeScript | Phase1 确认 | 可与 H5 共享 API client 和类型。 |
 | 后端 | Python + FastAPI | 已列入项目规则草稿 | REST API、服务层、适配层。 |
 | 数据库 | PostgreSQL + pgvector | 计划方向，Phase1 可降级 | Docker 不可用时先 Mock / 本地临时数据。 |
 | 向量检索 | pgvector / TEI | 预留，默认关闭 | Phase1 不强制向量服务。 |
@@ -47,7 +47,7 @@ Phase1 必须能本机运行：
 
 | 决策 | 当前口径 | 原因 | 风险 |
 |---|---|---|---|
-| 前端单仓多入口 | `frontend/customer-h5` 与 `frontend/console` 分目录 | H5 与控制台职责不同，但共享类型和 API client | 前端框架待确认 |
+| 前端单仓多入口 | `frontend/customer-h5` 与 `frontend/console` 分目录 | H5 与控制台职责不同，但共享类型和 API client | 前端框架已按 Phase1 确认为 React + Vite + TypeScript |
 | 后端分层 | API / Service / Adapter / Data / Schema / Core | 避免外部系统与业务逻辑耦合 | 初期目录较多 |
 | 场景包配置化 | 使用数据文件表达产品型 / 项目型场景 | 支持复用与追溯 | 需要设计校验规则 |
 | Mock 优先 | Phase1 所有外部系统走 Mock | 保证本机可跑与安全 | 与真实系统差异需标明 |
@@ -64,6 +64,8 @@ Phase1 必须能本机运行：
 - 日志必须脱敏，禁止输出 token、真实联系方式、真实订单或合同信息。
 
 ## 5. 前端技术方案
+
+前端交互细节、页面状态、边界文案、接口依赖和验收路径统一见 `docs/design/frontend-interaction.md`。
 
 ### 5.1 H5 对话页
 
@@ -125,8 +127,7 @@ Phase1 必须能本机运行：
 
 ## 11. 待确认项
 
-1. 前端框架是否确认 React + Vite + TypeScript。
-2. Phase1 存储降级策略选择：JSON / SQLite / 内存 / PostgreSQL。
-3. 是否允许安装依赖和 Docker 镜像。
-4. 是否允许真实飞书机器人通知。
-5. 是否使用公司服务器；若使用，需确认 CPU / 内存 / GPU / 端口 / 成本。
+1. Phase1 存储降级策略选择：JSON / SQLite / 内存 / PostgreSQL。
+2. 是否允许安装依赖和 Docker 镜像。
+3. 是否允许真实飞书机器人通知。
+4. 是否使用公司服务器；若使用，需确认 CPU / 内存 / GPU / 端口 / 成本。

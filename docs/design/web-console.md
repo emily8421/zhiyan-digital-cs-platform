@@ -1,6 +1,6 @@
 # Web 控制台详细设计
 
-> **定位：详细设计。** 本文细化 Phase1 员工 / 运营 Web 控制台，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束。
+> **定位：详细设计。** 本文细化 Phase1 员工 / 运营 Web 控制台，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束；跨入口前端交互、状态、边界文案和验收路径见 `docs/design/frontend-interaction.md`。
 
 ## 1. 目标与范围
 
@@ -9,6 +9,8 @@ Web 控制台用于演示员工和运营人员如何查看客户会话、待跟�
 覆盖需求：REQ-006、REQ-009、REQ-010、REQ-011、REQ-012、REQ-016。
 
 ## 2. 页面结构
+
+Phase1 控制台采用顶部 Tab 导航；列表详情采用右侧详情栏，不做生产级左侧导航、复杂权限菜单或多租户工作台。
 
 | 页面 | 主要内容 | API |
 |---|---|---|

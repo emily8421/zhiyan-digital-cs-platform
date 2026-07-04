@@ -1,6 +1,6 @@
 # H5 客户对话页详细设计
 
-> **定位：详细设计。** 本文细化 Phase1 客户侧 H5 对话页，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束。
+> **定位：详细设计。** 本文细化 Phase1 客户侧 H5 对话页，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束；跨入口前端交互、状态、边界文案和验收路径见 `docs/design/frontend-interaction.md`。
 
 ## 1. 目标与范围
 
@@ -33,7 +33,7 @@ H5 对话页用于演示客户扫码即用的轻入口。Phase1 只支持 Demo �
 ## 4. 交互流程
 
 1. 页面首次加载时调用 API-010 获取场景包列表。
-2. 用户选择场景包或使用默认产品型场景包。
+2. 页面默认进入产品型场景包，用户可切换到其他场景包。
 3. 调用 API-001 创建会话。
 4. 用户输入问题，调用 API-002。
 5. 页面展示 `answer`、`answer_type`、`source_ref`、`mock`。

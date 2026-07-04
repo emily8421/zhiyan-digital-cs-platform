@@ -103,6 +103,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - `docs/03-prd.md`：F-001、F-002、F-003、F-006、F-009
 - `docs/07-api-spec.md`：API-001、API-002
 - `docs/design/h5-dialog.md`
+- `docs/design/frontend-interaction.md`：H5 页面状态、边界文案、接口依赖与验收路径
 
 #### 修改范围
 
@@ -133,6 +134,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - `docs/03-prd.md`：F-006、F-007、F-008
 - `docs/07-api-spec.md`：API-003、API-004、API-005、API-008、API-009、API-012
 - `docs/design/web-console.md`
+- `docs/design/frontend-interaction.md`：Console 页面状态、列表详情、边界文案与验收路径
 
 #### 修改范围
 
