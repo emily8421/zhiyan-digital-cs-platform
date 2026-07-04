@@ -44,6 +44,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 ### TC-001 H5 创建会话并发送消息
 
+- 依据：`docs/design/h5-dialog.md`、`docs/design/frontend-interaction.md`。
 - 前置：后端与 H5 启动。
 - 步骤：打开 H5，选择产品型场景包，发送产品参数问题。
 - 期望：页面展示回答、来源类型、会话 ID，且没有真实客户数据。
@@ -66,11 +67,13 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 ### TC-005 不编造与高风险保护
 
+- 依据：`docs/design/knowledge-and-policy.md`、`docs/design/frontend-interaction.md`。
 - 步骤：输入赔付承诺、合同责任、真实交期承诺或无来源事实问题。
 - 期望：系统不承诺，生成转人工或知识缺口。
 
 ### TC-006 转人工流转
 
+- 依据：`docs/design/web-console.md`、`docs/design/frontend-interaction.md`。
 - 步骤：触发高风险问题，在控制台查看并更新转人工状态。
 - 期望：转人工记录包含原因、状态、建议负责人、来源会话。
 
@@ -81,6 +84,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 ### TC-008 Mock 进度查询
 
+- 依据：`docs/design/mock-integrations.md`、`docs/design/frontend-interaction.md`。
 - 步骤：查询样例订单号、项目号、售后单号。
 - 期望：返回 Mock 状态、下一步、更新时间，并标明 `mock: true`。
 
@@ -91,16 +95,19 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 ### TC-010 Web 控制台查看运营列表
 
+- 依据：`docs/design/web-console.md`、`docs/design/frontend-interaction.md`。
 - 步骤：打开控制台，查看会话、待跟进、缺口、通知、摘要。
 - 期望：列表数据完整，Mock / Demo 标识明确。
 
 ### TC-011 知识缺口生命周期
 
+- 依据：`docs/design/knowledge-and-policy.md`、`docs/design/frontend-interaction.md`。
 - 步骤：触发未知问题，在控制台更新缺口状态。
 - 期望：缺口从 `new` 更新到 `reviewing` 或关闭状态。
 
 ### TC-012 日报摘要
 
+- 依据：`docs/design/web-console.md`、`docs/design/frontend-interaction.md`。
 - 步骤：完成多轮会话后查看日报摘要。
 - 期望：摘要包含会话数、转人工数、缺口数、未结案数。
 

@@ -149,17 +149,17 @@ Windows 本机
 
 | REQ-ID | 前端 | 后端服务 | 数据 / 适配 | 设计文档 |
 |---|---|---|---|---|
-| REQ-001 | Customer H5 | API Layer | Conversation | `docs/design/h5-dialog.md` |
+| REQ-001 | Customer H5 | API Layer | Conversation | `docs/design/h5-dialog.md`、`docs/design/frontend-interaction.md` |
 | REQ-002 | Customer H5 / Console | Conversation Service | Conversation Store | `docs/design/backend-service.md` |
 | REQ-003 | Customer H5 | Intent Routing Service | Scenario Pack | `docs/design/backend-service.md` |
 | REQ-004 | Customer H5 | Knowledge & Policy Service | Knowledge Store | `docs/design/knowledge-and-policy.md` |
 | REQ-005 | Customer H5 / Console | Safety Policy | Audit Store | `docs/design/knowledge-and-policy.md` |
-| REQ-006 | Console | Handoff Service | HumanHandoff | `docs/design/web-console.md` |
+| REQ-006 | Console | Handoff Service | HumanHandoff | `docs/design/web-console.md`、`docs/design/frontend-interaction.md` |
 | REQ-007 | Console | Scenario Pack Service | ScenarioPack | `docs/design/scenario-packs.md` |
-| REQ-008 | Customer H5 / Console | Business Adapter | MockBusinessRecord | `docs/design/mock-integrations.md` |
+| REQ-008 | Customer H5 / Console | Business Adapter | MockBusinessRecord | `docs/design/mock-integrations.md`、`docs/design/frontend-interaction.md` |
 | REQ-009 | Console | Notification Adapter | Notification | `docs/design/mock-integrations.md` |
-| REQ-010 | Console | Aggregation APIs | 多对象 | `docs/design/web-console.md` |
-| REQ-011 | Console | Knowledge Gap Service | KnowledgeGap | `docs/design/knowledge-and-policy.md` |
+| REQ-010 | Console | Aggregation APIs | 多对象 | `docs/design/web-console.md`、`docs/design/frontend-interaction.md` |
+| REQ-011 | Console | Knowledge Gap Service | KnowledgeGap | `docs/design/knowledge-and-policy.md`、`docs/design/frontend-interaction.md` |
 | REQ-012 | Console | Summary & Audit Service | DailySummary / AuditLog | `docs/design/backend-service.md` |
 | REQ-013 | H5 / Console | API Layer | 全部 | `docs/07-api-spec.md` |
 | REQ-014 | H5 / Console | Config Loader | ScenarioPack / Mock 数据 | `docs/design/scenario-packs.md` |
