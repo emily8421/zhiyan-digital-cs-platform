@@ -2,6 +2,7 @@
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from app.api.console import router as console_router
 from app.api.conversations import router as conversations_router
 from app.api.health import router as health_router
 from app.api.mock_business import router as mock_business_router
@@ -38,6 +39,7 @@ def create_app() -> FastAPI:
         return JSONResponse(status_code=422, content=response.model_dump())
 
     app.include_router(health_router)
+    app.include_router(console_router, prefix="/api/v1")
     app.include_router(conversations_router, prefix="/api/v1")
     app.include_router(mock_business_router, prefix="/api/v1")
     app.include_router(scenario_packs_router, prefix="/api/v1")

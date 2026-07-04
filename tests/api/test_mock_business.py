@@ -50,3 +50,14 @@ def test_get_missing_mock_record_returns_error_contract() -> None:
         "record_type": "order",
         "external_ref": "UNKNOWN-001",
     }
+
+
+def test_list_mock_business_records() -> None:
+    response = client.get("/api/v1/mock-business?scenario_pack_code=project_business")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["meta"]["mock"] is True
+    assert body["data"]
+    assert {record["scenario_pack_code"] for record in body["data"]} == {"project_business"}
+    assert all(record["mock"] is True for record in body["data"])

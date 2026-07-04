@@ -9,8 +9,25 @@ class CreateConversationRequest(BaseModel):
 
 class ConversationData(BaseModel):
     conversation_id: str
-    status: str
+    channel: str = "h5"
     scenario_pack_code: str
+    status: str
+    risk_level: str = "low"
+    last_message: str = ""
+    customer_alias: str | None = None
+    updated_at: str = ""
+    mock: bool = True
+
+
+class ConversationListItem(BaseModel):
+    conversation_id: str
+    channel: str
+    scenario_pack_code: str
+    status: str
+    risk_level: str
+    last_message: str
+    updated_at: str
+    mock: bool = True
 
 
 class SendMessageRequest(BaseModel):
