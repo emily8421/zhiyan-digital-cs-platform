@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 
 from app.api.conversations import router as conversations_router
 from app.api.health import router as health_router
+from app.api.mock_business import router as mock_business_router
+from app.api.scenario_packs import router as scenario_packs_router
 from app.schemas.common import ApiError, ApiException, ErrorResponse, new_request_id
 
 
@@ -37,6 +39,8 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(conversations_router, prefix="/api/v1")
+    app.include_router(mock_business_router, prefix="/api/v1")
+    app.include_router(scenario_packs_router, prefix="/api/v1")
     return app
 
 

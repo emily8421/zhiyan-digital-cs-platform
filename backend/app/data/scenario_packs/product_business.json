@@ -1,0 +1,77 @@
+﻿{
+  "code": "product_business",
+  "name": "产品型客户场景包",
+  "description": "面向灯饰、制造、标准或半标准产品销售企业的 Phase1 Demo 场景包。",
+  "source_refs": ["SRC-SP-PRODUCT-001", "SRC-PRD-001"],
+  "intents": [
+    {
+      "code": "product_consultation",
+      "name": "产品咨询",
+      "examples": ["灯带有什么规格", "可以定制颜色吗"]
+    },
+    {
+      "code": "order_progress",
+      "name": "订单进度",
+      "examples": ["我想查一下 HC-ORDER-001 的生产进度"]
+    },
+    {
+      "code": "after_sales",
+      "name": "售后规则",
+      "examples": ["灯带坏了怎么售后", "能退换货吗"]
+    }
+  ],
+  "knowledge_items": [
+    {
+      "id": "kb_product_001",
+      "title": "灯带规格咨询",
+      "content": "Phase1 Demo 中可说明常见灯带规格、颜色和定制方向，具体价格与交期需转人工确认。",
+      "source_ref": "SRC-SP-PRODUCT-001"
+    },
+    {
+      "id": "kb_product_002",
+      "title": "售后处理边界",
+      "content": "售后问题可先收集故障现象和订单编号，赔付、退换货结论需人工确认。",
+      "source_ref": "SRC-PRD-001"
+    }
+  ],
+  "rule_items": [
+    {
+      "id": "rule_product_001",
+      "rule_type": "risk",
+      "pattern": "投诉|曝光|赔偿|合同|最低价|保证交期",
+      "action": "handoff",
+      "source_ref": "SRC-PRD-001"
+    }
+  ],
+  "mock_business_records": [
+    {
+      "record_type": "order",
+      "external_ref": "HC-ORDER-001",
+      "status": "生产排期中",
+      "summary": "Mock 订单 HC-ORDER-001 已进入生产排期，等待物料齐套。",
+      "next_step": "物料齐套后进入生产。",
+      "eta": "2026-07-10",
+      "is_mock": true
+    },
+    {
+      "record_type": "order",
+      "external_ref": "HC-ORDER-002",
+      "status": "质检中",
+      "summary": "Mock 订单 HC-ORDER-002 已完成生产，正在质检。",
+      "next_step": "质检通过后安排包装。",
+      "eta": "2026-07-08",
+      "is_mock": true
+    }
+  ],
+  "handoff_rules": [
+    {
+      "code": "product_high_risk",
+      "description": "价格、交期、赔付、合同和投诉问题必须转人工。"
+    }
+  ],
+  "demo_questions": [
+    "灯带有什么规格？",
+    "我想查一下 HC-ORDER-001 的生产进度",
+    "如果客户要赔偿怎么办？"
+  ]
+}
