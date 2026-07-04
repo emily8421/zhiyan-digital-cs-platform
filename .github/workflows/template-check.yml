@@ -1,4 +1,4 @@
-name: Template Check
+name: Project Check
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  template-check:
+  project-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,5 +28,12 @@ jobs:
             git diff --check "${{ github.event.before }}" "${{ github.sha }}"
           fi
 
-      - name: Run template self-check
-        run: bash scripts/check-template.sh
+      - name: Check derived sync boundary
+        shell: bash
+        run: |
+          subject="$(git log -1 --format=%s)"
+          if [[ "$subject" =~ ^sync[[:space:]]template[[:space:]]v[0-9]+\.[0-9]+\.[0-9]+[[:space:]]from[[:space:]]ai-project-template$ ]]; then
+            bash scripts/check-derived-sync.sh HEAD
+          else
+            echo "Not a template sync commit; skip derived sync boundary check."
+          fi
