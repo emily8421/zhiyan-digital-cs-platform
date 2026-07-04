@@ -47,4 +47,3 @@ def _validate_scenario_pack(pack: ScenarioPack) -> None:
     for mock_record in pack.mock_business_records:
         if not mock_record.is_mock:
             raise InvalidScenarioPackError(pack.code, "mock business record must set is_mock=true")
-
