@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | 当前 Phase | Phase1：本机 Demo |
 
@@ -13,7 +13,7 @@
 
 Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服统一平台的核心价值：H5 客户对话、规则 / 知识 / Mock 回答、转人工、知识缺口、Web 控制台、Mock 通知和日报摘要。
 
-进入开发前必须先人工确认 `docs/03-prd.md` §3 阶段路线图、前端框架、存储降级策略、是否启用真实飞书通知、是否启用 LLM。
+开发按已确认口径推进：Phase1 本机 Demo；前端采用 React + Vite + TypeScript；存储优先 JSON / SQLite / 内存 Mock；飞书仅 Mock payload；LLM 默认关闭。每个 Sprint 开始前仍需确认本次修改范围。
 
 ## 2. Sprint 总览
 
@@ -180,13 +180,13 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 #### 禁止事项
 
 - 不用随机生成内容冒充业务事实。
-- 不把未确认规则写成客户承诺。
+- 不把未纳入 Phase1 的规则或能力写成客户承诺。
 
 ### Sprint-6：本机演示与文档回填
 
 #### 目标
 
-跑通端到端 Demo，补充验证记录、运行说明和未确认风险。
+跑通端到端 Demo，补充验证记录、运行说明和已知风险。
 
 #### 输入文档
 
@@ -236,9 +236,9 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 |---|---|---|
 | 2026-07-03 | 文档补齐中 | 生成 `docs/00-09`、`docs/design/*`、`docs/decisions/*` 草稿。 |
 
-## 7. 待人工确认
+## 7. 已确认口径与待执行
 
-- 是否按 Sprint-1 开始后端 API 骨架。
-- 是否允许安装 / 使用前后端依赖。
-- Phase1 存储采用哪种降级方式。
-- 是否需要拆分 Sprint-1 为正式 `tasks/task-001-backend-skeleton.md`。
+- 已确认可按 Sprint-1 开始后端 API 骨架；写代码前仍需列出实现方案、影响范围和预期变更文件。
+- 已确认允许安装 Sprint 必需依赖，但每次安装前需说明包名、用途和影响范围。
+- Phase1 存储已确认优先 JSON / SQLite / 内存 Mock，不强制 PostgreSQL。
+- Sprint-1 暂不强制拆分正式 `tasks/task-001-backend-skeleton.md`；若范围扩大再单独拆任务。

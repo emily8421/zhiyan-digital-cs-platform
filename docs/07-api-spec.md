@@ -6,7 +6,7 @@
 |---|---|
 | 保留 / 省略决策 | 保留；项目包含 H5 / Web / 通知接口 |
 | 上游输入 | `docs/02-srs.md`、`docs/04-architecture.md`、`docs/06-db-design.md` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | API 前缀 | `/api/v1` |
 
@@ -60,7 +60,44 @@
 | API-011 | GET | `/scenario-packs/{scenario_pack_id}` | 查询场景包详情 | REQ-007、REQ-014 |
 | API-012 | GET | `/summaries/daily` | 查询日报摘要 | REQ-012 |
 
-## 3. 接口契约草案
+## 3. 接口交互图
+
+```mermaid
+sequenceDiagram
+  participant H5 as Customer H5
+  participant Console as Web Console
+  participant API as FastAPI API Layer
+  participant Conversation as Conversation Service
+  participant Knowledge as Knowledge / Policy / Scenario Services
+  participant Mock as Mock Business Adapter
+  participant Handoff as Handoff / Gap / Notification Services
+
+  H5->>API: POST /api/v1/conversations
+  API->>Conversation: create_conversation(channel, scenario_pack_code)
+  Conversation-->>API: conversation_id, status, scenario_pack_code
+  API-->>H5: request_id, data, meta.mock=true
+
+  H5->>API: POST /api/v1/conversations/{id}/messages
+  API->>Conversation: append_message(content)
+  Conversation->>Knowledge: route intent and lookup answer
+  alt 命中知识 / 规则
+    Knowledge-->>Conversation: answer, source_ref
+  else 命中 Mock 业务查询
+    Conversation->>Mock: lookup(record_type, external_ref)
+    Mock-->>Conversation: mock status, next_step, eta
+  else 无依据或高风险
+    Conversation->>Handoff: create handoff or knowledge gap
+    Handoff-->>Conversation: handoff / gap status
+  end
+  Conversation-->>API: message reply payload
+  API-->>H5: request_id, data, meta.mock=true
+
+  Console->>API: GET conversations / handoffs / gaps / summaries
+  API->>Conversation: query demo state
+  API-->>Console: request_id, data, meta.mock=true
+```
+
+## 4. 接口契约草案
 
 ### API-001 创建会话
 
@@ -242,7 +279,7 @@
 
 响应字段：`summary_date`、`conversation_count`、`handoff_count`、`gap_count`、`open_item_count`、`content`、`mock`。
 
-## 4. 错误码
+## 5. 错误码
 
 | Code | HTTP | 说明 |
 |---|---|---|
@@ -254,14 +291,14 @@
 | `EXTERNAL_INTEGRATION_DISABLED` | 503 | 外部真实集成未启用 |
 | `INTERNAL_ERROR` | 500 | 未预期错误 |
 
-## 5. 权限与安全
+## 6. 权限与安全
 
 - Phase1 不实现生产鉴权；接口仅用于本机 Demo。
 - 禁止将真实 token 放入请求、响应、日志或 Mock payload。
 - 控制台更新接口只处理 Demo 数据。
 - 未来 MVP 需补充登录、角色权限、租户隔离和审计。
 
-## 6. 版本演进
+## 7. 版本演进
 
 | 版本 | 范围 |
 |---|---|
@@ -269,7 +306,7 @@
 | v1 Phase2 | 真实飞书通知、权限、知识确认流、试点部署。 |
 | v2 Phase3 | CRM / ERP / OA / 工单 / 飞书项目真实集成。 |
 
-## 7. REQ 到接口矩阵
+## 8. REQ 到接口矩阵
 
 | REQ-ID | API |
 |---|---|
@@ -290,8 +327,8 @@
 | REQ-015 | 不适用，运行验证项 |
 | REQ-016 | 全部接口 |
 
-## 8. 待确认
+## 9. 延后确认
 
-- Phase1 是否需要引入简易登录；默认不需要。
-- 是否需要在 API 层预留多租户字段；默认仅在数据模型预留，不实现。
-- 是否允许真实飞书 webhook；默认不允许。
+- Phase1 默认不引入简易登录；如需对外演示或试点部署，另行确认。
+- API 层 Phase1 不实现多租户字段；仅在数据模型 / 架构中保留未来扩展位置。
+- 真实飞书 webhook Phase1 不允许；仅记录 Mock payload。

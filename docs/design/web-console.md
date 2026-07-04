@@ -31,6 +31,36 @@ Phase1 控制台采用顶部 Tab 导航；列表详情采用右侧详情栏，�
 
 ## 4. 关键交互
 
+```mermaid
+sequenceDiagram
+  participant Staff as 员工 / 运营
+  participant Console as Web 控制台
+  participant API as FastAPI API
+
+  Staff->>Console: 打开待跟进页
+  Console->>API: API-004 查询 open 转人工记录
+  API-->>Console: handoff list, mock
+  Staff->>Console: 查看详情并更新状态
+  Console->>API: API-004 PATCH processing / closed
+  API-->>Console: 更新后的转人工状态
+
+  Staff->>Console: 打开知识缺口页
+  Console->>API: API-005 查询 new 缺口
+  API-->>Console: knowledge gap list, mock
+  Staff->>Console: 标记 reviewing / accepted / rejected / closed
+  Console->>API: API-005 PATCH 缺口状态
+  alt accepted
+    Console->>API: API-006 创建 draft 知识条目
+    API-->>Console: draft knowledge item
+  else 其他状态
+    API-->>Console: 更新后的缺口状态
+  end
+
+  Staff->>Console: 打开概览页
+  Console->>API: API-012 查询日报摘要
+  API-->>Console: Demo / Mock 摘要数据
+```
+
 ### 4.1 查看转人工
 
 1. 控制台调用 API-004 查询 `open` 状态。

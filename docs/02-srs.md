@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/01-user-requirements.md` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | 当前阶段 | Phase1 Demo |
 
@@ -84,9 +84,9 @@
 | REQ-015 | 本机运行方案 | 不适用 | 不适用 | TC-015 |
 | REQ-016 | 安全与隐私控制 | `AuditLog` | 全部 | TC-016 |
 
-## 7. 待确认项
+## 7. 人工确认记录
 
-- 是否采用 React + Vite + TypeScript 作为前端默认方案。
-- Phase1 数据存储是否先用 JSON / SQLite / 内存 Mock，还是强制 PostgreSQL。
-- 飞书真实通知是否纳入 Phase1；默认不纳入。
-- LLM 是否完全禁用；默认 Phase1 不启用。
+- Phase1 前端默认方案已确认采用 React + Vite + TypeScript。
+- Phase1 数据存储已确认优先使用 JSON / SQLite / 内存 Mock，不强制 PostgreSQL。
+- 飞书真实通知不纳入 Phase1，仅记录 Mock payload。
+- Phase1 不启用 LLM；如后续启用，需另补安全、成本、不编造和审计边界。

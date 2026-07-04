@@ -32,6 +32,29 @@ H5 对话页用于演示客户扫码即用的轻入口。Phase1 只支持 Demo �
 
 ## 4. 交互流程
 
+```mermaid
+sequenceDiagram
+  participant User as 客户
+  participant H5 as H5 对话页
+  participant API as FastAPI API
+
+  H5->>API: API-010 获取场景包列表
+  API-->>H5: 产品型 / 项目型场景包
+  User->>H5: 选择或使用默认产品型场景包
+  H5->>API: API-001 创建会话
+  API-->>H5: conversationId, status, mock
+  User->>H5: 输入问题
+  H5->>API: API-002 发送消息
+  API-->>H5: answer, answer_type, source_ref, handoff, knowledge_gap, mock
+  alt 返回 handoff
+    H5-->>User: 展示“已转人工”卡片
+  else 返回 knowledge_gap
+    H5-->>User: 展示“已记录知识缺口”卡片
+  else 返回依据回答
+    H5-->>User: 展示回答、来源和 Mock 标识
+  end
+```
+
 1. 页面首次加载时调用 API-010 获取场景包列表。
 2. 页面默认进入产品型场景包，用户可切换到其他场景包。
 3. 调用 API-001 创建会话。

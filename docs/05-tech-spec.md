@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 | 当前阶段 | Phase1 本机 Demo |
 
@@ -20,7 +20,7 @@
 | 向量检索 | pgvector / TEI | 预留，默认关闭 | Phase1 不强制向量服务。 |
 | 通知 | 飞书机器人适配 | 预留，Phase1 Mock | 默认不真实发送。 |
 | 外部业务系统 | CRM / ERP / OA / 工单适配 | 预留，Phase3 | Phase1 仅 Mock。 |
-| LLM | 待确认 | 默认关闭 | 启用前需补成本、不编造、兜底、审计。 |
+| LLM | Phase1 不启用 | 默认关闭 | 启用前需补成本、不编造、兜底、审计。 |
 
 ## 2. 本机环境约束
 
@@ -90,7 +90,7 @@ Phase1 必须能本机运行：
 | 转人工 / 缺口 | 本地临时存储或 PostgreSQL | `zycs_human_handoffs`、`zycs_knowledge_gaps` |
 | 通知 / 摘要 / 审计 | 本地临时存储或 PostgreSQL | `zycs_notifications`、`zycs_daily_summaries`、`zycs_audit_logs` |
 
-数据库表前缀 `zycs_` 仍待人工确认。
+数据库表前缀已确认为 `zycs_`。
 
 ## 7. 接口方案
 
@@ -112,11 +112,11 @@ Phase1 必须能本机运行：
 
 | 项 | 正常方案 | 降级方案 | 触发条件 |
 |---|---|---|---|
-| PostgreSQL | Docker 启动本地数据库 | JSON / SQLite / 内存 Mock | Docker 不可用或安装未确认 |
+| PostgreSQL | Docker 启动本地数据库 | JSON / SQLite / 内存 Mock | Docker 不可用或 Phase1 未要求启用数据库 |
 | pgvector | PostgreSQL 扩展 | 关键词 / 规则匹配 | 向量服务不可用 |
-| TEI / Embedding | 远程或容器服务 | 不启用 | 无 GPU / 无服务器 / 未确认成本 |
-| 飞书通知 | 真实机器人 webhook | Mock payload + 日志 | 未授权外部联网 / 无凭据 |
-| LLM | 受控 API 调用 | 不启用 | 未确认成本、安全、准确性 |
+| TEI / Embedding | 远程或容器服务 | 不启用 | Phase1 默认关闭；无 GPU / 无服务器 / 成本未纳入 Phase1 |
+| 飞书通知 | 真实机器人 webhook | Mock payload + 日志 | Phase1 不授权外部联网 / 不配置真实凭据 |
+| LLM | 受控 API 调用 | 不启用 | Phase1 默认关闭；后续需另行确认成本、安全、准确性 |
 
 ## 10. 编码约定
 
@@ -125,9 +125,9 @@ Phase1 必须能本机运行：
 - 场景包、Mock 数据和客户叙事必须以可追溯配置或数据文件表达。
 - 错误处理不得吞掉高风险状态；高风险问题要显式进入转人工。
 
-## 11. 待确认项
+## 11. 人工确认记录与延后项
 
-1. Phase1 存储降级策略选择：JSON / SQLite / 内存 / PostgreSQL。
-2. 是否允许安装依赖和 Docker 镜像。
-3. 是否允许真实飞书机器人通知。
-4. 是否使用公司服务器；若使用，需确认 CPU / 内存 / GPU / 端口 / 成本。
+1. Phase1 存储降级策略已确认优先 JSON / SQLite / 内存 Mock，不强制 PostgreSQL。
+2. 允许安装 Sprint 必需依赖，但每次安装前需说明包名、用途和影响范围；Docker 镜像 Phase1 默认不新增。
+3. 真实飞书机器人通知不纳入 Phase1，仅记录 Mock payload。
+4. Phase1 默认不使用公司服务器；若后续需要，需另行确认 CPU / 内存 / GPU / 端口 / 成本 / 安全边界。

@@ -9,7 +9,7 @@
 | 输入来源 | `docs/vision/product-vision.md`、`docs/inputs/*`、`docs/meetings/2026-07-01-input-review.md`、`ai/project-rules.md` |
 | 入口模式 | External-input + Vision-first |
 | 文档剖面 | Full |
-| 当前状态 | 草稿，待人工确认 |
+| 当前状态 | Phase1 关键口径已确认 |
 | 最后更新 | 2026-07-03 |
 
 ## 1. 背景与问题
@@ -60,10 +60,10 @@ Phase1 是本机 Demo，不是生产 MVP。当前只要求用 Mock 数据演示�
 | 编号 | 内容 | 状态 | 影响 |
 |---|---|---|---|
 | A-001 | 客户侧主入口采用 H5 对话页。 | 已确认草稿 | 前端、API、演示流程 |
-| A-002 | 员工侧采用 Web 控制台，通知采用飞书机器人适配但 Phase1 可 Mock。 | 待确认 | 通知接口、验证方式 |
+| A-002 | 员工侧采用 Web 控制台，通知采用飞书机器人适配但 Phase1 仅 Mock。 | 已确认 | 通知接口、验证方式 |
 | A-003 | Phase1 使用 Mock 订单 / 项目 / CRM / ERP / 工单数据。 | 已确认草稿 | 适配层、DB、测试数据 |
-| A-004 | PostgreSQL + pgvector 是计划方向，但 Demo 可降级为本地 Mock / 临时数据。 | 待确认 | DB 设计、部署 |
-| A-005 | 不启用 LLM，或启用前必须单独确认成本、不编造与兜底边界。 | 待确认 | 技术方案、安全验证 |
+| A-004 | PostgreSQL + pgvector 是计划方向，但 Phase1 不强制运行，可降级为本地 Mock / 临时数据。 | 已确认 | DB 设计、部署 |
+| A-005 | Phase1 不启用 LLM；后续启用前必须单独确认成本、不编造与兜底边界。 | 已确认 | 技术方案、安全验证 |
 
 ## 6. 场景到需求追溯
 
