@@ -1,7 +1,7 @@
 # TEMPLATE-UPGRADE: 待人工确认项应包含 AI 建议与依据
 
 > 类型：派生项目中发现的模板优化提案。
-> 状态：待评估 / 待回流。
+> 状态：已落地于 ai-project-template v1.30.0；派生项目已同步并评估覆盖，归档留痕。
 > 关联：`ai/document-lifecycle-rules.md`、`ai/doc-standards/00-09`、`ai/prompts/docs/00-generate-or-complete-docs.md`、`ai/prompts/review/10-docs-checklist.md`、`ai/project-rules.md`。
 
 ## 1. 背景与问题

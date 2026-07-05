@@ -1,7 +1,7 @@
 # TEMPLATE-UPGRADE: 前端交互设计文档触发规则与标准结构
 
 > 类型：派生项目中发现的模板优化提案。
-> 状态：待评估 / 待回流。
+> 状态：已落地于 ai-project-template v1.30.0；派生项目已同步并评估覆盖，归档留痕。
 > 关联：`ai/global-rules.md` 中前端启用规则、`ai/prompts/docs/00-generate-or-complete-docs.md` 中演示形态判断、`ai/prompts/review/10-docs-checklist.md` 文档审查清单。
 
 ## 1. 背景与问题

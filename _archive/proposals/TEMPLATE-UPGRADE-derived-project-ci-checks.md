@@ -1,7 +1,7 @@
 # TEMPLATE-UPGRADE: 区分模板仓与派生项目的 CI 检查入口
 
 > 类型：派生项目中发现的模板优化提案。
-> 状态：待评估 / 待回流。
+> 状态：已落地于 ai-project-template v1.30.0；派生项目已同步并评估覆盖，归档留痕。
 > 关联：`.github/workflows/template-check.yml`、`scripts/check-template.sh`、`scripts/check-derived-sync.sh`、`scripts/check-derived-sync.ps1`、`scripts/new-project.sh`、`scripts/sync-template.*`、`template-sync.json`。
 
 ## 1. 背景与问题
