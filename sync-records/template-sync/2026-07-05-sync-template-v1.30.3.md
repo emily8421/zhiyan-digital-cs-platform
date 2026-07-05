@@ -93,4 +93,3 @@
 - 追加修改范围：`VERSION`、`CHANGELOG.md`、`scripts/sync-template.ps1`、`scripts/check-derived-sync.ps1`。
 - 追加验证：`powershell -ExecutionPolicy Bypass -File scripts/check-derived-sync.ps1` 通过。
 - v1.30.2 / v1.30.3 均为 PowerShell fallback 热修，分别修复 sync 与 derived check 的空 stderr 兼容问题。
-
