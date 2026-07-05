@@ -2,9 +2,27 @@
 
 from app.schemas.common import ApiError, ApiException, ApiResponse, ErrorResponse, ResponseMeta, new_request_id
 from app.schemas.mock_business import MockBusinessRecordResponse
-from app.services.mock_business_service import MockRecordNotFoundError, get_mock_business_record
+from app.services.mock_business_service import MockRecordNotFoundError, get_mock_business_record, list_mock_business_records
 
 router = APIRouter(tags=["mock-business"])
+
+
+@router.get(
+    "/mock-business",
+    response_model=ApiResponse[list[MockBusinessRecordResponse]],
+)
+def list_mock_business(
+    record_type: str | None = None,
+    scenario_pack_code: str | None = None,
+) -> ApiResponse[list[MockBusinessRecordResponse]]:
+    return ApiResponse(
+        request_id=new_request_id(),
+        data=list_mock_business_records(
+            record_type=record_type,
+            scenario_pack_code=scenario_pack_code,
+        ),
+        meta=ResponseMeta(mock=True),
+    )
 
 
 @router.get(

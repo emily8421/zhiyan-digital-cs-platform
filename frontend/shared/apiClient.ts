@@ -2,7 +2,14 @@ import type {
   ApiErrorResponse,
   ApiResponse,
   ConversationData,
+  ConversationListItem,
+  DailySummaryData,
+  HandoffRecord,
+  KnowledgeGapRecord,
   MessageResponseData,
+  MockBusinessRecord,
+  MockNotificationRecord,
+  ScenarioPackDetail,
   ScenarioPackSummary
 } from './types';
 
@@ -41,6 +48,10 @@ export function listScenarioPacks(): Promise<ApiResponse<ScenarioPackSummary[]>>
   return requestJson<ScenarioPackSummary[]>('/scenario-packs');
 }
 
+export function getScenarioPack(scenarioPackCode: string): Promise<ApiResponse<ScenarioPackDetail>> {
+  return requestJson<ScenarioPackDetail>(`/scenario-packs/${scenarioPackCode}`);
+}
+
 export function createConversation(scenarioPackCode: string): Promise<ApiResponse<ConversationData>> {
   return requestJson<ConversationData>('/conversations', {
     method: 'POST',
@@ -60,4 +71,60 @@ export function sendMessage(
     method: 'POST',
     body: JSON.stringify({ content })
   });
+}
+
+export function listConversations(): Promise<ApiResponse<ConversationListItem[]>> {
+  return requestJson<ConversationListItem[]>('/conversations');
+}
+
+export function listHandoffs(): Promise<ApiResponse<HandoffRecord[]>> {
+  return requestJson<HandoffRecord[]>('/handoffs');
+}
+
+export function updateHandoffStatus(
+  handoffId: string,
+  status: string,
+  resolutionNote: string
+): Promise<ApiResponse<HandoffRecord>> {
+  return requestJson<HandoffRecord>(`/handoffs/${handoffId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, resolution_note: resolutionNote })
+  });
+}
+
+export function listKnowledgeGaps(): Promise<ApiResponse<KnowledgeGapRecord[]>> {
+  return requestJson<KnowledgeGapRecord[]>('/knowledge-gaps');
+}
+
+export function updateKnowledgeGapStatus(
+  gapId: string,
+  status: string,
+  resolutionNote: string
+): Promise<ApiResponse<KnowledgeGapRecord>> {
+  return requestJson<KnowledgeGapRecord>(`/knowledge-gaps/${gapId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, resolution_note: resolutionNote })
+  });
+}
+
+export function listMockNotifications(): Promise<ApiResponse<MockNotificationRecord[]>> {
+  return requestJson<MockNotificationRecord[]>('/notifications/mock');
+}
+
+export function createMockNotification(
+  eventType: string,
+  relatedId: string
+): Promise<ApiResponse<MockNotificationRecord>> {
+  return requestJson<MockNotificationRecord>('/notifications/mock', {
+    method: 'POST',
+    body: JSON.stringify({ event_type: eventType, related_id: relatedId, target_type: 'feishu' })
+  });
+}
+
+export function getDailySummary(): Promise<ApiResponse<DailySummaryData>> {
+  return requestJson<DailySummaryData>('/summaries/daily');
+}
+
+export function listMockBusinessRecords(): Promise<ApiResponse<MockBusinessRecord[]>> {
+  return requestJson<MockBusinessRecord[]>('/mock-business');
 }
