@@ -3,6 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Query
 
 from app.schemas.common import ApiError, ApiException, ApiResponse, ErrorResponse, ResponseMeta, new_request_id
+from app.schemas.audit import AuditLogRecord
 from app.schemas.console import (
     DailySummaryData,
     HandoffRecord,
@@ -11,6 +12,7 @@ from app.schemas.console import (
     MockNotificationRequest,
     StatusUpdateRequest,
 )
+from app.services.audit_service import list_audit_logs
 from app.services.console_service import (
     ConsoleRecordNotFoundError,
     InvalidConsoleStatusError,
@@ -146,6 +148,15 @@ def get_daily_summary(
     return ApiResponse(
         request_id=new_request_id(),
         data=build_daily_summary(summary_date),
+        meta=ResponseMeta(mock=True),
+    )
+
+
+@router.get("/audit-logs", response_model=ApiResponse[list[AuditLogRecord]])
+def get_audit_logs() -> ApiResponse[list[AuditLogRecord]]:
+    return ApiResponse(
+        request_id=new_request_id(),
+        data=list_audit_logs(),
         meta=ResponseMeta(mock=True),
     )
 

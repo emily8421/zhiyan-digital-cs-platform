@@ -50,9 +50,9 @@ def test_send_message_returns_mock_answer() -> None:
     body = response.json()
     assert body["meta"]["mock"] is True
     assert body["data"]["message_id"].startswith("msg_")
-    assert body["data"]["intent"] == "demo_echo"
+    assert body["data"]["intent"] == "order_progress"
     assert body["data"]["answer_type"] == "mock_business"
-    assert body["data"]["source_ref"] == "mock:sprint-1"
+    assert body["data"]["source_ref"] == "mock_business:HC-ORDER-001"
     assert body["data"]["handoff"] is None
     assert body["data"]["knowledge_gap"] is None
 

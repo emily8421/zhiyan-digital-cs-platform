@@ -8,7 +8,6 @@ from app.schemas.console import (
     KnowledgeGapRecord,
     MockNotificationRecord,
 )
-from app.services.conversation_service import list_demo_conversations
 
 _HANDOFF_STATUSES = {"open", "processing", "closed"}
 _GAP_STATUSES = {"new", "reviewing", "accepted", "rejected", "closed"}
@@ -110,6 +109,29 @@ def update_handoff_status(
     return deepcopy(record)
 
 
+def create_handoff_record(
+    conversation_id: str,
+    scenario_pack_code: str,
+    reason: str,
+    summary: str,
+    risk_level: str,
+) -> HandoffRecord:
+    handoff = HandoffRecord(
+        handoff_id=f"handoff_{uuid4().hex[:8]}",
+        conversation_id=conversation_id,
+        scenario_pack_code=scenario_pack_code,
+        reason=reason,
+        suggested_owner="人工客服值班同事",
+        status="open",
+        risk_level=risk_level,
+        summary=summary,
+        updated_at=_now_iso(),
+        mock=True,
+    )
+    _handoffs[handoff.handoff_id] = handoff
+    return deepcopy(handoff)
+
+
 def list_knowledge_gaps(
     status: str | None = None,
     scenario_pack_code: str | None = None,
@@ -138,6 +160,26 @@ def update_knowledge_gap_status(
     record.resolution_note = resolution_note
     record.updated_at = _now_iso()
     return deepcopy(record)
+
+
+def create_knowledge_gap_record(
+    conversation_id: str,
+    scenario_pack_code: str,
+    question: str,
+    tags: list[str] | None = None,
+) -> KnowledgeGapRecord:
+    gap = KnowledgeGapRecord(
+        gap_id=f"gap_{uuid4().hex[:8]}",
+        conversation_id=conversation_id,
+        scenario_pack_code=scenario_pack_code,
+        question=question,
+        tags=tags or ["待确认"],
+        status="new",
+        updated_at=_now_iso(),
+        mock=True,
+    )
+    _knowledge_gaps[gap.gap_id] = gap
+    return deepcopy(gap)
 
 
 def list_notifications(
@@ -172,6 +214,8 @@ def create_mock_notification(
 
 
 def build_daily_summary(summary_date: date | None = None) -> DailySummaryData:
+    from app.services.conversation_service import list_demo_conversations
+
     resolved_date = summary_date or date.today()
     conversations = list_demo_conversations()
     handoffs = list_handoffs()
