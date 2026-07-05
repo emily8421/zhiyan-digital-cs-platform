@@ -76,7 +76,7 @@ def send_message(
         )
 
     update_conversation_last_message(conversation_id, payload.content)
-    answer = build_demo_message_response(payload.content)
+    answer = build_demo_message_response(conversation_id, payload.content)
     return ApiResponse(
         request_id=new_request_id(),
         data=answer,

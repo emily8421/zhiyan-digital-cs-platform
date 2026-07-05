@@ -1,0 +1,155 @@
+import re
+from dataclasses import dataclass
+
+from app.schemas.mock_business import MockBusinessRecordResponse
+from app.schemas.scenario_packs import KnowledgeItem, RuleItem
+from app.services.mock_business_service import MockRecordNotFoundError, get_mock_business_record
+from app.services.scenario_pack_service import ScenarioPackNotFoundError, get_scenario_pack
+
+
+@dataclass(frozen=True)
+class MessageDecision:
+    intent: str
+    answer_type: str
+    answer: str
+    source_ref: str
+    risk_level: str
+    handoff_reason: str | None = None
+    gap_question: str | None = None
+    mock_record: MockBusinessRecordResponse | None = None
+
+
+_HIGH_RISK_PATTERNS = [
+    ("high_risk_complaint", "投诉|曝光|抖音|维权", "投诉舆情问题必须人工确认。", "high"),
+    ("high_risk_compensation", "赔钱|补偿|赔偿|赔付", "赔付承诺问题必须人工确认。", "high"),
+    ("high_risk_contract", "合同|违约|法律责任|责任", "合同责任问题必须人工确认。", "high"),
+    ("high_risk_price", "最低价|报价|打折|价格", "价格承诺问题必须人工确认。", "medium"),
+    ("high_risk_delivery", "保证交期|一定到货|交期承诺", "交期承诺问题必须人工确认。", "medium"),
+    ("privacy_data", "手机|身份证|地址|账号|token|api[_-]?key|secret", "疑似隐私或凭据内容不得自动处理。", "high"),
+]
+
+_MOCK_REF_PATTERN = re.compile(r"\b(HC-ORDER-\d+|XS-PROJ-\d+|XS-TICKET-\d+)\b", re.IGNORECASE)
+
+_MOCK_REF_TYPES = {
+    "HC-ORDER": "order",
+    "XS-PROJ": "project",
+    "XS-TICKET": "ticket",
+}
+
+
+def decide_message_response(content: str, scenario_pack_code: str) -> MessageDecision:
+    stripped_content = content.strip()
+    high_risk_decision = _match_high_risk(stripped_content)
+    if high_risk_decision is not None:
+        return high_risk_decision
+
+    mock_decision = _match_mock_business(stripped_content)
+    if mock_decision is not None:
+        return mock_decision
+
+    knowledge_decision = _match_knowledge_or_rule(stripped_content, scenario_pack_code)
+    if knowledge_decision is not None:
+        return knowledge_decision
+
+    return MessageDecision(
+        intent="unknown_question",
+        answer_type="gap",
+        answer="这个问题当前知识库没有可追溯依据，我已记录为知识缺口，等待人工确认后再回复。",
+        source_ref="policy:knowledge_gap",
+        risk_level="medium",
+        gap_question=stripped_content,
+    )
+
+
+def _match_high_risk(content: str) -> MessageDecision | None:
+    for intent, pattern, reason, risk_level in _HIGH_RISK_PATTERNS:
+        if re.search(pattern, content, flags=re.IGNORECASE):
+            return MessageDecision(
+                intent=intent,
+                answer_type="handoff",
+                answer="这个问题需要人工确认，我已记录为待跟进事项；在人工确认前不会给出承诺性答复。",
+                source_ref="rule:high_risk_handoff",
+                risk_level=risk_level,
+                handoff_reason=reason,
+            )
+    return None
+
+
+def _match_mock_business(content: str) -> MessageDecision | None:
+    match = _MOCK_REF_PATTERN.search(content)
+    if match is None:
+        return None
+    external_ref = match.group(1).upper()
+    record_type = _record_type_for_ref(external_ref)
+    if record_type is None:
+        return None
+    try:
+        record = get_mock_business_record(record_type, external_ref)
+    except MockRecordNotFoundError:
+        return MessageDecision(
+            intent="missing_mock_business",
+            answer_type="gap",
+            answer="这个编号当前没有可用的 Mock 记录，我已记录为知识缺口，避免编造进度。",
+            source_ref=f"mock_business:{external_ref}:missing",
+            risk_level="medium",
+            gap_question=f"缺少 Mock 业务记录：{external_ref}",
+        )
+    return MessageDecision(
+        intent=f"{record.record_type}_progress",
+        answer_type="mock_business",
+        answer=f"这是 Mock 进度：{record.summary} 下一步：{record.next_step}",
+        source_ref=f"mock_business:{record.external_ref}",
+        risk_level="low",
+        mock_record=record,
+    )
+
+
+def _match_knowledge_or_rule(content: str, scenario_pack_code: str) -> MessageDecision | None:
+    try:
+        scenario_pack = get_scenario_pack(scenario_pack_code)
+    except ScenarioPackNotFoundError:
+        return None
+
+    rule = _find_answer_rule(content, scenario_pack.rule_items)
+    if rule is not None:
+        return MessageDecision(
+            intent=rule.rule_type,
+            answer_type="rule",
+            answer="当前问题命中场景包规则，涉及承诺或风险事项时以人工确认结果为准。",
+            source_ref=rule.source_ref,
+            risk_level="low",
+        )
+
+    knowledge_item = _find_knowledge_item(content, scenario_pack.knowledge_items)
+    if knowledge_item is not None:
+        return MessageDecision(
+            intent="knowledge_lookup",
+            answer_type="knowledge",
+            answer=knowledge_item.content,
+            source_ref=knowledge_item.source_ref,
+            risk_level="low",
+        )
+    return None
+
+
+def _find_answer_rule(content: str, rules: list[RuleItem]) -> RuleItem | None:
+    for rule in rules:
+        if rule.action == "answer" and re.search(rule.pattern, content, flags=re.IGNORECASE):
+            return rule
+    return None
+
+
+def _find_knowledge_item(content: str, knowledge_items: list[KnowledgeItem]) -> KnowledgeItem | None:
+    for knowledge_item in knowledge_items:
+        keywords = [knowledge_item.title, *re.split(r"[，。、\s]+", knowledge_item.title)]
+        meaningful_keywords = [keyword for keyword in keywords if len(keyword) >= 4]
+        if any(keyword in content for keyword in meaningful_keywords):
+            return knowledge_item
+    return None
+
+
+def _record_type_for_ref(external_ref: str) -> str | None:
+    for prefix, record_type in _MOCK_REF_TYPES.items():
+        if external_ref.startswith(prefix):
+            return record_type
+    return None
