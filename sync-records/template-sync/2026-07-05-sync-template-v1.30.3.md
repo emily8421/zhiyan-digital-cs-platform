@@ -68,7 +68,7 @@
 
 ## 已生成的回流提案
 
-- 已新增 `_proposals/TEMPLATE-UPGRADE-derived-sync-powershell-fallback.md`，建议回流 PowerShell fallback 参数传递、merge commit 场景识别和回归测试覆盖问题。
+- 已新增 `_proposals/TEMPLATE-UPGRADE-derived-sync-powershell-fallback.md`，并已提交到模板仓 issue #102：https://github.com/emily8421/ai-project-template/issues/102。
 
 ## 提案回流收口
 

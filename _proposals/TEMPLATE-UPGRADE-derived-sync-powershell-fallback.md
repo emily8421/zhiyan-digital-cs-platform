@@ -1,7 +1,9 @@
 # TEMPLATE-UPGRADE: Derived Sync PowerShell Fallback Robustness
 
+> 来源：zhiyan-digital-cs-platform (emily8421/zhiyan-digital-cs-platform) 派生项目回流
 > Type: template improvement proposal found during derived-project post-sync closure.
-> Status: pending template-repo review.
+> Status: submitted to template repo issue #102 (https://github.com/emily8421/ai-project-template/issues/102).
+> Issue: https://github.com/emily8421/ai-project-template/issues/102
 > Related: `scripts/check-derived-sync.ps1`, `scripts/check-derived-sync.sh`, `ai/commands/sync-methodology.md`, `template-docs/derived-sync-report-template.md`.
 
 ## 1. Background and Problem
@@ -28,9 +30,14 @@ This is not project-specific business logic. It may affect any Windows user who 
 
 - Suitable for a patch release.
 - No change to document lifecycle semantics or the sync file list.
-- Impact is limited to Windows / PowerShell fallback reliability and derived-project sync validation UX.
 
-## 4. Acceptance Suggestions
+## 4. Impact Scope
+
+- Impact is limited to Windows / PowerShell fallback reliability and derived-project sync validation UX.
+- It does not change project-specific requirements, document lifecycle semantics, or the sync file list.
+- It improves guidance for derived projects that merge template sync branches through PR merge commits.
+
+## 5. Acceptance Suggestions
 
 - On Windows PowerShell 5.1, run `scripts/check-derived-sync.ps1 <sync-commit>` and confirm the target commit is the explicit commit.
 - Run the checker with a merge commit as `HEAD` and confirm it does not mislead users into treating the merge commit as the template sync commit.
