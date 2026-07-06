@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 关键口径已确认 |
+| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 规划待人工确认 |
 | 最后更新 | 2026-07-03 |
 | 当前 Phase | Phase1：本机 Demo |
 
@@ -17,14 +17,14 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 ## 2. Sprint 总览
 
-| Sprint | 名称 | 目标 | 覆盖功能 | 预计修改范围 |
-|---|---|---|---|---|
-| Sprint-1 | 后端 API 骨架 | 建立 FastAPI 入口、请求响应模型和健康检查。 | F-001、F-009 | `backend/app/api/`、`backend/app/schemas/`、`tests/api/` |
-| Sprint-2 | 场景包与 Mock 服务 | 加载场景包、知识 / 规则和 Mock 业务数据。 | F-002、F-003、F-004、F-005 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` |
-| Sprint-3 | H5 客户对话闭环 | 实现客户 H5 对话页，与后端消息 API 联通。 | F-001、F-002、F-003、F-006 | `frontend/customer-h5/`、`frontend/shared/`、`tests/acceptance/` |
-| Sprint-4 | Web 控制台 | 实现会话、待跟进、缺口、通知、摘要基础列表。 | F-006、F-007、F-008 | `frontend/console/`、`frontend/shared/`、`tests/acceptance/` |
-| Sprint-5 | 不编造与风险兜底 | 补充高风险规则、缺口流转、审计日志和验收样例。 | F-003、F-006、F-008、F-009 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` |
-| Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` |
+| Sprint | 名称 | 目标 | 覆盖功能 | 预计修改范围 | 状态 |
+|---|---|---|---|---|---|
+| Sprint-1 | 后端 API 骨架 | 建立 FastAPI 入口、请求响应模型和健康检查。 | F-001、F-009 | `backend/app/api/`、`backend/app/schemas/`、`tests/api/` | 已完成 |
+| Sprint-2 | 场景包与 Mock 服务 | 加载场景包、知识 / 规则和 Mock 业务数据。 | F-002、F-003、F-004、F-005 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` | 已完成 |
+| Sprint-3 | H5 客户对话闭环 | 实现客户 H5 对话页，与后端消息 API 联通。 | F-001、F-002、F-003、F-006 | `frontend/customer-h5/`、`frontend/shared/`、`tests/acceptance/` | 已完成 |
+| Sprint-4 | Web 控制台 | 实现会话、待跟进、缺口、通知、摘要基础列表。 | F-006、F-007、F-008 | `frontend/console/`、`frontend/shared/`、`tests/acceptance/` | 已完成 |
+| Sprint-5 | 不编造与风险兜底 | 补充高风险规则、缺口流转、审计日志和验收样例。 | F-003、F-006、F-008、F-009 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` | 已完成 |
+| Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` | 已通过验收 |
 
 ## 3. Sprint 详情
 
@@ -235,10 +235,12 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 日期 | 进度 | 说明 |
 |---|---|---|
 | 2026-07-03 | 文档补齐中 | 生成 `docs/00-09`、`docs/design/*`、`docs/decisions/*` 草稿。 |
+| 2026-07-06 | Phase1 Sprint-1~Sprint-6 已完成 | 后端 API 测试 `19 passed`；H5 / Console build 通过；HTTP 场景验证 TC-001~TC-016 全部通过；三端本机运行端口 `8000` / `5173` / `5174` 可访问，详见 `docs/09-verification.md` §6。 |
+| 2026-07-06 | Phase2 规划待人工确认 | `docs/research/2026-07-06-phase-upgrade-evaluation.md` 结论为 Conditional Go，是否进入 Phase2 / MVP 试点规划仍待人工确认。 |
 
 ## 7. 已确认口径与待执行
 
-- 已确认可按 Sprint-1 开始后端 API 骨架；写代码前仍需列出实现方案、影响范围和预期变更文件。
-- 已确认允许安装 Sprint 必需依赖，但每次安装前需说明包名、用途和影响范围。
-- Phase1 存储已确认优先 JSON / SQLite / 内存 Mock，不强制 PostgreSQL。
-- Sprint-1 暂不强制拆分正式 `tasks/task-001-backend-skeleton.md`；若范围扩大再单独拆任务。
+- Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；后续不再从 Sprint-1 重新开始。
+- 是否接受 Phase2 / MVP 试点规划仍待人工确认；确认前不修改当前 Phase 指针，不解锁真实系统集成或 LLM。
+- Phase1 存储已确认优先 JSON / SQLite / 内存 Mock，不强制 PostgreSQL；Phase2 是否进行 PostgreSQL / pgvector 技术验证需另行确认。
+- 后续若进入 Phase2，应先更新 `ai/project-rules.md`、`docs/03-prd.md`、本文件和 `docs/09-verification.md` 的 Phase2 范围、Sprint 草案与验证计划。
