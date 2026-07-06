@@ -19,13 +19,36 @@
 
 ## 快速开始
 
-当前仓库已完成文档基线回梳，并已合并 Sprint-1 到 Sprint-5 的 Demo 纵切实现。建议流程：
+当前仓库已完成文档基线回梳，并已合并 Sprint-1 到 Sprint-6 的 Phase1 Demo 纵切实现。Phase1 使用 Mock / Demo 数据，Docker、PostgreSQL、真实飞书、真实业务系统和 LLM 默认关闭。
 
-1. 阅读并确认 `docs/03-prd.md` 的 Phase 路线图和 `docs/08-dev-plan.md` 的 Sprint 拆分。
-2. 按已确认口径执行：React + Vite + TypeScript；存储优先 JSON / SQLite / 内存 Mock；飞书仅 Mock payload；LLM 默认关闭；Docker / PostgreSQL 不强制纳入 Phase1。
-3. 下一步从 `docs/08-dev-plan.md` 的 Sprint-6 开始做本机演示与文档回填；写代码或安装依赖前仍需说明范围并确认。
+### 启动后端
 
-本机环境记录见 `docs/env/local-env.md`。当前记录显示 Docker 已安装但不可用，Phase1 默认允许使用 Mock / 本地临时数据降级。
+```powershell
+$env:PYTHONPATH='backend'
+python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
+```
+
+健康检查：`http://127.0.0.1:8000/health`。
+
+### 启动 H5 客户页
+
+```powershell
+cd frontend/customer-h5
+npm.cmd run dev -- --port 5173
+```
+
+访问：`http://127.0.0.1:5173`。
+
+### 启动 Web 控制台
+
+```powershell
+cd frontend/console
+npm.cmd run dev -- --port 5174
+```
+
+访问：`http://127.0.0.1:5174`。
+
+本机环境记录见 `docs/env/local-env.md`。当前记录显示 Docker 已安装但不可用，Phase1 默认允许使用 Mock / 本地临时数据降级。PowerShell 下如遇 `npm.ps1` 执行策略拦截，使用 `npm.cmd`。
 
 ## 文档入口
 
@@ -52,20 +75,20 @@
 
 ## 开发计划
 
-当前 Phase1 开发进度：Sprint-1 到 Sprint-5 已完成并合并，下一步进入 Sprint-6。
+当前 Phase1 开发进度：Sprint-1 到 Sprint-6 已完成并合并，Phase1 本机 Demo 已跑通。
 
 1. 后端 API 骨架：已完成。
 2. 场景包与 Mock 服务：已完成。
 3. H5 客户对话闭环：已完成。
 4. Web 控制台：已完成。
 5. 不编造与风险兜底：已完成。
-6. 本机演示与文档回填：下一步。
+6. 本机演示与文档回填：已完成。
 
 文档链路与 Phase1 关键口径已确认；进入每个 Sprint 前仍需确认本次修改范围。
 
 ## 验证方式
 
-验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-016。Phase1 以接口验证、场景样例和手工端到端演示为主，后续再按 Sprint 增加自动化测试。
+验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-016。Sprint-6 已完成后端 API 测试、H5 / Console 构建、三端本机启动和 HTTP 场景验证；后续真实集成或产品化能力再补新的验证层级。
 
 ## 模板关系
 
