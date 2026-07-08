@@ -2,7 +2,8 @@
 
 > 来源：zhiyan-digital-cs-platform（emily8421/zhiyan-digital-cs-platform）派生项目回流
 > 类型：模板优化提案草稿
-> 状态：v1.43.0 同步后复盘起草，待提交模板仓 issue
+> 状态：已提交到模板仓 issue #148（https://github.com/emily8421/ai-project-template/issues/148）
+> Issue：https://github.com/emily8421/ai-project-template/issues/148
 > 来源记录：`sync-records/template-sync/2026-07-08-sync-template-v1.43.0.md`
 > 关联：`template-docs/scenario-guides.md` A13、`ai/commands/sync-methodology.md`、`ai/prompts/maintainers/12-sync-template.md`、`template-docs/derived-sync-report-template.md`、`scripts/sync-template.ps1`、`scripts/check-derived-sync.ps1`
 > 已知相关 issue：#102（PowerShell fallback / derived sync check，已关闭但本机仍复现相邻问题）
