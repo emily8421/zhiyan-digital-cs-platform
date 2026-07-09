@@ -5,8 +5,8 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/00-scenario.md`、`docs/vision/product-vision.md`、`docs/inputs/*` |
-| 当前状态 | Phase1 关键口径已确认 |
-| 最后更新 | 2026-07-03 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
+| 最后更新 | 2026-07-09 |
 | 阶段标签说明 | `[P1]` Phase1 Demo；`[P2]` MVP；`[P3]` 真实集成；`[P4]` 产品化；`[愿景]` 待技术 / 商业验证 |
 
 ## 1. 用户需求全集

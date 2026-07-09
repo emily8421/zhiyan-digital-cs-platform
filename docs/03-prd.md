@@ -6,8 +6,9 @@
 |---|---|
 | 产品名称 | 知衍数字客服统一平台 |
 | 当前状态 | Phase1 本机 Demo 已通过验收；Phase2 Conditional Go 待人工确认 |
-| 最后更新 | 2026-07-03 |
+| 最后更新 | 2026-07-09 |
 | 当前 Phase | Phase1：本机 Demo |
+| 待确认事项 | 见 `docs/research/2026-07-09-docs-open-items.md`（DOC-C-001~C-007） |
 | 阶段标签权威 | 本文 §3 是阶段归属的当前权威草稿 |
 
 ## 1. 产品目标
@@ -18,19 +19,19 @@ Phase1 的目标是用可本机运行的 Demo 证明“统一数字客服平台�
 
 ## 2. 功能范围
 
-| 功能 ID | 功能 | 覆盖 REQ | 优先级 | 当前阶段处理 |
-|---|---|---|---|---|
-| F-001 | H5 客户对话页 | REQ-001、REQ-002、REQ-013 | P0 | Phase1 实现 |
-| F-002 | 意图识别与路由 | REQ-003、REQ-004 | P0 | Phase1 实现规则版 |
-| F-003 | 知识 / 规则问答 | REQ-004、REQ-005 | P0 | Phase1 实现可追溯回答 |
-| F-004 | 场景包配置 | REQ-007、REQ-014 | P0 | Phase1 支持产品型 / 项目型 |
-| F-005 | Mock 进度查询 | REQ-008、REQ-014 | P1 | Phase1 Mock 演示 |
-| F-006 | 转人工与 Mock 通知 | REQ-006、REQ-009 | P0 | Phase1 实现本地记录 |
-| F-007 | Web 运营控制台 | REQ-010、REQ-011、REQ-012 | P0 | Phase1 实现核心列表 |
-| F-008 | 知识缺口与日报摘要 | REQ-011、REQ-012 | P1 | Phase1 实现基础状态 |
-| F-009 | 安全 / 隐私 / Mock 标识 | REQ-005、REQ-016 | P0 | Phase1 必须实现 |
-| F-010 | 真实飞书 / CRM / ERP / OA 集成 | REQ-008、REQ-009 | P2 | Phase2+ / Phase3 |
-| F-011 | 多租户、权限、计费、生产监控 | REQ-016 | P3 | Phase4 产品化 |
+| 功能 ID | 功能 | 覆盖 REQ | 优先级 | 当前阶段处理 | 交付物形态 | 状态 | 证据 / 验收引用 |
+|---|---|---|---|---|---|---|---|
+| F-001 | H5 客户对话页 | REQ-001、REQ-002、REQ-013 | P0 | Phase1 实现 | Demo | 已实现 | AC-001；TC-001/002/013 |
+| F-002 | 意图识别与路由 | REQ-003、REQ-004 | P0 | Phase1 实现规则版 | Demo | 已实现 | AC-001；TC-003/004 |
+| F-003 | 知识 / 规则问答 | REQ-004、REQ-005 | P0 | Phase1 实现可追溯回答 | Demo | 已实现 | AC-001/004；TC-004/005 |
+| F-004 | 场景包配置 | REQ-007、REQ-014 | P0 | Phase1 支持产品型 / 项目型 | Demo | 已实现 | AC-002；TC-007/014 |
+| F-005 | Mock 进度查询 | REQ-008、REQ-014 | P1 | Phase1 Mock 演示 | Demo | 已实现 | AC-003；TC-008/014 |
+| F-006 | 转人工与 Mock 通知 | REQ-006、REQ-009 | P0 | Phase1 实现本地记录 | Demo | 已实现 | AC-004/005；TC-006/009 |
+| F-007 | Web 运营控制台 | REQ-010、REQ-011、REQ-012 | P0 | Phase1 实现核心列表 | Demo | 已实现 | AC-005；TC-010/011/012 |
+| F-008 | 知识缺口与日报摘要 | REQ-011、REQ-012 | P1 | Phase1 实现基础状态 | Demo | 已实现 | AC-004/005；TC-011/012 |
+| F-009 | 安全 / 隐私 / Mock 标识 | REQ-005、REQ-016 | P0 | Phase1 必须实现 | Demo | 已实现 | AC-004/006；TC-005/016 |
+| F-010 | 真实飞书 / CRM / ERP / OA 集成 | REQ-008、REQ-009 | P2 | Phase2+ / Phase3 | MVP 试点 / 集成 | 骨架，待细化 | 待 Phase2/3 细化（Mock 降级见 F-005/F-006） |
+| F-011 | 多租户、权限、计费、生产监控 | REQ-016 | P3 | Phase4 产品化 | 产品 | 骨架，待细化 | 待 Phase4 细化 |
 
 ## 3. 阶段路线图（已人工确认）
 
@@ -99,4 +100,4 @@ Phase1 的目标是用可本机运行的 Demo 证明“统一数字客服平台�
 2. Phase1 已确认可不强制运行 PostgreSQL + pgvector，存储优先 JSON / SQLite / 内存 Mock 降级。
 3. 前端已确认采用 React + Vite + TypeScript。
 4. 飞书通知 Phase1 已确认只做 Mock / payload，不真实发送。
-5. Phase1 Sprint-6 本机演示与文档回填已通过验收；是否进入 Phase2 / MVP 试点规划仍待人工确认。
+5. Phase1 Sprint-6 本机演示与文档回填已通过验收；是否进入 Phase2 / MVP 试点规划仍待人工确认（见 `docs/research/2026-07-09-docs-open-items.md`，DOC-C-001~C-005）。
