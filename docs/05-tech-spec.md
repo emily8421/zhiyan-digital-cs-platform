@@ -5,9 +5,9 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09），P0 readiness 补强见 §12~§14 |
 | 最后更新 | 2026-07-09 |
-| 当前阶段 | Phase1 本机 Demo |
+| 当前阶段 | Phase2：MVP 试点 |
 
 ## 1. 技术栈
 
@@ -131,3 +131,34 @@ Phase1 必须能本机运行：
 2. 允许安装 Sprint 必需依赖，但每次安装前需说明包名、用途和影响范围；Docker 镜像 Phase1 默认不新增。
 3. 真实飞书机器人通知不纳入 Phase1，仅记录 Mock payload。
 4. Phase1 默认不使用公司服务器；若后续需要，需另行确认 CPU / 内存 / GPU / 端口 / 成本 / 安全边界。
+
+## 12. Phase2 技术约束（P0 补强，2026-07-09）
+
+> 对应 `ai/doc-standards/05-tech-spec.md` §5。本章为 Phase2 Conditional Go 落地补强；章节号待 P1 合规回梳时重排为 §5。
+
+| Phase | 允许 | 禁止 | Mock / 降级 | 技术状态说明 | 权威源 |
+|---|---|---|---|---|---|
+| Phase2 | 强化知识库 / 缺口流转 / 权限 / 运营配置；飞书沙箱联调；PostgreSQL/pgvector 技术验证；单个试点客户部署 | 真实 CRM/ERP/OA/工单（Phase3）；多租户 / 计费（Phase4）；LLM 默认启用；真实客户隐私 / 生产会话 | 飞书沙箱不接真实组织数据；DB 验证不作功能前置；Mock / 降级路径保留 | Conditional Go（2026-07-09） | `ai/project-rules.md` §1、`docs/03-prd.md` §3 |
+
+## 13. 技术风险与验证计划（P0 补强，2026-07-09）
+
+> 对应 `ai/doc-standards/05-tech-spec.md` §8。Risk-ID 待 P1 合规回梳时与 TDR-ID 体系统一编号。
+
+| Risk-ID | 风险 | 触发条件 | 影响 | 当前状态 | 验证方式 | 对应用例 / 任务 | 解锁条件 |
+|---|---|---|---|---|---|---|---|
+| RISK-P2-001 | Docker 不可用阻塞 PostgreSQL/pgvector | Sprint-8 需 DB 技术验证 | 影响 DB 验证节奏 | 待验证 | Docker 修复 + 技术环境评估 | Sprint-8 / RG-002 | Docker 可用或确认降级可接受 |
+| RISK-P2-002 | 飞书真实通知权限 / 回调边界未定 | Sprint-8 沙箱联调 | 影响员工侧触达 | 待验证 | 沙箱联调 + 权限确认 | Sprint-8 / RG-001 | 权限 / 回调边界确认 |
+| RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 待评估 | LLM 专项评估 | Sprint-9 / RG-003 | 评估结论 Go |
+| RISK-P2-004 | 沙箱内 Vite `spawn EPERM` | 前端 build / dev | 沙箱内构建失败 | 已接受 | 非沙箱本机运行 | TC-015 | 非沙箱环境 |
+
+## 14. Readiness Gate（P0 补强，2026-07-09）
+
+> 对应 `ai/doc-standards/05-tech-spec.md` §9。Phase2 涉及真实运行依赖（飞书 / DB / LLM），进入相关 Sprint 前必须给出 gate 结论。
+
+| Gate | 适用对象 | 进入标准 | 必需证据 | 状态 | 阻塞项 / 下一步 |
+|---|---|---|---|---|---|
+| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限 / 回调边界确认 | `docs/research/*tech-env-evaluation*.md` | 待评估 | Sprint-8 前补技术环境评估 |
+| RG-002 | PostgreSQL/pgvector | 技术验证 Go / Conditional Go | `docs/research/*tech-env-evaluation*.md` | 待评估 | Sprint-8 前补技术环境评估 |
+| RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | LLM 专项评估报告 | 待评估 | Sprint-9 前补 LLM 专项评估 |
+
+Conditional Go 保留：上述 gate 在对应 Sprint 前必须由「待评估」推进到 Go / Conditional Go；No-Go 阻止相关 Sprint。详见 `docs/09-verification.md` §10.2。

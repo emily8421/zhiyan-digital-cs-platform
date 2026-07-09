@@ -6,12 +6,12 @@
 >
 > 当前内容为 `post-sync-cleanup` 后的项目草稿，依据 `docs/meetings/2026-07-01-input-review.md`、
 > `docs/inputs/platform-vision-brief.md`、`docs/inputs/agent-delivery-modes.md` 与
-> `docs/env/local-env.md` 起草；Phase1 关键口径已于 2026-07-04 人工确认。
+> `docs/env/local-env.md` 起草；Phase1 关键口径已于 2026-07-04 人工确认；Phase2 Conditional Go 已于 2026-07-09 人工确认（见 `docs/research/2026-07-06-phase-upgrade-evaluation.md`、`docs/research/2026-07-09-docs-open-items.md` DOC-C-001~C-005）。
 
 ## 初始化必填检查（生成 docs/03-09 前）
 
 - `项目名称` 与 `代号/缩写`：已确认，缩写为 `zycs`，数据库表前缀为 `zycs_`。
-- `§1 Phase边界`：已确认 Phase1 本机 Demo 边界。
+- `§1 Phase边界`：已确认 Phase2 MVP 试点边界（2026-07-09；Phase1 本机 Demo 已通过验收）。
 - `§2 技术栈约束`：已确认 React + Vite + TypeScript、Python + FastAPI；Docker / PostgreSQL 不强制纳入 Phase1。
 - `§2.5 运行环境与资源约束`：已生成 `docs/env/local-env.md`，Phase1 默认本机 Demo，不使用公司服务器。
 - `§3 项目形态与文档裁剪`：已起草保留 `docs/06`、`docs/07` 与主要代码目录。
@@ -25,28 +25,36 @@
 
 ## 1. Phase边界
 
-当前阶段：Phase1（Demo；覆盖 P0/P1 最小闭环）
+当前阶段：Phase2（MVP 试点；在 Phase1 本机 Demo 闭环基础上强化运营可用性，面向单个试点客户）
+
+> Phase1 已通过本机 Demo 验收（2026-07-06，见 `docs/09-verification.md` §6）；Phase2 Conditional Go 已人工确认（2026-07-09，DOC-C-001~C-005 全按 AI 推荐）。
 
 允许：
-- 客户侧入口采用 H5 对话页，验证零安装、扫码即用的客服交互闭环。
-- 员工侧入口采用飞书机器人通知 / 转交 + Web 控制台运营、日报、知识确认。
-- 第一阶段主打两个最小场景包：产品型客户 + 项目型客户。
-- 售中订单 / 项目进度查询使用 Mock 数据演示，架构预留集成层。
-- 复用 `digital-cs-demo` 的经验与部分设计，不直接改造旧项目。
-- 生成并确认 `docs/00-09`、必要的 `docs/design/*` 与 `docs/decisions/*` 后，再进入 Sprint 开发。
+- 在保留 H5 + Web 控制台 + FastAPI 主链路的基础上，强化知识库、知识缺口审核、运营配置和基础权限。
+- 将飞书通知从 Mock payload 推进到试点评估 / 沙箱联调，但不得默认接入真实组织数据（DOC-C-003）。
+- 以单个试点客户为目标，规划部署、演示数据、运营流程和验收路径（DOC-C-002）。
+- 继续保留 Mock 订单 / 项目数据作为默认降级路径。
+- 为 PostgreSQL / pgvector、飞书回调、部署脚本等补充技术验证任务（DOC-C-004：先技术验证，不作全部功能前置）。
 
 禁止：
-- Phase1 不接真实客户业务系统、CRM、ERP、工单系统或企微会话存档。
-- Phase1 不依赖企微客户群机器人对外自动回复；该能力已被输入评审标记为不可作为 Demo 通道实现。
+- 不直接接入真实 CRM / ERP / OA / 工单系统，除非已有接口授权、数据边界和安全评审（Phase3 范围）。
+- 不处理真实客户隐私、合同、订单、报价、联系方式或生产会话。
+- 不启用通用 LLM 自动答复，除非先完成证据约束、不编造、成本与兜底评估（DOC-C-005：Phase2 仅评估，不默认启用）。
+- 不把试点能力包装为多租户、计费、监控、审计等产品化平台能力（Phase4 范围）。
+- 不绕过人工确认引入新依赖、Docker 镜像、外部 SaaS API 或付费服务。
 - AI 不做售后高风险裁决；高风险场景必须转人工或规则化引导。
 - 无外部数据或数据不足时不得编造订单、项目进度、库存、报价、合同等业务事实。
-- Demo 阶段不启用通用 LLM 自动生成客服答案；优先使用规则、知识库、Mock 与转人工兜底。
-- 不处理真实公司数据、隐私数据或生产客户会话，除非另有人工确认与合规边界。
-- 不扩展到两个最小场景包之外的新行业 / 新客户类型。
 
 下一阶段预告：
-- MVP 阶段可评估真实系统集成、会话监控链路、更多场景包、权限体系、运营报表增强与有限 LLM 能力。
-- 企微会话存档 / 监控链路必须以企业认证、客户同意、合规评审为前置条件。
+- Phase3 可在试点客户授权后接入 CRM / ERP / OA / 飞书项目 / 工单等真实业务系统。
+- Phase4 再考虑多租户、计费、监控、审计、插件化场景包和产品化运营。
+
+Conditional Go 保留条件（Phase2 全程有效）：
+
+1. Phase2 先做 MVP 试点，不直接进入 Phase3 真实集成。
+2. 真实飞书 / 业务系统 / LLM / PostgreSQL·pgvector 仍需单独技术验证、授权边界与安全评审。
+3. 任何新依赖、Docker 镜像、外部 SaaS API 或付费服务必须先人工确认。
+4. Phase2 继续保留 Mock / 降级路径。
 
 ## 2. 技术栈约束
 
