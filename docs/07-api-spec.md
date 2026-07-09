@@ -6,8 +6,8 @@
 |---|---|
 | 保留 / 省略决策 | 保留；项目包含 H5 / Web / 通知接口 |
 | 上游输入 | `docs/02-srs.md`、`docs/04-architecture.md`、`docs/06-db-design.md` |
-| 当前状态 | Phase1 关键口径已确认 |
-| 最后更新 | 2026-07-03 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
+| 最后更新 | 2026-07-09 |
 | API 前缀 | `/api/v1` |
 
 ## 1. 统一约定

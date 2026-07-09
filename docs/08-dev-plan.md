@@ -6,7 +6,7 @@
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
 | 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 规划待人工确认 |
-| 最后更新 | 2026-07-03 |
+| 最后更新 | 2026-07-09 |
 | 当前 Phase | Phase1：本机 Demo |
 
 ## 1. Phase1 目标
