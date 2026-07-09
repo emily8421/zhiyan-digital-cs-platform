@@ -4,13 +4,20 @@
 
 ## 0. 文档元信息
 
-| 项目 | 内容 |
+| 项 | 内容 |
 |---|---|
-| 当前状态 | Phase1 关键口径已确认 |
-| 覆盖阶段 | Phase1 本机 Demo |
+| 设计对象 | H5 客户对话页 + Web 控制台跨入口前端交互索引 |
+| 文档路径 | docs/design/frontend-interaction.md |
+| 当前状态 | P1-已实现（Phase1 本机 Demo 已验收）；Phase2 增量（权限 / 缺口流转 / 运营配置交互）待补 |
+| 覆盖阶段 | [P1] Demo（Phase2 MVP 增量待补） |
+| 交付物形态 | Demo |
 | 覆盖入口 | H5 客户对话页、员工 / 运营 Web 控制台 |
-| 上游依据 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/05-tech-spec.md`、`docs/07-api-spec.md`、`docs/09-verification.md` |
-| 关联详细设计 | `docs/design/h5-dialog.md`、`docs/design/web-console.md` |
+| 覆盖 REQ / NFR | REQ-001、REQ-002、REQ-006、REQ-007、REQ-008、REQ-010、REQ-011、REQ-013、REQ-014、REQ-015、REQ-016 |
+| 上游依据 | docs/02-srs.md、03-prd.md、04-architecture.md、05-tech-spec.md、07-api-spec.md、09-verification.md |
+| 关联详细设计 | docs/design/h5-dialog.md、docs/design/web-console.md |
+| UI 原型策略 | 代码原型（engineering-driven），见 ai/project-rules.md §2.7；探索原型见 docs/research/2026-07-09-ui-prototype-exploration.md |
+| 最后更新 | 2026-07-09 |
+| 下游影响 | docs/08-dev-plan.md（Sprint-3/4/7）、docs/09-verification.md（TC-001~016）、frontend/customer-h5/、frontend/console/、frontend/shared/、tests/ |
 
 ## 1. 目标与范围
 
@@ -295,7 +302,33 @@
 | 移动端验收尺寸 | H5 以 375px 宽度作为手机可读性基准；Console 以桌面浏览器为主，窄屏只需可降级阅读。 | H5 是客户侧轻入口，必须手机可读；Console 是员工 / 运营演示入口，不要求完整移动端运营体验。 |
 | 状态枚举 | 转人工使用 `open`、`processing`、`closed`；知识缺口使用 `new`、`reviewing`、`accepted`、`rejected`、`closed`。前端不得自行扩展。 | `docs/07-api-spec.md` 已给出 API-004 / API-005 的查询与更新状态示例，最终以 API 契约为准。 |
 
-## 12. 延后确认项
+## 12. 待人工确认项
 
-1. H5 和 Console 的具体样式变量、颜色、字号和间距在进入 Sprint-3 前补充轻量规范。
-2. 若后续需要对外正式演示，再另补 UI 视觉稿或演示包装规范。
+| ID | 待确认项 | AI 建议 | 建议依据 | 备选方案 | 取舍影响 / 阻塞关系 |
+|---|---|---|---|---|---|
+| FI-C-001 | H5 / Console 轻量样式规范（颜色 / 字号 / 间距） | 进入 Sprint-3 前补，或继续用样式约定 | §11 视觉规范决策 | 高保真视觉稿 | 不阻塞 Phase1；MVP / 对外演示前补 |
+| FI-C-002 | 对外正式演示的 UI 视觉稿 / 演示包装 | MVP 或对外演示前另补 | §11 视觉规范决策 | 不补 | 不阻塞 |
+| FI-C-003 | Phase2 权限可见性 / 角色-权限表 | Sprint-7 前补角色-权限可见性表（前后端双落地） | project-rules §1 Phase2、frontend-interaction §4.3 | 仅前端可见性 | 不阻塞 Phase1；阻塞 Phase2 控制台试点 |
+| FI-C-004 | 状态枚举补 success / degraded / no-permission | 在 §5 状态模型补全 | frontend-interaction §4.6 | 维持现状 | 不阻塞；完整性提升 |
+
+## 13. 上游依据与追溯
+
+最低追溯链：`REQ/NFR → Phase → COMP/MOD/Flow → Table/Field → API → Design Point → Sprint/Task → TC`。本文是跨入口前端交互索引，Page / Flow / API / TC 追溯以 §2（页面清单）、§3（用户路径）、§8（接口依赖）、§10（验收路径）为准；下表补 COMP/MOD/Flow 层闭合。
+
+| 来源 | 章节 / ID | 本设计承接内容 |
+|---|---|---|
+| docs/04-architecture.md | COMP-001（H5）、COMP-002（Console）；MOD-001/002/003（frontend/customer-h5、frontend/console、frontend/shared）；Flow-001~004 | 页面信息架构、用户路径、状态、接口依赖 |
+| docs/07-api-spec.md | API-001~012（§8 接口依赖逐页映射） | 前端接口契约（以 07 为准） |
+| docs/08-dev-plan.md | Sprint-3（H5）、Sprint-4（Console）、Sprint-7（试点 / 权限） | 实现范围 |
+| docs/09-verification.md | TC-001~016（§10 验收路径逐条映射） | 验收路径 |
+| docs/06-db-design.md | 经 API 间接（前端不直连 DB） | 裁剪原因：前端无 DB 访问 |
+
+错误码（07 §5，按各页 API 归属推断）：`CONVERSATION_NOT_FOUND`、`MOCK_RECORD_NOT_FOUND`、`SCENARIO_PACK_NOT_FOUND`、`HIGH_RISK_REQUIRES_HANDOFF`、`VALIDATION_ERROR`。
+
+## 14. 实现偏差 / 设计回写
+
+| 偏差 ID | 代码 / 配置事实 | 原设计 | 偏差类型 | 处理结论 | 验证 / 证据 |
+|---|---|---|---|---|---|
+| FE-DEV-001 | H5 / Console 已按本文实现并通过 TC-001~016 | §0 状态原为「Phase1 关键口径已确认」 | 设计滞后 | 回写状态为 P1-已实现 | docs/09-verification.md §6 验收记录（2026-07-06） |
+| FE-DEV-002 | Console 导航补「概览默认着陆 + 待跟进 / 缺口 / 通知 Tab 角标」 | §11 已纳入 PX-R-002 | 实现对齐 | 已对齐，无偏差 | PR #27 |
+| FE-DEV-003 | Phase2 增量（权限 / 缺口流转 / 运营配置）尚未在前端实现 | 本文覆盖 Phase1 | 后续阶段 | 登记为 Phase2 Sprint-7 前置 | project-rules §1 Phase2 |
