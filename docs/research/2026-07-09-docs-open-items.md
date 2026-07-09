@@ -9,7 +9,7 @@
 | 定位 | 集中项目的待人工确认事项（open items）；A17 `docs-open-items` 产物 |
 | 提出基准日 | 2026-07-09 |
 | 方法依据 | `ai/document-lifecycle-rules.md` §6.1 / §6.2、`ai/commands/docs-open-items`（A17） |
-| 关联来源 | `docs/research/2026-07-06-phase-upgrade-evaluation.md`（C-001~C-005）、`docs/research/2026-07-09-docs-system-audit-after-v1.43.0.md`（O-001~O-004）、模板仓 issue #148 |
+| 关联来源 | `docs/research/2026-07-06-phase-upgrade-evaluation.md`（C-001~C-005）、`docs/research/2026-07-09-docs-system-audit-after-v1.43.0.md`（O-001~O-004）、模板仓 issue #148、`docs/research/2026-07-09-inputs-re-eval-by-four-layers.md`（IN-C-001~005） |
 | 落盘约定 | 默认日期戳路径（本文件）；若后续改为长期固定入口 `docs/open-items.md`，须在 `docs/README.md` 说明其定位 |
 | 性质 | AI 辅助汇总；所有「AI 建议」均为建议，不等于用户已确认事实 |
 
@@ -24,6 +24,8 @@
 | DOC-C-005 | LLM 是否进入 Phase2 | Phase2 LLM 评估前 | 条件阻塞 | 待确认 |
 | DOC-C-006 | 模板仓 issue #148（A13 同步闭环提案）处理 | 模板维护者侧 | 不阻塞项目 | 待模板仓处理（open） |
 | DOC-C-007 | `docs/design/*` 多数未套用 v1.43.0 设计标准元信息 | 触碰对应设计文档时 | 不阻塞（P2） | 可延后 |
+| IN-C-003 | 商业模式 / 定价详细策略归属（愿景定性已留，详细是否另立文档） | 实际报价验证后 | 不阻塞 | 暂缓（已决策：愿景定性 + 报价验证后 ADR） |
+| IN-C-005 | Channel Adapter Layer 设计（全渠道接入层） | Phase2 全渠道入口 Sprint 前 | 条件阻塞 Phase2 全渠道入口 | 暂缓（已决策：Phase2 readiness gate，届时补 `docs/design/channel-adapters.md`） |
 
 ## 2. 逐项详情
 
@@ -148,6 +150,40 @@
 | 当前状态 | 可延后 |
 | 关闭依据 | 各设计文档补齐后逐项标记 |
 
+### IN-C-003：商业模式 / 定价详细策略归属
+
+| 字段 | 内容 |
+|---|---|
+| 提出时间 | 2026-07-09 |
+| 来源文档 / 位置 | `docs/research/2026-07-09-inputs-re-eval-by-four-layers.md` §6（IN-C-003）、`docs/inputs/分析报告_数字客服商业模式与定价参考_20260708.md`（SRC-IN-004） |
+| 待确认项 | 商业模式 / 定价详细策略是否另立独立商业文档 |
+| AI 建议 | 愿景定性（已落地 `product-vision` §6 / PV-DIFF-007）+ 报价验证后用 `docs/decisions/ADR-000X-pricing-strategy.md` 落地决策；当前不新建独立商业文档 |
+| 建议依据 | 商业模式是商业策略而非产品功能；古晶 / 乐式付费习惯为推测未验证，提前写详细文档违反状态词典；`docs/README.md` §5 无商业专属目录，ADR 是天然归属 |
+| 备选方案 | 现在写独立 `docs/business/`（偏离模板分区）；详细写进 vision（vision 应稳定，定价会变） |
+| 取舍影响 | 详细策略延后到报价验证，避免把推测写成已确认策略 |
+| 需确认节点 | 实际报价验证后 |
+| 阻塞关系 | 不阻塞 |
+| 回填位置 | `docs/decisions/ADR-000X-pricing-strategy.md`（届时新增） |
+| 当前状态 | 暂缓（已决策处理方式） |
+| 关闭依据 | 报价验证后落地 ADR 并回填 vision 引用 |
+
+### IN-C-005：Channel Adapter Layer 设计
+
+| 字段 | 内容 |
+|---|---|
+| 提出时间 | 2026-07-09 |
+| 来源文档 / 位置 | `docs/research/2026-07-09-inputs-re-eval-by-four-layers.md` §6（IN-C-005）；现状见 `docs/04-architecture.md`（mermaid `future_systems` / `channels` 节点）、`docs/06-db-design.md:79`（`channel` 占位字段）、`docs/07-api-spec.md`（`channel` 透传字段） |
+| 待确认项 | 是否新增 `docs/design/channel-adapters.md`（webhook 验签 / 去重 / 重试 / 限流 / 统一入出站 / 用户 ID 映射 / 授权边界） |
+| AI 建议 | 当前不写；登记为 Phase2 readiness gate，Phase2 实现公众号 / 小程序 / API 嵌入入口前再补 |
+| 建议依据 | Phase1 仅用 H5，`channel` 只取 `h5`；`ai/document-lifecycle-rules.md` §5.4 readiness gate 语义——真实外部服务进入 Sprint 前才需 Gate；提前写违反 §8.3「不提前写死远期细节」 |
+| 备选方案 | 现在写 design（验签 / 限流细节在无真实接入前易过设计、臆测） |
+| 取舍影响 | 不影响 Phase1；Phase2 全渠道入口实现时需先补此设计 |
+| 需确认节点 | Phase2 全渠道入口 Sprint 前 |
+| 阻塞关系 | 条件阻塞 Phase2 全渠道入口实现 |
+| 回填位置 | 届时新增 `docs/design/channel-adapters.md` + 同步 `docs/04-architecture.md`、`docs/07-api-spec.md` |
+| 当前状态 | 暂缓（已决策处理方式） |
+| 关闭依据 | Phase2 channel-adapters design 补齐后标记 |
+
 ## 3. 已关闭 / 已解决项（不再 open，仅留痕避免重复决策）
 
 | 原编号 | 内容 | 关闭依据 |
@@ -158,6 +194,9 @@
 | O-001 | Phase2 Conditional Go 未集中表达 | 已映射并集中到 DOC-C-001 系列 |
 | O-002 | 无集中 open items 总览 | 本文档已补齐 |
 | O-004 | 真实集成边界未解锁 | 以 `ai/project-rules.md` §1 与 `docs/03-prd.md` §6 为准，非待确认项 |
+| IN-C-001 | 输入材料四层次评估是否落盘 research 报告 | 已确认并落盘：`docs/research/2026-07-09-inputs-re-eval-by-four-layers.md`（2026-07-09） |
+| IN-C-002 | 是否据此修订 `product-vision` | 已执行：`docs/vision/product-vision.md` 按四层次口径补强（2026-07-09，新增 PV-DIFF / PV-CAP-013~017 / PV-NOT 系列） |
+| IN-C-004 | 企微会话存档措辞从"Phase 不接"改为"长期视合规条件评估" | 已落地：`product-vision` §5 长期定位 + §4.3 PV-NOT-001 |
 
 ## 4. 门禁与回填说明
 
