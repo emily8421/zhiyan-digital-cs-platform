@@ -72,6 +72,15 @@
 - 是否允许使用公司服务器：Phase1 默认不使用公司服务器。
 - 若需服务器，资源申请口径：仅当本机无法支撑 Demo 时另行确认触发条件、CPU / 内存 / GPU / 端口 / 成本 / 安全边界。
 
+## 2.7 UI 原型策略
+
+> 依据 `ai/global-rules.md` §5.3 / `ai/document-lifecycle-rules.md` §5.3。本项目为 UI 型（H5 客户对话页 + Web 控制台），记录 UI 原型策略以闭合规范要求。
+
+- **主策略：代码原型（engineering-driven）**。H5 与 Console 直接用真实技术栈（React + Vite + TypeScript）实现可运行原型，配合 Mock 数据验证交互；不引入 Figma / Penpot 等独立设计稿工具（当前无专职设计协作角色）。
+- **补充：需求探索原型（按需）**。在需求阶段或新阶段 UX 不确定时，用低保真原型（ASCII 草图 + 自包含 HTML 静态页）与用户确认需求、页面结构、状态与文案，状态标为「探索 / 待确认」；产物落 `docs/research/YYYY-MM-DD-ui-prototype-exploration.md` + `docs/research/prototypes/*.html`，确认后回填 `00-03`，不替代需求 / 设计 / 验收。
+- **前端交互权威**：页面信息架构、状态、文案、接口依赖、验收路径以 `docs/design/frontend-interaction.md` 为准；原型不替代它。
+- **边界**：原型不锁定架构 / 技术栈 / 接口 / DB；不作为验收通过证据；不新增未授权需求。
+
 ## 3. 项目形态与文档裁剪
 
 - 是否有持久化存储：有，计划使用 PostgreSQL + pgvector；Demo 可在必要时降级为 Mock / 本地临时数据。
