@@ -222,7 +222,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 #### 输入文档
 
-- `docs/03-prd.md` Phase2、`docs/04-architecture.md`、`docs/05-tech-spec.md` §5 Phase 技术约束
+- `docs/03-prd.md` Phase2、`docs/04-architecture.md`、`docs/05-tech-spec.md` §12 Phase 技术约束（对应 doc-standards §5）
 - `docs/design/web-console.md`、`docs/design/frontend-interaction.md`
 
 #### 修改范围
@@ -251,7 +251,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 #### 输入文档
 
-- `docs/05-tech-spec.md` §8 技术风险、§9 Readiness Gate
+- `docs/05-tech-spec.md` §13 技术风险、§14 Readiness Gate（对应 doc-standards §8/§9）
 - `docs/design/mock-integrations.md`、`docs/06-db-design.md`
 
 #### 修改范围
@@ -280,7 +280,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 #### 输入文档
 
 - `docs/design/knowledge-and-policy.md`、`docs/decisions/ADR-0004-no-fabrication-and-human-handoff.md`
-- `docs/05-tech-spec.md` §9 Readiness Gate（LLM）
+- `docs/05-tech-spec.md` §14 Readiness Gate（LLM，对应 doc-standards §9）
 
 #### 修改范围
 

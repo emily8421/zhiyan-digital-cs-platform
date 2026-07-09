@@ -8,6 +8,7 @@
 | 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09），P0 readiness 补强见 §12~§14 |
 | 最后更新 | 2026-07-09 |
 | 当前阶段 | Phase2：MVP 试点 |
+| 覆盖架构组件 | COMP-001~012（见 `docs/04-architecture.md` §3） |
 
 ## 1. 技术栈
 
@@ -45,14 +46,26 @@ Phase1 必须能本机运行：
 
 ## 3. 关键技术决策
 
-| 决策 | 当前口径 | 原因 | 风险 |
-|---|---|---|---|
-| 前端单仓多入口 | `frontend/customer-h5` 与 `frontend/console` 分目录 | H5 与控制台职责不同，但共享类型和 API client | 前端框架已按 Phase1 确认为 React + Vite + TypeScript |
-| 后端分层 | API / Service / Adapter / Data / Schema / Core | 避免外部系统与业务逻辑耦合 | 初期目录较多 |
-| 场景包配置化 | 使用数据文件表达产品型 / 项目型场景 | 支持复用与追溯 | 需要设计校验规则 |
-| Mock 优先 | Phase1 所有外部系统走 Mock | 保证本机可跑与安全 | 与真实系统差异需标明 |
-| 不编造策略 | 无依据 / 高风险转人工 | 保护售后和承诺风险 | 演示时可能不够“智能” |
-| 数据库目标设计保留 | `docs/06` 写 PostgreSQL 目标结构 | 为后续 MVP / 集成铺路 | Phase1 实现可能降级 |
+| TDR-ID | 决策 | 当前口径 | 原因 | 风险 | 验证状态 |
+|---|---|---|---|---|---|
+| TDR-001 | 前端单仓多入口 | `frontend/customer-h5` 与 `frontend/console` 分目录 | H5 与控制台职责不同，但共享类型和 API client | 前端框架已按 Phase1 确认为 React + Vite + TypeScript | 已验证（Phase1 build 通过） |
+| TDR-002 | 后端分层 | API / Service / Adapter / Data / Schema / Core | 避免外部系统与业务逻辑耦合 | 初期目录较多 | 已验证（Phase1 API 测试通过） |
+| TDR-003 | 场景包配置化 | 使用数据文件表达产品型 / 项目型场景 | 支持复用与追溯 | 需要设计校验规则 | 已验证（Phase1 场景包加载通过） |
+| TDR-004 | Mock 优先 | Phase1 所有外部系统走 Mock | 保证本机可跑与安全 | 与真实系统差异需标明 | 已启用（Phase1）；Phase2 部分转沙箱 |
+| TDR-005 | 不编造策略 | 无依据 / 高风险转人工 | 保护售后和承诺风险 | 演示时可能不够“智能” | 已启用（ADR-0004） |
+| TDR-006 | 数据库目标设计保留 | `docs/06` 写 PostgreSQL 目标结构 | 为后续 MVP / 集成铺路 | Phase1 实现可能降级 | 已验证（目标结构）；Phase1 降级运行 |
+
+## 3.1 依赖与配置（P1 补强，2026-07-09）
+
+> 对应 `ai/doc-standards/05-tech-spec.md` §3。Phase1 依赖最小；Phase2 新增依赖需按 `ai/project-rules.md` §6 逐次确认。
+
+| 类型 | 名称 / 路径 | 用途 | 启用阶段 | 当前状态 | 配置来源 | 密钥 / 敏感性 | 验证方式 |
+|---|---|---|---|---|---|---|---|
+| Python 包 | `backend/requirements.txt`（FastAPI / Pydantic / uvicorn 等） | 后端运行 | Phase1 | 已启用 | requirements.txt | 无 | `pytest tests/api` 通过 |
+| Node 包 | `frontend/customer-h5/package.json`、`frontend/console/package.json` | 前端构建 | Phase1 | 已启用 | package.json | 无 | `npm run build` 通过 |
+| 数据库 | PostgreSQL + pgvector（计划） | 持久化 / 向量 | Phase2 技术验证 | 候选（默认关闭） | docker-compose（待） | 连接串（secret） | 待技术验证（RG-002） |
+| 通知 | 飞书机器人 webhook | 员工通知 | Phase2 沙箱 | Mock（默认关闭） | .env（待） | webhook token（secret） | 待沙箱联调（RG-001） |
+| LLM | 外部 LLM API | 自动答复 | Phase2 评估 | 默认关闭 | .env（待） | API key（secret） | 待专项评估（RG-003） |
 
 ## 4. 后端技术方案
 
@@ -125,16 +138,30 @@ Phase1 必须能本机运行：
 - 场景包、Mock 数据和客户叙事必须以可追溯配置或数据文件表达。
 - 错误处理不得吞掉高风险状态；高风险问题要显式进入转人工。
 
-## 11. 人工确认记录与延后项
+## 11. 人工确认记录与待确认项
+
+### 11.1 已确认记录
 
 1. Phase1 存储降级策略已确认优先 JSON / SQLite / 内存 Mock，不强制 PostgreSQL。
 2. 允许安装 Sprint 必需依赖，但每次安装前需说明包名、用途和影响范围；Docker 镜像 Phase1 默认不新增。
 3. 真实飞书机器人通知不纳入 Phase1，仅记录 Mock payload。
 4. Phase1 默认不使用公司服务器；若后续需要，需另行确认 CPU / 内存 / GPU / 端口 / 成本 / 安全边界。
 
+### 11.2 待确认项（§6.1 结构）
+
+> 集中在 `docs/research/2026-07-09-docs-open-items.md`：
+
+| 引用 ID | 待确认项 | AI 建议 | 建议依据 | 取舍影响 / 阻塞关系 |
+|---|---|---|---|---|
+| DOC-C-003 | 飞书通知沙箱 / 试点评估 | Phase2 技术验证任务 | Phase1 已 Mock | 条件阻塞 Sprint-8（RG-001） |
+| DOC-C-004 | PostgreSQL / pgvector Phase2 必做性 | 先技术验证，不作前置 | Docker 不可用 | 条件阻塞 Sprint-8（RG-002） |
+| DOC-C-005 | LLM 是否进入 Phase2 | 仅评估，不默认启用 | 不编造/成本边界未评估 | 条件阻塞 Sprint-9（RG-003） |
+| IN-C-005 | Channel Adapter Layer 设计 | Phase2 readiness gate 再补 | Phase1 仅 H5 | 条件阻塞 Phase2 全渠道入口 |
+| ARCH-C-001 | 04/05 doc-standards 合规改进 | 本次 P1 执行 | 评估报告 | 不阻塞 |
+
 ## 12. Phase2 技术约束（P0 补强，2026-07-09）
 
-> 对应 `ai/doc-standards/05-tech-spec.md` §5。本章为 Phase2 Conditional Go 落地补强；章节号待 P1 合规回梳时重排为 §5。
+> 对应 `ai/doc-standards/05-tech-spec.md` §5（Phase 技术约束）。本文件保留实际章节号 §12，全文未做章节重排，对齐方式见 §15 章节映射说明。
 
 | Phase | 允许 | 禁止 | Mock / 降级 | 技术状态说明 | 权威源 |
 |---|---|---|---|---|---|
@@ -142,7 +169,7 @@ Phase1 必须能本机运行：
 
 ## 13. 技术风险与验证计划（P0 补强，2026-07-09）
 
-> 对应 `ai/doc-standards/05-tech-spec.md` §8。Risk-ID 待 P1 合规回梳时与 TDR-ID 体系统一编号。
+> 对应 `ai/doc-standards/05-tech-spec.md` §8（技术风险）。Risk-ID 使用 RISK-P2-* 前缀。
 
 | Risk-ID | 风险 | 触发条件 | 影响 | 当前状态 | 验证方式 | 对应用例 / 任务 | 解锁条件 |
 |---|---|---|---|---|---|---|---|
@@ -153,7 +180,7 @@ Phase1 必须能本机运行：
 
 ## 14. Readiness Gate（P0 补强，2026-07-09）
 
-> 对应 `ai/doc-standards/05-tech-spec.md` §9。Phase2 涉及真实运行依赖（飞书 / DB / LLM），进入相关 Sprint 前必须给出 gate 结论。
+> 对应 `ai/doc-standards/05-tech-spec.md` §9（Readiness Gate）。Phase2 涉及真实运行依赖（飞书 / DB / LLM），进入相关 Sprint 前必须给出 gate 结论。
 
 | Gate | 适用对象 | 进入标准 | 必需证据 | 状态 | 阻塞项 / 下一步 |
 |---|---|---|---|---|---|
@@ -162,3 +189,20 @@ Phase1 必须能本机运行：
 | RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | LLM 专项评估报告 | 待评估 | Sprint-9 前补 LLM 专项评估 |
 
 Conditional Go 保留：上述 gate 在对应 Sprint 前必须由「待评估」推进到 Go / Conditional Go；No-Go 阻止相关 Sprint。详见 `docs/09-verification.md` §10.2。
+
+## 15. 与 doc-standards 章节映射说明（P1 合规，2026-07-09）
+
+> 本文件未做全文章节号重排（§4 后端 / §6 数据 / §7 接口在 doc-standards 05 无对应归属，整文件重写风险高），采用映射说明对齐 `ai/doc-standards/05-tech-spec.md`。追溯链用 TDR-ID / Risk-ID / RG-ID 串联，不依赖章节号。
+
+| doc-standards 章节 | 本文件实际章节 | 说明 |
+|---|---|---|
+| §2 关键技术决策 | §3 | TDR-001~006 |
+| §3 依赖与配置 | §3.1 | 新增（P1） |
+| §4 运行环境与资源评估 | §2 + §9 | 本机环境 + 资源降级 |
+| §5 Phase 技术约束 | §12 | Phase2 约束（P0） |
+| §6 编码约定 | §10 | — |
+| §7 安全隐私合规 | §8 | — |
+| §8 技术风险与验证 | §13 | RISK-P2-*（P0） |
+| §9 Readiness Gate | §14 | RG-001~003（P0） |
+| §10 待确认项 | §11.2 | 引用 open items（§6.1 结构） |
+| §4 后端 / §6 数据 / §7 接口（DS 无对应） | §4 / §6 / §7 | 保留为技术实现口径（非 DB/API 字段细节） |
