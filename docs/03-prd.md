@@ -5,10 +5,10 @@
 | 项 | 内容 |
 |---|---|
 | 产品名称 | 知衍数字客服统一平台 |
-| 当前状态 | Phase1 本机 Demo 已通过验收；Phase2 Conditional Go 待人工确认 |
+| 当前状态 | Phase1 本机 Demo 已通过验收；Phase2 Conditional Go 已确认（2026-07-09），进入 Phase2 / MVP 试点规划 |
 | 最后更新 | 2026-07-09 |
 | 当前 Phase | Phase1：本机 Demo |
-| 待确认事项 | 见 `docs/research/2026-07-09-docs-open-items.md`（DOC-C-001~C-007） |
+| 待确认事项 | DOC-C-001~C-005 已确认（Phase2 Conditional Go，2026-07-09）；剩余见 `docs/research/2026-07-09-docs-open-items.md`（DOC-C-006/007、IN-C-003/005、ARCH-C-001~003） |
 | 阶段标签权威 | 本文 §3 是阶段归属的当前权威草稿 |
 
 ## 1. 产品目标
@@ -39,7 +39,7 @@ Phase1 的目标是用可本机运行的 Demo 证明“统一数字客服平台�
 |---|---|---|---|---|---|
 | Phase0 | 文档与架构基线 | 文档基线 | 已回梳，人工已接受 | 输入材料已入库。 | 文档链路通过审计，人工确认路线图。 |
 | Phase1 | F-001~F-009；F-005 / F-006 使用 Mock；不接真实外部系统。 | 本机 Demo | 已通过验收（2026-07-06，见 `docs/09-verification.md` §6） | Phase0 文档确认，本机环境可运行前后端。 | H5 + 后端 + Web 控制台 + Mock 数据闭环演示通过。 |
-| Phase2 | 强化知识库、缺口流转、权限、真实飞书通知、运营配置；可对单个试点客户部署。 | MVP 试点 | 骨架，待细化 | Phase1 Demo 通过，确认外部服务和数据边界。 | 试点客户可用，人工运营流程跑通。 |
+| Phase2 | 强化知识库、缺口流转、权限、飞书通知试点评估、运营配置；可对单个试点客户部署。 | MVP 试点 | 已确认进入，Sprint 草案见 `docs/08-dev-plan.md` | Phase1 Demo 通过 + Conditional Go 确认（2026-07-09）+ 外部服务/数据边界已定（真实集成延后 Phase3）。 | 试点客户可用，人工运营流程跑通；真实 CRM/ERP/OA/工单/LLM 不在本阶段解锁。 |
 | Phase3 | 接 CRM/ERP/OA/飞书项目/工单等真实业务系统，支持订单 / 项目进度真实查询。 | 业务系统集成 | 骨架，待细化 | 试点客户明确接口和授权。 | 至少一个客户真实系统集成完成。 |
 | Phase4 | 多租户、计费、监控、运维、审计、插件化场景包和多入口交付。 | 产品化平台 | 骨架，待细化 | 多客户试点验证价值。 | 具备标准化交付和运营能力。 |
 | 愿景 | 跨文档推理、矛盾检测、证据地图、复杂 Agent 编排、本地 / 远程 LLM 混合。 | 产品愿景 | 待技术验证 | 安全、成本和准确性边界明确。 | 经专项验证后再纳入阶段。 |
@@ -100,4 +100,4 @@ Phase1 的目标是用可本机运行的 Demo 证明“统一数字客服平台�
 2. Phase1 已确认可不强制运行 PostgreSQL + pgvector，存储优先 JSON / SQLite / 内存 Mock 降级。
 3. 前端已确认采用 React + Vite + TypeScript。
 4. 飞书通知 Phase1 已确认只做 Mock / payload，不真实发送。
-5. Phase1 Sprint-6 本机演示与文档回填已通过验收；是否进入 Phase2 / MVP 试点规划仍待人工确认（见 `docs/research/2026-07-09-docs-open-items.md`，DOC-C-001~C-005）。
+5. Phase1 Sprint-6 本机演示与文档回填已通过验收；Phase2 Conditional Go 已确认（2026-07-09，DOC-C-001~C-005 全按 AI 推荐），进入 Phase2 / MVP 试点规划。

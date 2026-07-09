@@ -5,9 +5,9 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 规划待人工确认 |
+| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09），Sprint 草案见 §2/§3 |
 | 最后更新 | 2026-07-09 |
-| 当前 Phase | Phase1：本机 Demo |
+| 当前 Phase | Phase2：MVP 试点 |
 
 ## 1. Phase1 目标
 
@@ -25,6 +25,9 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-4 | Web 控制台 | 实现会话、待跟进、缺口、通知、摘要基础列表。 | F-006、F-007、F-008 | `frontend/console/`、`frontend/shared/`、`tests/acceptance/` | 已完成 |
 | Sprint-5 | 不编造与风险兜底 | 补充高风险规则、缺口流转、审计日志和验收样例。 | F-003、F-006、F-008、F-009 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` | 已完成 |
 | Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` | 已通过验收 |
+| Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 草案，待细化 |
+| Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`docker/`、`docs/research/` | 草案，待细化（DOC-C-003/004） |
+| Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | 草案，待细化（DOC-C-005） |
 
 ## 3. Sprint 详情
 
@@ -211,6 +214,90 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 - 不为通过演示而打开真实外部服务。
 
+### Sprint-7：试点部署与运营配置（Phase2）
+
+#### 目标
+
+面向单个试点客户（DOC-C-002）完成 MVP 部署、运营流程与基础权限 / 角色可见性。
+
+#### 输入文档
+
+- `docs/03-prd.md` Phase2、`docs/04-architecture.md`、`docs/05-tech-spec.md` §5 Phase 技术约束
+- `docs/design/web-console.md`、`docs/design/frontend-interaction.md`
+
+#### 修改范围
+
+- `backend/`（权限 / 角色可见性最小集）
+- `frontend/console/`（运营配置入口）
+- `docs/env/`（试点部署预案）
+
+#### 验收标准
+
+- 单个试点客户可部署并跑通主链路。
+- 基础权限 / 角色可见性由后端执行，不依赖前端隐藏。
+- Mock / 降级路径保留。
+
+#### 禁止事项
+
+- 不接真实 CRM/ERP/OA/工单（Phase3）。
+- 不实现多租户 / 计费（Phase4）。
+- 不处理真实客户隐私 / 生产会话。
+
+### Sprint-8：飞书沙箱联调 + DB 技术验证（Phase2）
+
+#### 目标
+
+将飞书通知从 Mock payload 推进到沙箱 / 试点评估（DOC-C-003，不接真实组织数据）；完成 PostgreSQL / pgvector 技术验证（DOC-C-004，不作全部功能前置）。
+
+#### 输入文档
+
+- `docs/05-tech-spec.md` §8 技术风险、§9 Readiness Gate
+- `docs/design/mock-integrations.md`、`docs/06-db-design.md`
+
+#### 修改范围
+
+- `backend/app/adapters/`（飞书适配沙箱）
+- `docker/`（PostgreSQL/pgvector 编排，待 Docker 可用）
+- `docs/research/*tech-env-evaluation*.md`（技术环境评估）
+
+#### 验收标准
+
+- 飞书沙箱联调通过，真实组织数据默认不接入。
+- PostgreSQL/pgvector 技术验证有 Go / Conditional Go 结论。
+- 不真实发送未经授权的通知。
+
+#### 禁止事项
+
+- 不默认接入真实飞书组织数据。
+- 不把 DB 技术验证成功等同于功能已启用。
+
+### Sprint-9：知识运营强化 + LLM 评估（Phase2）
+
+#### 目标
+
+强化知识缺口流转 / 审核、运营配置；完成 LLM 专项评估（DOC-C-005，仅评估，不默认启用自动答复）。
+
+#### 输入文档
+
+- `docs/design/knowledge-and-policy.md`、`docs/decisions/ADR-0004-no-fabrication-and-human-handoff.md`
+- `docs/05-tech-spec.md` §9 Readiness Gate（LLM）
+
+#### 修改范围
+
+- `backend/app/services/`（缺口流转 / 审核）
+- `docs/research/`（LLM 专项评估报告）
+
+#### 验收标准
+
+- 知识缺口流转 / 审核流程可用。
+- LLM 专项评估输出证据约束 / 不编造 / 成本 / 兜底结论。
+- LLM 默认仍关闭。
+
+#### 禁止事项
+
+- 不默认启用 LLM 自动答复。
+- 不把 LLM 评估结论等同于已启用。
+
 ## 4. 任务拆分规则
 
 - 一个 Sprint 如超过 1~3 个模块，应拆分 `tasks/task-00X-*.md`。
@@ -229,6 +316,9 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | M5 控制台闭环 | Sprint-4 完成 | 可演示员工侧运营 |
 | M6 风险兜底 | Sprint-5 完成 | 可演示不编造和转人工 |
 | M7 Demo 验收 | Sprint-6 完成 | Phase1 可对外演示 |
+| M8 试点部署 | Sprint-7 完成 | 单个试点客户可部署 |
+| M9 技术验证 | Sprint-8 完成 | 飞书沙箱 + DB 技术验证结论 |
+| M10 Phase2 MVP 验收 | Sprint-9 完成 | 试点客户可用，运营流程跑通 |
 
 ## 6. 当前进度记录
 
@@ -237,10 +327,11 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-03 | 文档补齐中 | 生成 `docs/00-09`、`docs/design/*`、`docs/decisions/*` 草稿。 |
 | 2026-07-06 | Phase1 Sprint-1~Sprint-6 已完成 | 后端 API 测试 `19 passed`；H5 / Console build 通过；HTTP 场景验证 TC-001~TC-016 全部通过；三端本机运行端口 `8000` / `5173` / `5174` 可访问，详见 `docs/09-verification.md` §6。 |
 | 2026-07-06 | Phase2 规划待人工确认 | `docs/research/2026-07-06-phase-upgrade-evaluation.md` 结论为 Conditional Go，是否进入 Phase2 / MVP 试点规划仍待人工确认。 |
+| 2026-07-09 | Phase2 Conditional Go 已确认 | DOC-C-001~C-005 全按 AI 推荐；新增 Phase2 Sprint-7/8/9 草案与 M8~M10 里程碑。 |
 
 ## 7. 已确认口径与待执行
 
 - Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；后续不再从 Sprint-1 重新开始。
-- 是否接受 Phase2 / MVP 试点规划仍待人工确认；确认前不修改当前 Phase 指针，不解锁真实系统集成或 LLM。
-- Phase1 存储已确认优先 JSON / SQLite / 内存 Mock，不强制 PostgreSQL；Phase2 是否进行 PostgreSQL / pgvector 技术验证需另行确认。
-- 后续若进入 Phase2，应先更新 `ai/project-rules.md`、`docs/03-prd.md`、本文件和 `docs/09-verification.md` 的 Phase2 范围、Sprint 草案与验证计划。
+- Phase2 Conditional Go 已确认（2026-07-09，DOC-C-001~C-005）；Sprint-7/8/9 为草案，各 Sprint 启动前仍需确认本次修改范围。
+- Phase2 存储优先继续 JSON / SQLite / 内存 Mock 降级；PostgreSQL / pgvector 作为技术验证任务（Sprint-8），不作全部功能前置（DOC-C-004）。
+- 飞书通知 Phase2 推进到沙箱 / 试点评估，不默认接真实组织数据（DOC-C-003）；LLM 仅评估，不默认启用（DOC-C-005）。

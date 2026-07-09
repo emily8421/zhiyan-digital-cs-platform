@@ -5,9 +5,9 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09），Phase2 验证范围见 §10 |
 | 最后更新 | 2026-07-09 |
-| 当前 Phase | Phase1 本机 Demo |
+| 当前 Phase | Phase2：MVP 试点 |
 
 ## 1. 验证策略
 
@@ -184,3 +184,28 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 1. Phase1 已确认以手工 + API 测试为主，按 Sprint 逐步增加自动化验证。
 2. Phase1 不强制加入自动化前端测试；若 Sprint-3 / Sprint-4 需要，可补最小手工验收或轻量前端测试。
 3. Python / Node 版本调整需在依赖兼容性验证后单独说明原因、影响范围并确认。
+4. Phase2 Conditional Go 已确认（2026-07-09，DOC-C-001~C-005）；Phase2 验证以试点客户 MVP + 技术验证任务为主，真实 CRM/ERP/OA/工单/LLM 不在本阶段解锁。
+
+## 10. Phase2 验证范围（草案）
+
+> Phase2 Conditional Go 已确认（2026-07-09）。本节为草案，各 Sprint 启动前细化；不替代 Sprint 验收标准。
+
+### 10.1 验证优先级（Phase2）
+
+1. P0：试点客户主链路部署可用（Sprint-7）、基础权限由后端执行。
+2. P1：飞书沙箱联调（Sprint-8，不接真实组织数据）、PostgreSQL/pgvector 技术验证结论。
+3. P2：知识缺口流转 / 审核（Sprint-9）、LLM 专项评估结论（不默认启用）。
+
+### 10.2 Phase2 readiness gate 验证项
+
+| Gate | 验证对象 | 进入标准 | 证据 | 状态 |
+|---|---|---|---|---|
+| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/*tech-env-evaluation*.md` | 待验证（Sprint-8） |
+| RG-002 | PostgreSQL/pgvector | 技术验证 Go/Conditional Go | `docs/research/*tech-env-evaluation*.md` | 待验证（Sprint-8） |
+| RG-003 | LLM | 证据约束/不编造/成本/兜底评估完成 | LLM 专项评估报告 | 待评估（Sprint-9） |
+
+### 10.3 Phase2 不解锁验证
+
+- 真实 CRM/ERP/OA/工单集成（Phase3）。
+- 多租户/计费/监控/审计（Phase4）。
+- LLM 自动答复默认启用。
