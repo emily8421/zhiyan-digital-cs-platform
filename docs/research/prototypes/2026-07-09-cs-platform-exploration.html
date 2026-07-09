@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>知衍数字客服平台 · 需求探索原型（低保真 / 探索）</title>
+<style>
+  :root { --line:#9aa0a6; --ink:#202124; --sub:#5f6368; --bg:#f1f3f4; --mock:#b45309; --risk:#b91c1c; --kb:#1d4ed8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
+  .banner { background:#fff7ed; border-bottom:1px solid #f59e0b; padding:10px 16px;
+    font-size:13px; color:#92400e; }
+  .banner b { color:#7c2d12; }
+  .wrap { padding:20px; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { color:var(--sub); font-size:13px; margin-bottom:18px; }
+  .stage { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+  .frame { background:#fff; border:1.5px solid var(--line); border-radius:10px; overflow:hidden; }
+  .cap { font-size:12px; color:var(--sub); margin:4px 2px 10px; }
+
+  /* H5 mobile frame */
+  .h5 { width:380px; }
+  .h5 .top { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #e5e7eb; }
+  .demo { font-size:11px; background:#fef3c7; color:#92400e; border:1px solid #f59e0b;
+    padding:2px 6px; border-radius:4px; }
+  .h5 .title { font-weight:600; font-size:14px; }
+  .h5 .ctx { margin-left:auto; font-size:12px; color:var(--sub); }
+  .h5 .meta { font-size:11px; color:var(--sub); padding:6px 12px; background:#fafafa; border-bottom:1px solid #f0f0f0; }
+  .msgs { padding:12px; height:360px; overflow:auto; background:#fafafa; display:flex; flex-direction:column; gap:10px; }
+  .msg { max-width:80%; padding:8px 10px; border-radius:10px; font-size:13px; line-height:1.4; border:1px solid #e5e7eb; background:#fff; }
+  .msg.cust { align-self:flex-end; background:#eef4ff; border-color:#c7dbff; }
+  .msg.bot  { align-self:flex-start; }
+  .tag { display:inline-block; font-size:10px; margin-top:5px; padding:1px 6px; border-radius:4px; }
+  .tag.kb   { background:#dbeafe; color:var(--kb); }
+  .tag.mock { background:#fef3c7; color:var(--mock); }
+  .sys { align-self:center; font-size:12px; color:var(--risk); background:#fee2e2; border:1px dashed var(--risk);
+    padding:6px 10px; border-radius:8px; }
+  .h5 .input { display:flex; gap:8px; padding:10px 12px; border-top:1px solid #e5e7eb; background:#fff; }
+  .h5 .input input { flex:1; padding:8px; border:1px solid var(--line); border-radius:6px; font-size:13px; }
+  .btn { padding:8px 14px; border:1px solid var(--line); background:#fff; border-radius:6px; font-size:13px; cursor:pointer; }
+  .btn:active { background:#eee; }
+
+  /* Console frame */
+  .console { width:760px; }
+  .console .ctop { display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid #e5e7eb; }
+  .console .ctop .ctx { margin-left:auto; font-size:12px; color:var(--sub); }
+  .tabs { display:flex; border-bottom:1px solid #e5e7eb; background:#fafafa; }
+  .tab { padding:10px 16px; font-size:13px; cursor:pointer; border-bottom:2px solid transparent; color:var(--sub); position:relative; }
+  .tab.active { color:var(--ink); border-bottom-color:var(--ink); background:#fff; }
+  .badge { position:absolute; top:4px; right:4px; font-size:10px; background:var(--risk); color:#fff;
+    border-radius:8px; padding:0 5px; line-height:14px; }
+  .cbody { display:flex; min-height:340px; }
+  .clist { flex:1; border-right:1px solid #e5e7eb; }
+  .crow { padding:10px 14px; border-bottom:1px solid #f3f4f6; font-size:13px; cursor:pointer; display:flex; gap:8px; align-items:center; }
+  .crow:hover { background:#f9fafb; }
+  .crow.sel { background:#eef4ff; }
+  .risk-h { color:var(--risk); font-weight:600; }
+  .pill { font-size:10px; padding:1px 6px; border-radius:4px; background:#eee; color:var(--sub); }
+  .cdetail { width:280px; padding:14px; font-size:13px; }
+  .cdetail h4 { margin:0 0 8px; font-size:14px; }
+  .cdetail .row { margin:5px 0; color:var(--sub); }
+  .cdetail .row b { color:var(--ink); }
+  .ovcards { display:flex; gap:10px; padding:14px; flex-wrap:wrap; }
+  .ovcard { flex:1; min-width:120px; border:1px solid #e5e7eb; border-radius:8px; padding:12px; }
+  .ovcard .n { font-size:22px; font-weight:700; }
+  .ovcard .l { font-size:12px; color:var(--sub); }
+  .placeholder { padding:24px; color:var(--sub); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="banner">
+  <b>需求探索原型 · 低保真 / 探索状态</b> —— 非 正式需求 / 架构 / 技术栈 / 接口 / 数据库 / 验收证据。
+  仅供需求阶段与用户确认；确认后内容须回填 <code>00-03</code>。
+</div>
+<div class="wrap">
+  <h1>知衍数字客服统一平台 · 需求探索原型</h1>
+  <div class="sub">两个入口：客户侧 H5 对话页 + 员工侧 Web 控制台。生成日期 2026-07-09。</div>
+  <div class="stage">
+
+    <!-- H5 -->
+    <div>
+      <div class="cap">PX-P-001 · H5 客户对话页（375px 基准）</div>
+      <div class="frame h5">
+        <div class="top">
+          <span class="title">知衍客服</span>
+          <span class="demo">Demo</span>
+          <span class="ctx">场景:产品型 ▾</span>
+        </div>
+        <div class="meta">会话 #a3f1 · 依据可追溯</div>
+        <div class="msgs" id="h5msgs">
+          <div class="msg cust">灯具X的功率是多少?</div>
+          <div class="msg bot">36W。<span class="tag kb">📎 依据:知识库</span></div>
+          <div class="msg cust">这个订单 #SO001 到哪了?</div>
+          <div class="msg bot">#SO001 生产中，预计 7/12 发货。<span class="tag mock">📎 依据:Mock业务(模拟)</span></div>
+          <div class="sys">⚠ 涉及交期承诺，已转人工跟进（售后负责人）</div>
+        </div>
+        <div class="input">
+          <input id="h5input" placeholder="输入问题…" />
+          <button class="btn" onclick="sendH5()">发送</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console -->
+    <div>
+      <div class="cap">PX-P-002 · Web 控制台（顶部 Tab + 右侧详情栏）</div>
+      <div class="frame console">
+        <div class="ctop">
+          <span class="title" style="font-weight:600;font-size:14px;">知衍客服控制台</span>
+          <span class="demo">Demo</span>
+          <span class="ctx">场景:产品型 ▾</span>
+        </div>
+        <div class="tabs" id="tabs">
+          <div class="tab active" data-tab="overview">概览</div>
+          <div class="tab" data-tab="sessions">会话</div>
+          <div class="tab" data-tab="handoffs">待跟进<span class="badge">2</span></div>
+          <div class="tab" data-tab="gaps">缺口<span class="badge">1</span></div>
+          <div class="tab" data-tab="notif">通知</div>
+          <div class="tab" data-tab="packs">场景包</div>
+          <div class="tab" data-tab="mock">Mock数据</div>
+        </div>
+        <div class="cbody">
+          <div class="clist" id="clist"></div>
+          <div class="cdetail" id="cdetail"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ---- H5: 发送一条客户消息，回一个 Mock 示例 ----
+  function sendH5(){
+    var v=document.getElementById('h5input').value.trim();
+    if(!v) return;
+    var box=document.getElementById('h5msgs');
+    var c=document.createElement('div'); c.className='msg cust'; c.textContent=v; box.appendChild(c);
+    var b=document.createElement('div'); b.className='msg bot';
+    b.innerHTML='（探索原型）示例回复<span class="tag mock">📎 依据:Mock业务(模拟)</span>';
+    box.appendChild(b);
+    document.getElementById('h5input').value='';
+    box.scrollTop=box.scrollHeight;
+  }
+  document.getElementById('h5input').addEventListener('keydown',function(e){ if(e.key==='Enter') sendH5(); });
+
+  // ---- Console: Tab 数据（探索样例） ----
+  var DATA={
+    overview:{detail:'<h4>今日概览（老板视角）</h4><div class="row">默认着陆 Tab，聚合关键摘要。</div>'+
+      '<div class="row">详见左侧指标卡。</div>'},
+    sessions:{items:[
+      {id:'#a3f1',t:'产品咨询',x:'低风险',s:'open',mock:true,d:'会话#a3f1｜意图:售前｜状态:open'},
+      {id:'#b7c2',t:'售后投诉',x:'高风险',s:'handoff',mock:true,d:'会话#b7c2｜意图:售后｜状态:转人工'}
+    ]},
+    handoffs:{items:[
+      {id:'#a3f1',t:'交期承诺',x:'高风险',s:'open',mock:true,d:'<h4>转人工 #a3f1</h4><div class="row"><b>原因:</b> 涉及交期承诺</div><div class="row"><b>建议负责人:</b> 售后</div><div class="row"><b>状态:</b> open <span class="tag mock">Mock</span></div>'},
+      {id:'#b7c2',t:'售后投诉',x:'高风险',s:'open',mock:true,d:'<h4>转人工 #b7c2</h4><div class="row"><b>原因:</b> 投诉/赔付风险</div><div class="row"><b>建议负责人:</b> 售后主管</div><div class="row"><b>状态:</b> open <span class="tag mock">Mock</span></div>'}
+    ]},
+    gaps:{items:[
+      {id:'#g01',t:'定制功率范围',x:'未知',s:'new',mock:true,d:'<h4>知识缺口 #g01</h4><div class="row"><b>问题:</b> 定制功率上限?</div><div class="row"><b>状态:</b> new <span class="tag mock">Mock</span></div><div class="row">待运营确认后入库。</div>'}
+    ]},
+    notif:{items:[
+      {id:'#n1',t:'转人工通知',x:'飞书Mock',s:'mocked',mock:true,d:'<h4>通知 #n1</h4><div class="row"><b>类型:</b> 飞书 Mock payload</div><div class="row"><b>状态:</b> mocked（未真实发送）</div>'}
+    ]},
+    packs:{items:[
+      {id:'product',t:'产品型场景包',x:'active',s:'active',mock:true,d:'<h4>场景包:产品型</h4><div class="row">灯饰参数、售后规则、订单Mock。</div>'},
+      {id:'project',t:'项目型场景包',x:'active',s:'active',mock:true,d:'<h4>场景包:项目型</h4><div class="row">方案流程、里程碑、项目Mock。</div>'}
+    ]},
+    mock:{items:[
+      {id:'SO001',t:'订单Mock',x:'order',s:'生产中',mock:true,d:'<h4>Mock 订单 #SO001</h4><div class="row"><b>状态:</b> 生产中｜预计7/12</div><div class="row"><b>is_mock:</b> true</div>'}
+    ]}
+  };
+
+  function render(tab){
+    var clist=document.getElementById('clist');
+    var cdetail=document.getElementById('cdetail');
+    clist.innerHTML=''; cdetail.innerHTML='';
+    if(tab==='overview'){
+      clist.innerHTML='<div class="ovcards">'+
+        '<div class="ovcard"><div class="n">12</div><div class="l">今日会话</div></div>'+
+        '<div class="ovcard"><div class="n" style="color:var(--risk)">2</div><div class="l">转人工</div></div>'+
+        '<div class="ovcard"><div class="n">1</div><div class="l">知识缺口</div></div>'+
+        '<div class="ovcard"><div class="n">3</div><div class="l">未结案</div></div></div>';
+      cdetail.innerHTML=DATA.overview.detail; return;
+    }
+    var d=DATA[tab]; if(!d||!d.items){ clist.innerHTML='<div class="placeholder">（探索样例，待细化）</div>'; return; }
+    d.items.forEach(function(it,i){
+      var r=document.createElement('div'); r.className='crow'+(i===0?' sel':'');
+      r.innerHTML='<span><b>'+it.id+'</b> '+it.t+'</span>'+
+        '<span class="pill '+(it.x.indexOf('高')>=0?'risk-h':'')+'">'+it.x+'</span>'+
+        '<span class="pill">'+it.s+(it.mock?' · Mock':'')+'</span>';
+      r.onclick=function(){ select(clist,r); cdetail.innerHTML=it.d; };
+      clist.appendChild(r);
+    });
+    cdetail.innerHTML=d.items[0].d;
+  }
+  function select(clist,r){ Array.prototype.forEach.call(clist.querySelectorAll('.crow'),function(x){x.classList.remove('sel');}); r.classList.add('sel'); }
+
+  document.getElementById('tabs').addEventListener('click',function(e){
+    var t=e.target.closest('.tab'); if(!t) return;
+    Array.prototype.forEach.call(this.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
+    t.classList.add('active'); render(t.getAttribute('data-tab'));
+  });
+  render('overview');
+</script>
+</body>
+</html>
