@@ -5,8 +5,8 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 关键口径已确认 |
-| 最后更新 | 2026-07-03 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
+| 最后更新 | 2026-07-09 |
 | 当前 Phase | Phase1 本机 Demo |
 
 ## 1. 验证策略
