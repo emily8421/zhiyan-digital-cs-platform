@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14） |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-001（飞书沙箱）Conditional Go、RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14） |
 | 最后更新 | 2026-07-10 |
 | 当前阶段 | Phase2：MVP 试点 |
 | 覆盖架构组件 | COMP-001~012（见 `docs/04-architecture.md` §3） |
@@ -64,7 +64,7 @@ Phase1 必须能本机运行：
 | Python 包 | `backend/requirements.txt`（FastAPI / Pydantic / uvicorn 等） | 后端运行 | Phase1 | 已启用 | requirements.txt | 无 | `pytest tests/api` 通过 |
 | Node 包 | `frontend/customer-h5/package.json`、`frontend/console/package.json` | 前端构建 | Phase1 | 已启用 | package.json | 无 | `npm run build` 通过 |
 | 数据库 | PostgreSQL 16 + pgvector 0.8.0 | 持久化 / 向量 | Phase2 技术验证 | 已验证可用（RG-002 Go） | docker-compose（待 Sprint-8 实现） | 连接串（secret） | 已验证（2026-07-10，见 `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md`） |
-| 通知 | 飞书机器人 webhook | 员工通知 | Phase2 沙箱 | Mock（默认关闭） | .env（待） | webhook token（secret） | 待沙箱联调（RG-001） |
+| 通知 | 飞书机器人 webhook | 员工通知 | Phase2 沙箱 | Conditional Go（默认 Mock，真实发送待凭据） | `.env.local` / 环境变量 | webhook URL / secret（secret） | 已完成启动前评估；待沙箱实发（RG-001，见 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`） |
 | LLM | 外部 LLM API | 自动答复 | Phase2 评估 | 默认关闭 | .env（待） | API key（secret） | 待专项评估（RG-003） |
 
 ## 4. 后端技术方案
@@ -176,7 +176,7 @@ Phase1 必须能本机运行：
 | RISK-P2-001 | Docker 不可用阻塞 PostgreSQL/pgvector | Sprint-8 需 DB 技术验证 | 影响 DB 验证节奏 | 已解除（2026-07-10） | Docker 修复 + 技术环境评估 | Sprint-8 / RG-002 | Docker 可用或确认降级可接受（已解除：Docker Desktop 4.76.0 可用） |
 | RISK-P2-005 | ivfflat 索引小数据低召回 | pgvector 向量检索 | 影响检索召回 | 已知，不阻塞 | 数据量足后评估 HNSW | Sprint-9 / 知识运营 | 数据量足或改 HNSW |
 | RISK-P2-006 | embedding 维度 / 方案未定 | 向量字段启用 | 向量检索暂不可用 | 待 embedding 方案（Phase2 默认关闭） | 关键词 / 规则匹配降级 | Sprint-9 / Phase3 | embedding 方案确定 |
-| RISK-P2-002 | 飞书真实通知权限 / 回调边界未定 | Sprint-8 沙箱联调 | 影响员工侧触达 | 待验证 | 沙箱联调 + 权限确认 | Sprint-8 / RG-001 | 权限 / 回调边界确认 |
+| RISK-P2-002 | 飞书真实通知权限 / 回调边界未定 | Sprint-8 沙箱联调 | 影响员工侧触达 | Conditional Go（凭据清单 / 出站通知 / 回调边界已定义，实发待凭据） | 沙箱联调 + 权限确认 | Sprint-8 / RG-001 | 人工提供沙箱 webhook URL / secret 后完成实发验证；回调另拆任务 |
 | RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 待评估 | LLM 专项评估 | Sprint-9 / RG-003 | 评估结论 Go |
 | RISK-P2-004 | 沙箱内 Vite `spawn EPERM` | 前端 build / dev | 沙箱内构建失败 | 已接受 | 非沙箱本机运行 | TC-015 | 非沙箱环境 |
 
@@ -186,7 +186,7 @@ Phase1 必须能本机运行：
 
 | Gate | 适用对象 | 进入标准 | 必需证据 | 状态 | 阻塞项 / 下一步 |
 |---|---|---|---|---|---|
-| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限 / 回调边界确认 | `docs/research/*tech-env-evaluation*.md` | 待评估 | Sprint-8 前补技术环境评估 |
+| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限 / 回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Conditional Go（2026-07-10） | 可进入默认 Mock / 显式 sandbox 的适配器设计；真实实发需人工提供 webhook URL / secret；事件回调另拆任务 |
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go / Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） | 已通过，可进 Sprint-8 DB 实现 |
 | RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | LLM 专项评估报告 | 待评估 | Sprint-9 前补 LLM 专项评估 |
 

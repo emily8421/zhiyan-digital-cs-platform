@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书沙箱）Conditional Go（2026-07-10，TC-036~038，TC-039 待凭据）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -201,7 +201,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 | Gate | 验证对象 | 进入标准 | 证据 | 状态 |
 |---|---|---|---|---|
-| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/*tech-env-evaluation*.md` | 待验证（Sprint-8） |
+| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Conditional Go（2026-07-10；TC-036~038 通过，TC-039 待凭据） |
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go/Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） |
 | RG-003 | LLM | 证据约束/不编造/成本/兜底评估完成 | LLM 专项评估报告 | 待评估（Sprint-9） |
 
@@ -296,3 +296,22 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-032~TC-035 均通过；PG 专项 `tests/api/test_console_store.py tests/api/test_conversation_store.py` 为 6 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 36 passed、4 skipped。
 - 边界说明：通知、日报、审计日志未切 PostgreSQL；飞书沙箱、LLM、真实业务系统未接入；PG 写入需显式环境变量启用，数据库不可用时保留内存降级。
 - 残留风险：`zycs_human_handoffs` 当前表结构无 `summary` / `resolution_note` 字段，PG 列表中的 `summary` 临时沿用 `reason`，转人工处理说明不写入 PG；如需完整运营工单字段，应另拆 schema 演进任务。
+
+### 10.9 Sprint-8D 验证用例（飞书沙箱启动前评估 / RG-001）
+
+> 2026-07-10 细化并执行。范围：仅确认飞书出站通知沙箱所需凭据、默认 Mock / 显式 sandbox / 失败降级、回调后置边界；不真实发送飞书通知，不接真实组织数据。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-036 | `tasks/task-008d-feishu-sandbox-readiness.md`、`docs/05-tech-spec.md` | RG-001、REQ-009、REQ-016 | 梳理出站通知配置项与密钥存放边界 | 明确 `ZYCS_FEISHU_NOTIFY_MODE`、`ZYCS_FEISHU_WEBHOOK_URL`、`ZYCS_FEISHU_WEBHOOK_SECRET`；密钥不落库不提交 | 通过（2026-07-10） |
+| TC-037 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、REQ-009 | 定义飞书通知出站行为 | 默认 Mock；仅显式 sandbox + URL + secret 时允许真实发送；失败回退不阻塞主链路 | 通过（2026-07-10） |
+| TC-038 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、NFR-002、NFR-003 | 定义事件回调边界 | 回调后置，启用前必须补验签 / 解密 / 去重 / 限流 / 脱敏日志，不接真实组织数据 | 通过（2026-07-10） |
+| TC-039 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、REQ-009 | 人工提供沙箱 webhook URL / secret 后执行实发 | 沙箱群收到转人工 / 知识缺口通知，日志无密钥；失败可回退 Mock | 待凭据 |
+
+#### Sprint-8D 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008d-feishu-sandbox-readiness.md`。
+- 改动范围：`docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`、`docs/05-tech-spec.md`、`docs/08-dev-plan.md`、`docs/09-verification.md`。
+- 验证结果：TC-036~TC-038 通过；TC-039 待人工提供飞书沙箱 webhook URL / secret 后执行。
+- RG-001 结论：Conditional Go。可进入默认 Mock / 显式 sandbox 的 Feishu 通知适配器骨架设计；不得默认开启真实发送，不得启用事件回调。
+- 边界说明：本次未写入真实 webhook、token、secret、用户 ID、组织 ID 或生产数据；未联网调用飞书 API；未改变现有 H5 / Console 默认 Mock 演示链路。
