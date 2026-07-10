@@ -257,6 +257,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 > 2026-07-10 已拆出并完成 Sprint-8A「DB 持久化基础设施」：仅搭建 PostgreSQL + pgvector 本机数据库地基，不把后端业务逻辑切到数据库；详见 `tasks/task-008a-db-foundation.md` 与 `docs/env/postgres-pgvector-runbook.md`。
 > 2026-07-10 已拆出并完成 Sprint-8B「静态数据读库」：场景包、知识、规则、Mock 业务记录可在显式启用后从 PostgreSQL 读取，并保留 JSON 降级；详见 `tasks/task-008b-static-data-postgres.md`。
+> 2026-07-10 已拆出并完成 Sprint-8C-A「会话与消息持久化」：新建会话、客户消息和助手回答可在显式启用后写入 PostgreSQL，并保留内存降级；详见 `tasks/task-008c-a-conversation-message-postgres.md`。
 
 #### 输入文档
 
@@ -270,6 +271,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - `docs/research/*tech-env-evaluation*.md`（技术环境评估）
 - `tasks/task-008a-db-foundation.md`、`docker/docker-compose.pgvector.yml`、`docker/postgres/init/*.sql`、`docs/env/postgres-pgvector-runbook.md`（Sprint-8A DB 地基，已完成）
 - `tasks/task-008b-static-data-postgres.md`、`backend/app/services/static_data_source.py`、`backend/app/services/postgres_static_data_repository.py`、`backend/app/services/scenario_pack_service.py`（Sprint-8B 静态数据读库，已完成）
+- `tasks/task-008c-a-conversation-message-postgres.md`、`backend/app/services/conversation_store.py`、`backend/app/services/conversation_service.py`（Sprint-8C-A 会话与消息持久化，已完成）
 
 #### 验收标准
 
@@ -277,6 +279,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - PostgreSQL/pgvector 技术验证有 Go / Conditional Go 结论。
 - Sprint-8A DB 地基可本机启动，pgvector 扩展、11 张 `zycs_` 表与 Demo seed 数据可验证；不等同于业务已启用 PG。
 - Sprint-8B 静态数据读库可在环境变量显式启用后读取 PostgreSQL seed，并在未配置 / 不可用时回退 JSON。
+- Sprint-8C-A 会话与消息可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于转人工 / 缺口 / 通知 / 日报已持久化。
 - 不真实发送未经授权的通知。
 
 #### 禁止事项
@@ -344,6 +347,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-10 | Sprint-7 已完成并通过验收 | 单实例双场景包（古晶产品型 + 乐式项目型）部署、控制台角色权限最小集（WC-C-001，Demo 级 `X-Console-Role`）、运营配置入口（角色切换 + 场景包过滤）、试点部署预案；后端 `30 passed`、两端 build 通过、TC-017~020 手工验收通过。PR #34 已合并。 |
 | 2026-07-10 | Sprint-8A DB 地基已完成 | 新增 PostgreSQL + pgvector Compose、本机 schema / seed 初始化和运行手册；验证通过：Compose config、容器 healthy、pgvector `0.8.0`、11 张 `zycs_` 表、2 个场景包 seed、5 条 Mock 业务记录。后端业务尚未切 PG，Mock / 本地临时数据链路保留。 |
 | 2026-07-10 | Sprint-8B 静态数据读库已完成 | 新增 `psycopg[binary]`、静态数据源开关和 PostgreSQL 静态读取仓库；默认 JSON，`ZYCS_STATIC_DATA_SOURCE=postgres` 时优先读 PG，失败回退 JSON；PG 模式 `tests/api/test_static_data_source.py` 3 passed，默认全量后端 33 passed、1 skipped。会话 / 消息 / 转人工 / 缺口 / 通知 / 日报仍未切 PG。 |
+| 2026-07-10 | Sprint-8C-A 会话与消息持久化已完成 | 新增会话存储开关和 PostgreSQL 会话 / 消息仓库；默认内存，`ZYCS_CONVERSATION_STORE=postgres` 时写入 PG，失败回退内存；PG 模式 `tests/api/test_conversation_store.py` 4 passed，默认全量后端 35 passed、3 skipped。转人工 / 知识缺口 / 通知 / 日报仍未切 PG。 |
 
 ## 7. 已确认口径与待执行
 

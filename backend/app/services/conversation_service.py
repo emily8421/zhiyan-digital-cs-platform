@@ -4,6 +4,15 @@ from uuid import uuid4
 from app.schemas.conversations import ConversationData, MessageResponseData
 from app.services.audit_service import record_audit_event, redact_sensitive_text
 from app.services.console_service import create_handoff_record, create_knowledge_gap_record
+from app.services.conversation_store import (
+    PostgresConversationStoreError,
+    append_message_to_postgres,
+    create_conversation_in_postgres,
+    get_conversation_from_postgres,
+    list_conversations_from_postgres,
+    should_use_postgres_conversation_store,
+    update_conversation_in_postgres,
+)
 from app.services.message_policy_service import MessageDecision, decide_message_response
 
 
@@ -31,10 +40,16 @@ def create_demo_conversation(
         mock=True,
     )
     _conversations[conversation.conversation_id] = conversation
+    if _use_postgres_conversation_store():
+        _try_postgres_write(create_conversation_in_postgres, conversation)
     return conversation
 
 
 def get_demo_conversation(conversation_id: str) -> ConversationData | None:
+    if _use_postgres_conversation_store():
+        conversation = _try_postgres_read(get_conversation_from_postgres, conversation_id)
+        if conversation is not None:
+            return conversation
     return _conversations.get(conversation_id)
 
 
@@ -43,6 +58,16 @@ def list_demo_conversations(
     scenario_pack_code: str | None = None,
     risk_level: str | None = None,
 ) -> list[ConversationData]:
+    if _use_postgres_conversation_store():
+        conversations = _try_postgres_read(
+            list_conversations_from_postgres,
+            status,
+            scenario_pack_code,
+            risk_level,
+        )
+        if conversations is not None:
+            return conversations
+
     conversations = list(_seed_conversations()) + list(_conversations.values())
     return [
         conversation
@@ -54,11 +79,14 @@ def list_demo_conversations(
 
 
 def build_demo_message_response(conversation_id: str, content: str) -> MessageResponseData:
-    conversation = _conversations[conversation_id]
+    conversation = get_demo_conversation(conversation_id)
+    if conversation is None:
+        raise KeyError(conversation_id)
     decision = decide_message_response(content, conversation.scenario_pack_code)
     handoff = _create_handoff_payload(conversation_id, conversation.scenario_pack_code, content, decision)
     knowledge_gap = _create_gap_payload(conversation_id, conversation.scenario_pack_code, decision)
     _apply_decision_to_conversation(conversation, content, decision)
+    _conversations[conversation.conversation_id] = conversation
     record_audit_event(
         event_type="message_policy",
         content=content,
@@ -67,8 +95,9 @@ def build_demo_message_response(conversation_id: str, content: str) -> MessageRe
         source_ref=decision.source_ref,
         conversation_id=conversation_id,
     )
-    return MessageResponseData(
-        message_id=new_demo_id("msg"),
+    message_id = new_demo_id("msg")
+    response = MessageResponseData(
+        message_id=message_id,
         intent=decision.intent,
         answer_type=decision.answer_type,
         answer=decision.answer,
@@ -76,14 +105,46 @@ def build_demo_message_response(conversation_id: str, content: str) -> MessageRe
         handoff=handoff,
         knowledge_gap=knowledge_gap,
     )
+    if _use_postgres_conversation_store():
+        _persist_message_exchange(conversation, content, response)
+    return response
 
 
 def update_conversation_last_message(conversation_id: str, content: str) -> None:
-    conversation = _conversations.get(conversation_id)
+    conversation = get_demo_conversation(conversation_id)
     if conversation is None:
         return
     conversation.last_message = content
     conversation.updated_at = _now_iso()
+    _conversations[conversation.conversation_id] = conversation
+    if _use_postgres_conversation_store():
+        _try_postgres_write(update_conversation_in_postgres, conversation)
+
+
+def _persist_message_exchange(
+    conversation: ConversationData,
+    content: str,
+    response: MessageResponseData,
+) -> None:
+    safe_content = redact_sensitive_text(content)
+    _try_postgres_write(
+        append_message_to_postgres,
+        new_demo_id("msg_customer"),
+        conversation.conversation_id,
+        "customer",
+        safe_content,
+    )
+    _try_postgres_write(
+        append_message_to_postgres,
+        response.message_id,
+        conversation.conversation_id,
+        "assistant",
+        response.answer,
+        response.intent,
+        response.answer_type,
+        response.source_ref,
+    )
+    _try_postgres_write(update_conversation_in_postgres, conversation)
 
 
 def _create_handoff_payload(
@@ -175,3 +236,24 @@ def _matches_filter(value: str | None, expected: str | None) -> bool:
 
 def _now_iso() -> str:
     return datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds")
+
+
+def _use_postgres_conversation_store() -> bool:
+    try:
+        return should_use_postgres_conversation_store()
+    except Exception:
+        return False
+
+
+def _try_postgres_write(function, *args) -> None:
+    try:
+        function(*args)
+    except PostgresConversationStoreError:
+        return
+
+
+def _try_postgres_read(function, *args):
+    try:
+        return function(*args)
+    except PostgresConversationStoreError:
+        return None

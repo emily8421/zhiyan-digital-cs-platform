@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -258,3 +258,22 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-025~TC-027 均通过；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 33 passed、1 skipped（PG 专项在未设置 `ZYCS_TEST_DATABASE_URL` 时跳过）。
 - 边界说明：会话、消息、转人工、知识缺口、通知和日报未切 PostgreSQL；PG 读取需显式环境变量启用；数据库不可用时保留 JSON 降级。
 - 残留风险：业务写库和会话持久化需 Sprint-8C 单独设计；飞书 RG-001 仍待凭据 / 回调边界。
+
+### 10.7 Sprint-8C-A 验证用例（会话与消息持久化）
+
+> 2026-07-10 细化并执行。范围：仅让新建会话、客户消息和助手回答可在显式启用时写入 PostgreSQL；默认仍走内存，失败回退内存。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-028 | `tasks/task-008c-a-conversation-message-postgres.md`、`backend/app/services/conversation_store.py` | RG-002、REQ-001、REQ-002 | 不设置 `ZYCS_CONVERSATION_STORE`，运行会话相关测试 | 现有会话创建、发消息、高风险、缺口链路仍走内存，测试通过 | 通过（2026-07-10） |
+| TC-029 | `backend/app/services/conversation_service.py` | RG-002、REQ-015 | 设置 `ZYCS_CONVERSATION_STORE=postgres` 但不设置 `ZYCS_DATABASE_URL` | 自动回退内存，Demo 不受影响 | 通过（2026-07-10） |
+| TC-030 | `backend/app/services/conversation_store.py`、`docs/env/postgres-pgvector-runbook.md` | RG-002、REQ-001、REQ-002 | 设置 `ZYCS_TEST_DATABASE_URL=postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs`，创建会话并发送知识问答 | `zycs_conversations` 写入会话；`zycs_messages` 写入客户消息和助手回答；列表 API 可查回 | 通过（2026-07-10） |
+| TC-031 | `backend/app/services/conversation_store.py`、`docs/06-db-design.md` | RG-002、REQ-006、REQ-016 | PG 模式下发送高风险问题 | `zycs_conversations.status` 更新为 `handoff`，`risk_level` 更新为 `high`；转人工详情仍走现有内存逻辑 | 通过（2026-07-10） |
+
+#### Sprint-8C-A 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008c-a-conversation-message-postgres.md`。
+- 改动范围：`backend/app/services/conversation_store.py`、`backend/app/services/conversation_service.py`、`tests/api/test_conversation_store.py`、`docs/env/postgres-pgvector-runbook.md`。
+- 验证结果：TC-028~TC-031 均通过；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 35 passed、3 skipped。
+- 边界说明：转人工详情、知识缺口、通知、日报、审计日志未切 PostgreSQL；PG 写入需显式环境变量启用；数据库不可用时保留内存降级。
+- 残留风险：运营数据持久化需 Sprint-8C-B 单独设计；飞书 RG-001 仍待凭据 / 回调边界。
