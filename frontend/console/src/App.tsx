@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ApiClientError,
   createMockNotification,
+  getConsoleRole,
   getDailySummary,
   getScenarioPack,
   listConversations,
@@ -11,9 +12,11 @@ import {
   listMockBusinessRecords,
   listMockNotifications,
   listScenarioPacks,
+  setConsoleRole,
   updateHandoffStatus,
   updateKnowledgeGapStatus
 } from '../../shared/apiClient';
+import type { ConsoleRole } from '../../shared/apiClient';
 import type {
   ConversationListItem,
   DailySummaryData,
@@ -67,6 +70,11 @@ const initialState: ConsoleState = {
   mockRecords: []
 };
 
+function filterByPack<T extends { scenario_pack_code?: string }>(records: T[], packCode: string): T[] {
+  if (packCode === 'all') return records;
+  return records.filter((record) => record.scenario_pack_code === packCode);
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [data, setData] = useState<ConsoleState>(initialState);
@@ -75,23 +83,46 @@ function App() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>('');
+  const [role, setRole] = useState<ConsoleRole>(getConsoleRole);
+  const [scenarioFilter, setScenarioFilter] = useState<string>('all');
+
+  const canWrite = role === 'admin';
+
+  function handleRoleChange(next: ConsoleRole) {
+    setRole(next);
+    setConsoleRole(next);
+  }
 
   useEffect(() => {
     void refreshConsoleData();
   }, []);
 
+  const visibleConversations = useMemo(
+    () => filterByPack(data.conversations, scenarioFilter),
+    [data.conversations, scenarioFilter]
+  );
+  const visibleHandoffs = useMemo(
+    () => filterByPack(data.handoffs, scenarioFilter),
+    [data.handoffs, scenarioFilter]
+  );
+  const visibleGaps = useMemo(() => filterByPack(data.gaps, scenarioFilter), [data.gaps, scenarioFilter]);
+  const visibleMockRecords = useMemo(
+    () => filterByPack(data.mockRecords, scenarioFilter),
+    [data.mockRecords, scenarioFilter]
+  );
+
   const activeCount = useMemo(() => {
     const counts: Record<TabKey, number> = {
       overview: data.summary ? 1 : 0,
-      conversations: data.conversations.length,
-      handoffs: data.handoffs.length,
-      gaps: data.gaps.length,
+      conversations: visibleConversations.length,
+      handoffs: visibleHandoffs.length,
+      gaps: visibleGaps.length,
       notifications: data.notifications.length,
       scenarios: data.scenarioPacks.length,
-      mockData: data.mockRecords.length
+      mockData: visibleMockRecords.length
     };
     return counts[activeTab];
-  }, [activeTab, data]);
+  }, [activeTab, data, visibleConversations, visibleHandoffs, visibleGaps, visibleMockRecords]);
 
   async function refreshConsoleData() {
     try {
@@ -208,6 +239,22 @@ function App() {
         <div className="header-actions">
           <span className="demo-badge">Demo</span>
           <span className="demo-badge">Mock 数据</span>
+          <div className="role-switch" role="group" aria-label="控制台角色（Demo）">
+            <button
+              type="button"
+              className={role === 'admin' ? 'active' : ''}
+              onClick={() => handleRoleChange('admin')}
+            >
+              管理员
+            </button>
+            <button
+              type="button"
+              className={role === 'viewer' ? 'active' : ''}
+              onClick={() => handleRoleChange('viewer')}
+            >
+              只读
+            </button>
+          </div>
           <button onClick={refreshConsoleData} disabled={isLoading || isUpdating}>
             刷新
           </button>
@@ -231,6 +278,24 @@ function App() {
             </button>
           ))}
         </nav>
+        <div className="filter-row">
+          <label htmlFor="scenario-filter">当前演示场景包：</label>
+          <select
+            id="scenario-filter"
+            value={scenarioFilter}
+            onChange={(event) => setScenarioFilter(event.target.value)}
+          >
+            <option value="all">全部</option>
+            {data.scenarioPacks.map((pack) => (
+              <option key={pack.code} value={pack.code}>
+                {pack.name}
+              </option>
+            ))}
+          </select>
+          {role === 'viewer' ? (
+            <span className="hint-badge">只读模式：写操作已禁用（后端同样拦截）</span>
+          ) : null}
+        </div>
         <p>{isLoading ? '加载 Demo 数据中…' : `当前列表 ${activeCount} 条，最近刷新：${lastUpdatedAt || '待刷新'}`}</p>
       </section>
 
@@ -241,12 +306,13 @@ function App() {
             <Overview summary={data.summary} onSelect={setSelected} />
           ) : null}
           {!isLoading && activeTab === 'conversations' ? (
-            <ConversationList records={data.conversations} onSelect={setSelected} />
+            <ConversationList records={visibleConversations} onSelect={setSelected} />
           ) : null}
           {!isLoading && activeTab === 'handoffs' ? (
             <HandoffList
-              records={data.handoffs}
+              records={visibleHandoffs}
               isUpdating={isUpdating}
+              canWrite={canWrite}
               onSelect={setSelected}
               onUpdate={handleHandoffUpdate}
               onNotify={handleCreateNotification}
@@ -254,8 +320,9 @@ function App() {
           ) : null}
           {!isLoading && activeTab === 'gaps' ? (
             <GapList
-              records={data.gaps}
+              records={visibleGaps}
               isUpdating={isUpdating}
+              canWrite={canWrite}
               onSelect={setSelected}
               onUpdate={handleGapUpdate}
               onNotify={handleCreateNotification}
@@ -268,7 +335,7 @@ function App() {
             <ScenarioList records={data.scenarioPacks} onSelect={handleScenarioSelect} />
           ) : null}
           {!isLoading && activeTab === 'mockData' ? (
-            <MockRecordList records={data.mockRecords} onSelect={setSelected} />
+            <MockRecordList records={visibleMockRecords} onSelect={setSelected} />
           ) : null}
         </div>
 
@@ -328,12 +395,14 @@ function ConversationList({ records, onSelect }: { records: ConversationListItem
 function HandoffList({
   records,
   isUpdating,
+  canWrite,
   onSelect,
   onUpdate,
   onNotify
 }: {
   records: HandoffRecord[];
   isUpdating: boolean;
+  canWrite: boolean;
   onSelect: (record: DetailRecord) => void;
   onUpdate: (record: HandoffRecord, status: string) => void;
   onNotify: (eventType: string, relatedId: string) => void;
@@ -350,13 +419,17 @@ function HandoffList({
           <p>{record.summary}</p>
           <MetaRow values={[record.suggested_owner, record.conversation_id, record.updated_at]} mock={record.mock} />
           <div className="action-row" onClick={(event) => event.stopPropagation()}>
-            <button disabled={isUpdating} onClick={() => onUpdate(record, 'processing')}>
+            <button disabled={isUpdating || !canWrite} onClick={() => onUpdate(record, 'processing')}>
               标记处理中
             </button>
-            <button disabled={isUpdating} onClick={() => onUpdate(record, 'closed')}>
+            <button disabled={isUpdating || !canWrite} onClick={() => onUpdate(record, 'closed')}>
               标记已关闭
             </button>
-            <button className="secondary" disabled={isUpdating} onClick={() => onNotify('handoff', record.handoff_id)}>
+            <button
+              className="secondary"
+              disabled={isUpdating || !canWrite}
+              onClick={() => onNotify('handoff', record.handoff_id)}
+            >
               生成通知
             </button>
           </div>
@@ -369,12 +442,14 @@ function HandoffList({
 function GapList({
   records,
   isUpdating,
+  canWrite,
   onSelect,
   onUpdate,
   onNotify
 }: {
   records: KnowledgeGapRecord[];
   isUpdating: boolean;
+  canWrite: boolean;
   onSelect: (record: DetailRecord) => void;
   onUpdate: (record: KnowledgeGapRecord, status: string) => void;
   onNotify: (eventType: string, relatedId: string) => void;
@@ -391,11 +466,15 @@ function GapList({
           <MetaRow values={[record.scenario_pack_code, ...record.tags, record.updated_at]} mock={record.mock} />
           <div className="action-row" onClick={(event) => event.stopPropagation()}>
             {['reviewing', 'accepted', 'rejected', 'closed'].map((status) => (
-              <button key={status} disabled={isUpdating} onClick={() => onUpdate(record, status)}>
+              <button key={status} disabled={isUpdating || !canWrite} onClick={() => onUpdate(record, status)}>
                 {status}
               </button>
             ))}
-            <button className="secondary" disabled={isUpdating} onClick={() => onNotify('knowledge_gap', record.gap_id)}>
+            <button
+              className="secondary"
+              disabled={isUpdating || !canWrite}
+              onClick={() => onNotify('knowledge_gap', record.gap_id)}
+            >
               生成通知
             </button>
           </div>

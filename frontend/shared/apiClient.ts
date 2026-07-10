@@ -15,6 +15,23 @@ import type {
 
 const API_BASE = '/api/v1';
 
+const CONSOLE_ROLE_KEY = 'zycs_console_role';
+
+export type ConsoleRole = 'admin' | 'viewer';
+
+export function getConsoleRole(): ConsoleRole {
+  const stored = localStorage.getItem(CONSOLE_ROLE_KEY);
+  return stored === 'admin' ? 'admin' : 'viewer';
+}
+
+export function setConsoleRole(role: ConsoleRole): void {
+  localStorage.setItem(CONSOLE_ROLE_KEY, role);
+}
+
+function consoleRoleHeader(): Record<string, string> {
+  return { 'X-Console-Role': getConsoleRole() };
+}
+
 export class ApiClientError extends Error {
   readonly code: string;
   readonly requestId: string;
@@ -30,12 +47,13 @@ export class ApiClientError extends Error {
 }
 
 async function requestJson<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  const { headers: optionHeaders, ...rest } = options ?? {};
   const response = await fetch(`${API_BASE}${path}`, {
+    ...rest,
     headers: {
       'Content-Type': 'application/json',
-      ...(options?.headers ?? {})
-    },
-    ...options
+      ...((optionHeaders as Record<string, string> | undefined) ?? {})
+    }
   });
   const body = await response.json();
   if (!response.ok) {
@@ -88,6 +106,7 @@ export function updateHandoffStatus(
 ): Promise<ApiResponse<HandoffRecord>> {
   return requestJson<HandoffRecord>(`/handoffs/${handoffId}`, {
     method: 'PATCH',
+    headers: consoleRoleHeader(),
     body: JSON.stringify({ status, resolution_note: resolutionNote })
   });
 }
@@ -103,6 +122,7 @@ export function updateKnowledgeGapStatus(
 ): Promise<ApiResponse<KnowledgeGapRecord>> {
   return requestJson<KnowledgeGapRecord>(`/knowledge-gaps/${gapId}`, {
     method: 'PATCH',
+    headers: consoleRoleHeader(),
     body: JSON.stringify({ status, resolution_note: resolutionNote })
   });
 }
@@ -117,6 +137,7 @@ export function createMockNotification(
 ): Promise<ApiResponse<MockNotificationRecord>> {
   return requestJson<MockNotificationRecord>('/notifications/mock', {
     method: 'POST',
+    headers: consoleRoleHeader(),
     body: JSON.stringify({ event_type: eventType, related_id: relatedId, target_type: 'feishu' })
   });
 }
