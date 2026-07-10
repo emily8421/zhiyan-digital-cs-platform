@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已细化（2026-07-10，单实例双场景包 / 本机部署 / 权限最小集），见 §2/§3 |
+| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，PR #34，单实例双场景包 / 本机部署 / 权限最小集），见 §2/§3 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -25,7 +25,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-4 | Web 控制台 | 实现会话、待跟进、缺口、通知、摘要基础列表。 | F-006、F-007、F-008 | `frontend/console/`、`frontend/shared/`、`tests/acceptance/` | 已完成 |
 | Sprint-5 | 不编造与风险兜底 | 补充高风险规则、缺口流转、审计日志和验收样例。 | F-003、F-006、F-008、F-009 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` | 已完成 |
 | Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` | 已通过验收 |
-| Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已细化，待编码 |
+| Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已完成（PR #34，2026-07-10） |
 | Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`docker/`、`docs/research/` | 草案，待细化（DOC-C-003/004） |
 | Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | 草案，待细化（DOC-C-005） |
 
@@ -334,6 +334,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-06 | Phase1 Sprint-1~Sprint-6 已完成 | 后端 API 测试 `19 passed`；H5 / Console build 通过；HTTP 场景验证 TC-001~TC-016 全部通过；三端本机运行端口 `8000` / `5173` / `5174` 可访问，详见 `docs/09-verification.md` §6。 |
 | 2026-07-06 | Phase2 规划待人工确认 | `docs/research/2026-07-06-phase-upgrade-evaluation.md` 结论为 Conditional Go，是否进入 Phase2 / MVP 试点规划仍待人工确认。 |
 | 2026-07-09 | Phase2 Conditional Go 已确认 | DOC-C-001~C-005 全按 AI 推荐；新增 Phase2 Sprint-7/8/9 草案与 M8~M10 里程碑。 |
+| 2026-07-10 | Sprint-7 已完成并通过验收 | 单实例双场景包（古晶产品型 + 乐式项目型）部署、控制台角色权限最小集（WC-C-001，Demo 级 `X-Console-Role`）、运营配置入口（角色切换 + 场景包过滤）、试点部署预案；后端 `30 passed`、两端 build 通过、TC-017~020 手工验收通过。PR #34 已合并。 |
 
 ## 7. 已确认口径与待执行
 
