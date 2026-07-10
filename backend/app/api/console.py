@@ -1,7 +1,8 @@
 from datetime import date
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from app.core.permissions import require_console_admin
 from app.schemas.common import ApiError, ApiException, ApiResponse, ErrorResponse, ResponseMeta, new_request_id
 from app.schemas.audit import AuditLogRecord
 from app.schemas.console import (
@@ -53,6 +54,7 @@ def get_handoffs(
 def patch_handoff(
     handoff_id: str,
     payload: StatusUpdateRequest,
+    _: None = Depends(require_console_admin),
 ) -> ApiResponse[HandoffRecord]:
     try:
         handoff = update_handoff_status(
@@ -96,6 +98,7 @@ def get_knowledge_gaps(
 def patch_knowledge_gap(
     gap_id: str,
     payload: StatusUpdateRequest,
+    _: None = Depends(require_console_admin),
 ) -> ApiResponse[KnowledgeGapRecord]:
     try:
         gap = update_knowledge_gap_status(
@@ -129,6 +132,7 @@ def get_mock_notifications(
 @router.post("/notifications/mock", response_model=ApiResponse[MockNotificationRecord])
 def post_mock_notification(
     payload: MockNotificationRequest,
+    _: None = Depends(require_console_admin),
 ) -> ApiResponse[MockNotificationRecord]:
     return ApiResponse(
         request_id=new_request_id(),
