@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024），见 §6 / §10.2 / §10.4 / §10.5 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -240,3 +240,21 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-021~TC-024 均通过。
 - 边界说明：后端业务未切 PostgreSQL；H5 / Console 仍走现有 Mock / 本地临时数据；embedding 字段保留但向量检索业务未启用。
 - 残留风险：飞书 RG-001 仍待凭据 / 回调边界；DB 业务读写需后续 Sprint-8B / Sprint-8C 单独实现。
+
+### 10.6 Sprint-8B 验证用例（静态数据读库）
+
+> 2026-07-10 细化并执行。范围：仅让场景包、知识、规则、Mock 业务记录可在显式启用时从 PostgreSQL 读取；默认仍走 JSON，失败回退 JSON。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-025 | `tasks/task-008b-static-data-postgres.md`、`backend/app/services/static_data_source.py` | RG-002、REQ-007、REQ-014 | 不设置 `ZYCS_STATIC_DATA_SOURCE`，运行静态数据相关接口测试 | 场景包、Mock 查询、知识问答仍走 JSON，既有测试通过 | 通过（2026-07-10） |
+| TC-026 | `backend/app/services/scenario_pack_service.py` | RG-002、REQ-015 | 设置 `ZYCS_STATIC_DATA_SOURCE=postgres` 但不设置 `ZYCS_DATABASE_URL` | 自动回退 JSON，Demo 不受影响 | 通过（2026-07-10） |
+| TC-027 | `backend/app/services/postgres_static_data_repository.py`、`docs/env/postgres-pgvector-runbook.md` | RG-002、REQ-007、REQ-008、REQ-014 | 设置 `ZYCS_TEST_DATABASE_URL=postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs`，运行 `tests/api/test_static_data_source.py` | PG 模式可读取 2 个场景包、Mock 业务记录和知识问答；测试 3 passed | 通过（2026-07-10） |
+
+#### Sprint-8B 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008b-static-data-postgres.md`。
+- 改动范围：`backend/requirements.txt`、`backend/app/services/static_data_source.py`、`backend/app/services/postgres_static_data_repository.py`、`backend/app/services/scenario_pack_service.py`、`tests/api/test_static_data_source.py`、`docs/env/postgres-pgvector-runbook.md`。
+- 验证结果：TC-025~TC-027 均通过；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 33 passed、1 skipped（PG 专项在未设置 `ZYCS_TEST_DATABASE_URL` 时跳过）。
+- 边界说明：会话、消息、转人工、知识缺口、通知和日报未切 PostgreSQL；PG 读取需显式环境变量启用；数据库不可用时保留 JSON 降级。
+- 残留风险：业务写库和会话持久化需 Sprint-8C 单独设计；飞书 RG-001 仍待凭据 / 回调边界。

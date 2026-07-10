@@ -3,6 +3,11 @@ from functools import lru_cache
 from pathlib import Path
 
 from app.schemas.scenario_packs import ScenarioPack, ScenarioPackSummary, to_summary
+from app.services.postgres_static_data_repository import (
+    PostgresStaticDataError,
+    load_scenario_packs_from_postgres,
+)
+from app.services.static_data_source import should_use_postgres_static_data
 
 _DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "scenario_packs"
 
@@ -20,6 +25,16 @@ class InvalidScenarioPackError(Exception):
 
 @lru_cache
 def load_scenario_packs() -> dict[str, ScenarioPack]:
+    if should_use_postgres_static_data():
+        try:
+            packs = load_scenario_packs_from_postgres()
+            for pack in packs.values():
+                _validate_scenario_pack(pack)
+            if packs:
+                return packs
+        except PostgresStaticDataError:
+            pass
+
     packs: dict[str, ScenarioPack] = {}
     for path in sorted(_DATA_DIR.glob("*.json")):
         raw_data = json.loads(path.read_text(encoding="utf-8-sig"))

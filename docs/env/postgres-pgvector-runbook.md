@@ -128,8 +128,35 @@ docker compose -f docker/docker-compose.pgvector.yml up -d
 
 下一步可拆为两个独立任务：
 
-1. **Sprint-8B：静态数据读库**——让场景包、知识、规则、Mock 业务记录可从 PostgreSQL 读取，同时保留 JSON 降级。
+1. **Sprint-8B：静态数据读库**——已完成。场景包、知识、规则、Mock 业务记录可在显式启用后从 PostgreSQL 读取，同时保留 JSON 降级。
 2. **Sprint-8C：会话持久化**——让会话、消息、转人工、知识缺口、通知和日报写入 PostgreSQL，同时保留 Mock / 内存降级。
 
 飞书沙箱（RG-001）和 LLM 评估（RG-003）继续单独处理，不与 DB 切换混在同一任务。
 
+## 8. Sprint-8B 静态数据读库开关
+
+默认情况下，后端仍从 `backend/app/data/scenario_packs/*.json` 读取静态数据。只有显式设置以下环境变量时，才会优先从 PostgreSQL 读取：
+
+```powershell
+$env:ZYCS_STATIC_DATA_SOURCE='postgres'
+$env:ZYCS_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+```
+
+启动后端：
+
+```powershell
+$env:PYTHONPATH='backend'
+python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
+```
+
+如未设置 `ZYCS_DATABASE_URL`、数据库不可用或读取失败，后端会回退到 JSON 静态数据，避免影响本机 Demo。
+
+测试 PG 模式：
+
+```powershell
+$env:PYTHONPATH='backend'
+$env:ZYCS_TEST_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+python -m pytest -p no:cacheprovider tests/api/test_static_data_source.py
+```
+
+注意：Sprint-8B 只让静态数据可从 PG 读取，不会把会话、消息、转人工、知识缺口、通知或日报写入 PG。
