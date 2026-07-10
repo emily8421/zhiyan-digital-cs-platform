@@ -8,6 +8,16 @@ from app.schemas.console import (
     KnowledgeGapRecord,
     MockNotificationRecord,
 )
+from app.services.console_store import (
+    PostgresConsoleStoreError,
+    create_handoff_in_postgres,
+    create_knowledge_gap_in_postgres,
+    list_handoffs_from_postgres,
+    list_knowledge_gaps_from_postgres,
+    update_handoff_status_in_postgres,
+    update_knowledge_gap_status_in_postgres,
+)
+from app.services.conversation_store import should_use_postgres_conversation_store
 
 _HANDOFF_STATUSES = {"open", "processing", "closed"}
 _GAP_STATUSES = {"new", "reviewing", "accepted", "rejected", "closed"}
@@ -84,6 +94,16 @@ def list_handoffs(
     risk_level: str | None = None,
     suggested_owner: str | None = None,
 ) -> list[HandoffRecord]:
+    if _use_postgres_console_store():
+        records = _try_postgres_read(
+            list_handoffs_from_postgres,
+            status,
+            risk_level,
+            suggested_owner,
+        )
+        if records is not None:
+            return records
+
     return [
         deepcopy(record)
         for record in _handoffs.values()
@@ -100,6 +120,16 @@ def update_handoff_status(
 ) -> HandoffRecord:
     if status not in _HANDOFF_STATUSES:
         raise InvalidConsoleStatusError("handoff", status)
+    if _use_postgres_console_store():
+        postgres_record = _try_postgres_read(
+            update_handoff_status_in_postgres,
+            handoff_id,
+            status,
+            resolution_note,
+        )
+        if postgres_record is not None:
+            return postgres_record
+
     record = _handoffs.get(handoff_id)
     if record is None:
         raise ConsoleRecordNotFoundError("handoff", handoff_id)
@@ -129,6 +159,8 @@ def create_handoff_record(
         mock=True,
     )
     _handoffs[handoff.handoff_id] = handoff
+    if _use_postgres_console_store():
+        _try_postgres_write(create_handoff_in_postgres, handoff)
     return deepcopy(handoff)
 
 
@@ -137,6 +169,16 @@ def list_knowledge_gaps(
     scenario_pack_code: str | None = None,
     tag: str | None = None,
 ) -> list[KnowledgeGapRecord]:
+    if _use_postgres_console_store():
+        records = _try_postgres_read(
+            list_knowledge_gaps_from_postgres,
+            status,
+            scenario_pack_code,
+            tag,
+        )
+        if records is not None:
+            return records
+
     return [
         deepcopy(record)
         for record in _knowledge_gaps.values()
@@ -153,6 +195,16 @@ def update_knowledge_gap_status(
 ) -> KnowledgeGapRecord:
     if status not in _GAP_STATUSES:
         raise InvalidConsoleStatusError("knowledge_gap", status)
+    if _use_postgres_console_store():
+        postgres_record = _try_postgres_read(
+            update_knowledge_gap_status_in_postgres,
+            gap_id,
+            status,
+            resolution_note,
+        )
+        if postgres_record is not None:
+            return postgres_record
+
     record = _knowledge_gaps.get(gap_id)
     if record is None:
         raise ConsoleRecordNotFoundError("knowledge_gap", gap_id)
@@ -179,6 +231,8 @@ def create_knowledge_gap_record(
         mock=True,
     )
     _knowledge_gaps[gap.gap_id] = gap
+    if _use_postgres_console_store():
+        _try_postgres_write(create_knowledge_gap_in_postgres, gap)
     return deepcopy(gap)
 
 
@@ -295,3 +349,24 @@ def _matches_filter(value: str, expected: str | None) -> bool:
 
 def _now_iso() -> str:
     return datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds")
+
+
+def _use_postgres_console_store() -> bool:
+    try:
+        return should_use_postgres_conversation_store()
+    except Exception:
+        return False
+
+
+def _try_postgres_write(function, *args) -> None:
+    try:
+        function(*args)
+    except PostgresConsoleStoreError:
+        return
+
+
+def _try_postgres_read(function, *args):
+    try:
+        return function(*args)
+    except PostgresConsoleStoreError:
+        return None

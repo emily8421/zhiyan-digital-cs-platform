@@ -258,6 +258,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 > 2026-07-10 已拆出并完成 Sprint-8A「DB 持久化基础设施」：仅搭建 PostgreSQL + pgvector 本机数据库地基，不把后端业务逻辑切到数据库；详见 `tasks/task-008a-db-foundation.md` 与 `docs/env/postgres-pgvector-runbook.md`。
 > 2026-07-10 已拆出并完成 Sprint-8B「静态数据读库」：场景包、知识、规则、Mock 业务记录可在显式启用后从 PostgreSQL 读取，并保留 JSON 降级；详见 `tasks/task-008b-static-data-postgres.md`。
 > 2026-07-10 已拆出并完成 Sprint-8C-A「会话与消息持久化」：新建会话、客户消息和助手回答可在显式启用后写入 PostgreSQL，并保留内存降级；详见 `tasks/task-008c-a-conversation-message-postgres.md`。
+> 2026-07-10 已拆出并完成 Sprint-8C-B「运营数据持久化（转人工 / 知识缺口）」：高风险转人工与无依据知识缺口可在显式启用后写入 PostgreSQL，并保留内存降级；通知、日报和审计日志仍后置。详见 `tasks/task-008c-b-operational-data-postgres.md`。
 
 #### 输入文档
 
@@ -272,6 +273,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - `tasks/task-008a-db-foundation.md`、`docker/docker-compose.pgvector.yml`、`docker/postgres/init/*.sql`、`docs/env/postgres-pgvector-runbook.md`（Sprint-8A DB 地基，已完成）
 - `tasks/task-008b-static-data-postgres.md`、`backend/app/services/static_data_source.py`、`backend/app/services/postgres_static_data_repository.py`、`backend/app/services/scenario_pack_service.py`（Sprint-8B 静态数据读库，已完成）
 - `tasks/task-008c-a-conversation-message-postgres.md`、`backend/app/services/conversation_store.py`、`backend/app/services/conversation_service.py`（Sprint-8C-A 会话与消息持久化，已完成）
+- `tasks/task-008c-b-operational-data-postgres.md`、`backend/app/services/console_store.py`、`backend/app/services/console_service.py`（Sprint-8C-B 转人工 / 知识缺口持久化，已完成）
 
 #### 验收标准
 
@@ -280,6 +282,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Sprint-8A DB 地基可本机启动，pgvector 扩展、11 张 `zycs_` 表与 Demo seed 数据可验证；不等同于业务已启用 PG。
 - Sprint-8B 静态数据读库可在环境变量显式启用后读取 PostgreSQL seed，并在未配置 / 不可用时回退 JSON。
 - Sprint-8C-A 会话与消息可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于转人工 / 缺口 / 通知 / 日报已持久化。
+- Sprint-8C-B 转人工与知识缺口可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于通知 / 日报 / 审计日志已持久化。
 - 不真实发送未经授权的通知。
 
 #### 禁止事项

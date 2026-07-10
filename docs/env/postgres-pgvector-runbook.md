@@ -130,7 +130,7 @@ docker compose -f docker/docker-compose.pgvector.yml up -d
 
 1. **Sprint-8B：静态数据读库**——已完成。场景包、知识、规则、Mock 业务记录可在显式启用后从 PostgreSQL 读取，同时保留 JSON 降级。
 2. **Sprint-8C-A：会话与消息持久化**——已完成。客户会话、客户消息和助手回答可在显式启用后写入 PostgreSQL，同时保留内存降级。
-3. **Sprint-8C-B：运营数据持久化**——让转人工、知识缺口、通知和日报写入 PostgreSQL，同时保留 Mock / 内存降级。
+3. **Sprint-8C-B：运营数据持久化**——已完成第一小步。转人工与知识缺口可在显式启用后写入 PostgreSQL，同时保留 Mock / 内存降级；通知、日报和审计日志仍后置。
 
 飞书沙箱（RG-001）和 LLM 评估（RG-003）继续单独处理，不与 DB 切换混在同一任务。
 
@@ -188,3 +188,30 @@ python -m pytest -p no:cacheprovider tests/api/test_conversation_store.py
 ```
 
 注意：Sprint-8C-A 只持久化 `zycs_conversations` 和 `zycs_messages`；转人工、知识缺口、通知、日报和审计日志仍沿用现有内存 / Mock 逻辑。
+
+## 10. Sprint-8C-B 转人工与知识缺口持久化开关
+
+默认情况下，后端仍把转人工记录和知识缺口保存在内存 Demo 中。只有显式设置以下环境变量时，才会把客户消息触发的转人工 / 知识缺口写入 PostgreSQL，并让控制台列表与状态更新优先读写 PostgreSQL：
+
+```powershell
+$env:ZYCS_CONVERSATION_STORE='postgres'
+$env:ZYCS_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+```
+
+可与 Sprint-8B 静态数据读库同时启用：
+
+```powershell
+$env:ZYCS_STATIC_DATA_SOURCE='postgres'
+$env:ZYCS_CONVERSATION_STORE='postgres'
+$env:ZYCS_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+```
+
+测试 PG 运营数据持久化：
+
+```powershell
+$env:PYTHONPATH='backend'
+$env:ZYCS_TEST_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+python -m pytest -p no:cacheprovider tests/api/test_console_store.py
+```
+
+注意：Sprint-8C-B 当前只持久化 `zycs_human_handoffs` 和 `zycs_knowledge_gaps`；通知、日报、审计日志、飞书沙箱、LLM 和真实业务系统仍后置。由于现有 `zycs_human_handoffs` 表尚无 `summary` / `resolution_note` 字段，PG 列表中的 `summary` 临时沿用 `reason`，转人工处理说明不写入 PG；如需完整运营工单字段，应另拆 schema 演进任务。

@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -277,3 +277,22 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-028~TC-031 均通过；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 35 passed、3 skipped。
 - 边界说明：转人工详情、知识缺口、通知、日报、审计日志未切 PostgreSQL；PG 写入需显式环境变量启用；数据库不可用时保留内存降级。
 - 残留风险：运营数据持久化需 Sprint-8C-B 单独设计；飞书 RG-001 仍待凭据 / 回调边界。
+
+### 10.8 Sprint-8C-B 验证用例（转人工与知识缺口持久化）
+
+> 2026-07-10 细化并执行。范围：仅让客户消息触发的转人工与知识缺口可在显式启用时写入 PostgreSQL，控制台列表和状态更新优先读写 PostgreSQL；默认仍走内存，失败回退内存。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-032 | `tasks/task-008c-b-operational-data-postgres.md`、`backend/app/services/console_service.py` | RG-002、REQ-006、REQ-011 | 设置 `ZYCS_CONVERSATION_STORE=postgres` 但不设置 `ZYCS_DATABASE_URL`，触发高风险转人工 | 自动回退内存，控制台转人工列表可查到本轮记录，Demo 不受影响 | 通过（2026-07-10） |
+| TC-033 | `backend/app/services/console_store.py`、`docs/06-db-design.md` | RG-002、REQ-006、REQ-016 | PG 模式下发送高风险问题 | `zycs_human_handoffs` 写入转人工记录；控制台列表可按 `status=open` 查回 | 通过（2026-07-10） |
+| TC-034 | `backend/app/services/console_store.py`、`docs/06-db-design.md` | RG-002、REQ-011、REQ-016 | PG 模式下发送无依据问题 | `zycs_knowledge_gaps` 写入知识缺口与 `suggested_tags`；控制台列表可按 `status=new` / `tag=待确认` 查回 | 通过（2026-07-10） |
+| TC-035 | `docs/07-api-spec.md` API-004 / API-005 | RG-002、REQ-010、REQ-011 | PG 模式下调用控制台 `PATCH /handoffs/{id}` 与 `PATCH /knowledge-gaps/{id}` | 转人工状态写回 `zycs_human_handoffs`；知识缺口状态与处理说明写回 `zycs_knowledge_gaps` | 通过（2026-07-10） |
+
+#### Sprint-8C-B 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008c-b-operational-data-postgres.md`。
+- 改动范围：`backend/app/services/console_store.py`、`backend/app/services/console_service.py`、`tests/api/test_console_store.py`、`docs/env/postgres-pgvector-runbook.md`。
+- 验证结果：TC-032~TC-035 均通过；PG 专项 `tests/api/test_console_store.py tests/api/test_conversation_store.py` 为 6 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 36 passed、4 skipped。
+- 边界说明：通知、日报、审计日志未切 PostgreSQL；飞书沙箱、LLM、真实业务系统未接入；PG 写入需显式环境变量启用，数据库不可用时保留内存降级。
+- 残留风险：`zycs_human_handoffs` 当前表结构无 `summary` / `resolution_note` 字段，PG 列表中的 `summary` 临时沿用 `reason`，转人工处理说明不写入 PG；如需完整运营工单字段，应另拆 schema 演进任务。
