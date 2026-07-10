@@ -1,0 +1,25 @@
+name: zycs-pgvector
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.0-pg16
+    container_name: zycs-postgres-pgvector
+    environment:
+      POSTGRES_DB: zycs
+      POSTGRES_USER: zycs
+      POSTGRES_PASSWORD: zycs_demo_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - zycs_pgvector_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zycs -d zycs"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  zycs_pgvector_data:
+

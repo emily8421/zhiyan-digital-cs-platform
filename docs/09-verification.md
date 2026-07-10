@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10），见 §6 / §10.2 / §10.4 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024），见 §6 / §10.2 / §10.4 / §10.5 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -221,3 +221,22 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | TC-018 | `docs/design/web-console.md`（WC-C-001）、`docs/02-srs.md` REQ-016 | REQ-016 | 以管理员与只读角色分别调用控制台写操作（转人工 / 缺口 / 知识候选状态更新） | 后端按角色放行：管理员可写、其余只读；前端隐藏 / 禁用不能绕过后端 |
 | TC-019 | `docs/design/web-console.md`、`docs/design/frontend-interaction.md` | REQ-010、REQ-012 | 控制台运营配置入口切换当前演示场景包、查看双场景包数据与日报摘要 | 可切换 / 查看双场景包数据，运营流程跑通，列表标明 Mock / Demo |
 | TC-020 | `docs/env/`（试点部署预案）、本文件 §4 | REQ-015 | 按 `docs/env` 试点部署预案本机部署三端（8000 / 5173 / 5174） | 三端可达，端到端演示可复现，Mock / 降级路径保留 |
+
+### 10.5 Sprint-8A 验证用例（DB 持久化基础设施）
+
+> 2026-07-10 细化并执行。范围：仅搭建 PostgreSQL + pgvector 本机数据库地基，不改后端业务逻辑，不把 Demo 链路切到 PostgreSQL。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-021 | `docs/env/postgres-pgvector-runbook.md`、`docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | RG-002 | 执行 `docker compose -f docker/docker-compose.pgvector.yml config` | Compose 配置可解析，无错误 | 通过（2026-07-10） |
+| TC-022 | `docker/docker-compose.pgvector.yml` | RG-002 | 启动 `docker compose -f docker/docker-compose.pgvector.yml up -d` 并等待 healthcheck | `zycs-postgres-pgvector` 进入 `healthy` | 通过（2026-07-10） |
+| TC-023 | `docker/postgres/init/001_schema.sql`、`docs/06-db-design.md` | REQ-001~REQ-012、REQ-014、REQ-016 | 查询 pgvector 扩展与 `zycs_` 表数量 | pgvector 扩展版本 `0.8.0`；`zycs_` 表数量 = 11 | 通过（2026-07-10） |
+| TC-024 | `docker/postgres/init/002_seed.sql`、`docs/06-db-design.md` §6 | REQ-007、REQ-008、REQ-014 | 查询场景包和 Mock 业务记录 seed | 场景包 = 2；Mock 业务记录 = 5，含 `HC-ORDER-001`、`XS-PROJ-001`、`XS-TICKET-001` | 通过（2026-07-10） |
+
+#### Sprint-8A 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008a-db-foundation.md`。
+- 改动范围：`docker/docker-compose.pgvector.yml`、`docker/postgres/init/001_schema.sql`、`docker/postgres/init/002_seed.sql`、`docs/env/postgres-pgvector-runbook.md`。
+- 验证结果：TC-021~TC-024 均通过。
+- 边界说明：后端业务未切 PostgreSQL；H5 / Console 仍走现有 Mock / 本地临时数据；embedding 字段保留但向量检索业务未启用。
+- 残留风险：飞书 RG-001 仍待凭据 / 回调边界；DB 业务读写需后续 Sprint-8B / Sprint-8C 单独实现。

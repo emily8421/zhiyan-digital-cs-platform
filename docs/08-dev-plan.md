@@ -255,6 +255,8 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 将飞书通知从 Mock payload 推进到沙箱 / 试点评估（DOC-C-003，不接真实组织数据）；完成 PostgreSQL / pgvector 技术验证（DOC-C-004，不作全部功能前置）。
 
+> 2026-07-10 已拆出并完成 Sprint-8A「DB 持久化基础设施」：仅搭建 PostgreSQL + pgvector 本机数据库地基，不把后端业务逻辑切到数据库；详见 `tasks/task-008a-db-foundation.md` 与 `docs/env/postgres-pgvector-runbook.md`。
+
 #### 输入文档
 
 - `docs/05-tech-spec.md` §13 技术风险、§14 Readiness Gate（对应 doc-standards §8/§9）
@@ -265,11 +267,13 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - `backend/app/adapters/`（飞书适配沙箱）
 - `docker/`（PostgreSQL/pgvector 编排，待 Docker 可用）
 - `docs/research/*tech-env-evaluation*.md`（技术环境评估）
+- `tasks/task-008a-db-foundation.md`、`docker/docker-compose.pgvector.yml`、`docker/postgres/init/*.sql`、`docs/env/postgres-pgvector-runbook.md`（Sprint-8A DB 地基，已完成）
 
 #### 验收标准
 
 - 飞书沙箱联调通过，真实组织数据默认不接入。
 - PostgreSQL/pgvector 技术验证有 Go / Conditional Go 结论。
+- Sprint-8A DB 地基可本机启动，pgvector 扩展、11 张 `zycs_` 表与 Demo seed 数据可验证；不等同于业务已启用 PG。
 - 不真实发送未经授权的通知。
 
 #### 禁止事项
@@ -335,6 +339,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-06 | Phase2 规划待人工确认 | `docs/research/2026-07-06-phase-upgrade-evaluation.md` 结论为 Conditional Go，是否进入 Phase2 / MVP 试点规划仍待人工确认。 |
 | 2026-07-09 | Phase2 Conditional Go 已确认 | DOC-C-001~C-005 全按 AI 推荐；新增 Phase2 Sprint-7/8/9 草案与 M8~M10 里程碑。 |
 | 2026-07-10 | Sprint-7 已完成并通过验收 | 单实例双场景包（古晶产品型 + 乐式项目型）部署、控制台角色权限最小集（WC-C-001，Demo 级 `X-Console-Role`）、运营配置入口（角色切换 + 场景包过滤）、试点部署预案；后端 `30 passed`、两端 build 通过、TC-017~020 手工验收通过。PR #34 已合并。 |
+| 2026-07-10 | Sprint-8A DB 地基已完成 | 新增 PostgreSQL + pgvector Compose、本机 schema / seed 初始化和运行手册；验证通过：Compose config、容器 healthy、pgvector `0.8.0`、11 张 `zycs_` 表、2 个场景包 seed、5 条 Mock 业务记录。后端业务尚未切 PG，Mock / 本地临时数据链路保留。 |
 
 ## 7. 已确认口径与待执行
 
