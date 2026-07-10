@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020），见 §6 / §10.4 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10），见 §6 / §10.2 / §10.4 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -202,7 +202,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | Gate | 验证对象 | 进入标准 | 证据 | 状态 |
 |---|---|---|---|---|
 | RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/*tech-env-evaluation*.md` | 待验证（Sprint-8） |
-| RG-002 | PostgreSQL/pgvector | 技术验证 Go/Conditional Go | `docs/research/*tech-env-evaluation*.md` | 待验证（Sprint-8） |
+| RG-002 | PostgreSQL/pgvector | 技术验证 Go/Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） |
 | RG-003 | LLM | 证据约束/不编造/成本/兜底评估完成 | LLM 专项评估报告 | 待评估（Sprint-9） |
 
 ### 10.3 Phase2 不解锁验证
