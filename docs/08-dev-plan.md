@@ -261,6 +261,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 > 2026-07-10 已拆出并完成 Sprint-8C-B「运营数据持久化（转人工 / 知识缺口）」：高风险转人工与无依据知识缺口可在显式启用后写入 PostgreSQL，并保留内存降级；通知、日报和审计日志仍后置。详见 `tasks/task-008c-b-operational-data-postgres.md`。
 > 2026-07-10 已拆出并完成 Sprint-8D「飞书沙箱启动前评估」：RG-001 结论为 Conditional Go，已明确出站通知凭据清单、默认 Mock / 显式 sandbox / 失败降级、回调后置边界；真实沙箱实发待人工提供 webhook URL / secret。详见 `tasks/task-008d-feishu-sandbox-readiness.md` 与 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`。
 > 2026-07-10 已拆出并完成 Sprint-8E「Feishu 通知适配器骨架」：默认 Mock、显式 sandbox、缺配置 / 发送失败降级，不提交真实凭据、不启用事件回调；真实沙箱实发 TC-039 仍待人工提供 webhook URL / secret。详见 `tasks/task-008e-feishu-notification-adapter.md`。
+> 2026-07-10 已拆出并完成 Sprint-8F「通知记录持久化」：API-009 创建的通知记录可在显式启用后写入 PostgreSQL，并保留内存降级；日报和审计日志仍后置。详见 `tasks/task-008f-notification-postgres.md`。
 
 #### 输入文档
 
@@ -278,6 +279,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - `tasks/task-008c-b-operational-data-postgres.md`、`backend/app/services/console_store.py`、`backend/app/services/console_service.py`（Sprint-8C-B 转人工 / 知识缺口持久化，已完成）
 - `tasks/task-008d-feishu-sandbox-readiness.md`、`docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`（Sprint-8D 飞书沙箱启动前评估，已完成）
 - `tasks/task-008e-feishu-notification-adapter.md`、`backend/app/adapters/feishu_notification_adapter.py`、`backend/app/services/console_service.py`（Sprint-8E Feishu 通知适配器骨架，已完成）
+- `tasks/task-008f-notification-postgres.md`、`backend/app/services/console_store.py`、`backend/app/services/console_service.py`（Sprint-8F 通知记录持久化，已完成）
 
 #### 验收标准
 
@@ -289,6 +291,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Sprint-8C-B 转人工与知识缺口可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于通知 / 日报 / 审计日志已持久化。
 - Sprint-8D 飞书沙箱启动前评估给出 RG-001 Conditional Go：可进入默认 Mock / 显式 sandbox 的适配器设计；真实实发仍需人工提供凭据。
 - Sprint-8E Feishu 通知适配器骨架默认 Mock，显式 sandbox，缺配置 / 发送失败降级；不等同于 TC-039 沙箱实发已通过。
+- Sprint-8F 通知记录可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于日报 / 审计日志已持久化。
 - 不真实发送未经授权的通知。
 
 #### 禁止事项

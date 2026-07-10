@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from typing import Any
 
-from app.schemas.console import HandoffRecord, KnowledgeGapRecord
+from app.schemas.console import HandoffRecord, KnowledgeGapRecord, MockNotificationRecord
 from app.services.static_data_source import get_database_url
 
 
@@ -162,6 +162,54 @@ def update_knowledge_gap_status_in_postgres(
     return _knowledge_gap_from_row(row)
 
 
+def create_notification_in_postgres(record: MockNotificationRecord) -> None:
+    _execute(
+        """
+        INSERT INTO zycs_notifications (
+          id, target_type, event_type, related_id, payload, send_status, is_mock, created_at
+        )
+        VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+        ON CONFLICT (id) DO UPDATE SET
+          target_type = EXCLUDED.target_type,
+          event_type = EXCLUDED.event_type,
+          related_id = EXCLUDED.related_id,
+          payload = EXCLUDED.payload,
+          send_status = EXCLUDED.send_status,
+          is_mock = EXCLUDED.is_mock
+        """,
+        (
+            record.notification_id,
+            record.target_type,
+            record.event_type,
+            record.related_id,
+            json.dumps(record.payload, ensure_ascii=False),
+            record.send_status,
+            record.mock,
+            record.created_at,
+        ),
+    )
+
+
+def list_notifications_from_postgres(
+    event_type: str | None = None,
+    send_status: str | None = None,
+) -> list[MockNotificationRecord]:
+    where_clauses: list[str] = []
+    params: list[str] = []
+    if event_type is not None:
+        where_clauses.append("event_type = %s")
+        params.append(event_type)
+    if send_status is not None:
+        where_clauses.append("send_status = %s")
+        params.append(send_status)
+
+    where_sql = ""
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
+    rows = _fetch_all(_notification_select_sql(where_sql), tuple(params))
+    return [_notification_from_row(row) for row in rows]
+
+
 def _handoff_select_sql(where_sql: str, table_name: str = "zycs_human_handoffs") -> str:
     return f"""
         SELECT
@@ -197,6 +245,23 @@ def _knowledge_gap_select_sql(where_sql: str, table_name: str = "zycs_knowledge_
         LEFT JOIN zycs_scenario_packs sp ON sp.id = c.scenario_pack_id
         {where_sql}
         ORDER BY g.updated_at DESC, g.id
+        """
+
+
+def _notification_select_sql(where_sql: str) -> str:
+    return f"""
+        SELECT
+          id,
+          event_type,
+          related_id,
+          target_type,
+          payload,
+          send_status,
+          is_mock,
+          created_at
+        FROM zycs_notifications
+        {where_sql}
+        ORDER BY created_at DESC, id
         """
 
 
@@ -280,6 +345,19 @@ def _knowledge_gap_from_row(row: dict[str, Any]) -> KnowledgeGapRecord:
     )
 
 
+def _notification_from_row(row: dict[str, Any]) -> MockNotificationRecord:
+    return MockNotificationRecord(
+        notification_id=str(row["id"]),
+        event_type=str(row["event_type"]),
+        related_id=str(row["related_id"] or ""),
+        target_type=str(row["target_type"]),
+        payload=_payload_from_jsonb(row["payload"]),
+        send_status=str(row["send_status"]),
+        created_at=_format_timestamp(row["created_at"]),
+        mock=bool(row["is_mock"]),
+    )
+
+
 def _tags_from_jsonb(value: Any) -> list[str]:
     if isinstance(value, list):
         return [str(item) for item in value]
@@ -291,6 +369,19 @@ def _tags_from_jsonb(value: Any) -> list[str]:
         if isinstance(loaded, list):
             return [str(item) for item in loaded]
     return []
+
+
+def _payload_from_jsonb(value: Any) -> dict[str, object]:
+    if isinstance(value, dict):
+        return dict(value)
+    if isinstance(value, str):
+        try:
+            loaded = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        if isinstance(loaded, dict):
+            return dict(loaded)
+    return {}
 
 
 def _format_timestamp(value: Any) -> str:

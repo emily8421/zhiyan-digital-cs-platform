@@ -246,3 +246,30 @@ python -m pytest -p no:cacheprovider tests/api/test_feishu_notification_adapter.
 ```
 
 注意：当前只实现出站通知适配器骨架；未启用事件回调，未提交真实凭据，未接真实组织数据。缺 webhook URL / secret 或发送失败时，通知路径会降级为 Mock / failed，不阻塞 H5 / Console 主链路。
+
+## 12. Sprint-8F 通知记录持久化开关
+
+默认情况下，通知记录仍保存在内存 Mock 中。只有显式设置以下环境变量时，才会把 API-009 创建的通知记录写入 PostgreSQL，并让通知列表优先读取 `zycs_notifications`：
+
+```powershell
+$env:ZYCS_CONVERSATION_STORE='postgres'
+$env:ZYCS_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+```
+
+可与 Feishu sandbox 骨架同时启用；缺飞书凭据时仍会降级为 Mock 通知，但通知记录会写入 PostgreSQL：
+
+```powershell
+$env:ZYCS_CONVERSATION_STORE='postgres'
+$env:ZYCS_FEISHU_NOTIFY_MODE='sandbox'
+$env:ZYCS_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+```
+
+测试 PG 通知持久化：
+
+```powershell
+$env:PYTHONPATH='backend'
+$env:ZYCS_TEST_DATABASE_URL='postgresql://zycs:zycs_demo_password@127.0.0.1:5432/zycs'
+python -m pytest -p no:cacheprovider tests/api/test_console_store.py
+```
+
+注意：Sprint-8F 只持久化 `zycs_notifications`；日报、审计日志、飞书事件回调和 TC-039 沙箱实发仍后置。

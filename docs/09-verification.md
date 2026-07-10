@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书沙箱）Conditional Go（2026-07-10，TC-036~038，TC-039 待凭据，TC-040~043 适配器骨架通过）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 / §10.10 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书沙箱）Conditional Go（2026-07-10，TC-036~038，TC-039 待凭据，TC-040~043 适配器骨架通过）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035）；Sprint-8F 通知记录持久化已完成并通过验证（TC-044~046），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 / §10.10 / §10.11 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -333,3 +333,20 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 改动范围：`backend/app/adapters/feishu_notification_adapter.py`、`backend/app/adapters/__init__.py`、`backend/app/services/console_service.py`、`tests/api/test_feishu_notification_adapter.py`、`tests/api/test_console.py`、`docs/env/postgres-pgvector-runbook.md`。
 - 验证结果：TC-040~TC-043 均通过；专项测试 `tests/api/test_feishu_notification_adapter.py tests/api/test_console.py` 为 18 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 43 passed、4 skipped。
 - 边界说明：未提交真实 webhook / token / secret；未执行 TC-039 沙箱实发；未启用事件回调；缺配置或发送失败时不阻塞主链路并降级。
+
+### 10.11 Sprint-8F 验证用例（通知记录持久化）
+
+> 2026-07-10 细化并执行。范围：仅让 API-009 创建的通知记录可在显式启用时写入 PostgreSQL；默认仍走内存，失败回退内存。日报和审计日志仍后置。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-044 | `tasks/task-008f-notification-postgres.md`、`backend/app/services/console_service.py` | RG-002、REQ-009 | 不设置 `ZYCS_CONVERSATION_STORE`，创建 / 查询通知 | API-009 仍走内存 Mock，现有控制台测试通过 | 通过（2026-07-10） |
+| TC-045 | `backend/app/services/console_store.py`、`docs/06-db-design.md` | RG-002、REQ-009、REQ-016 | PG 模式下调用 `POST /api/v1/notifications/mock` | `zycs_notifications` 写入通知记录，`payload`、`send_status`、`is_mock` 正确 | 通过（2026-07-10） |
+| TC-046 | `backend/app/services/console_store.py`、API-009 | RG-002、REQ-009 | PG 模式下按 `event_type` / `send_status` 查询通知列表 | `GET /api/v1/notifications/mock` 可从 PostgreSQL 查回本轮记录 | 通过（2026-07-10） |
+
+#### Sprint-8F 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008f-notification-postgres.md`。
+- 改动范围：`backend/app/services/console_store.py`、`backend/app/services/console_service.py`、`tests/api/test_console_store.py`、`docs/env/postgres-pgvector-runbook.md`。
+- 验证结果：TC-044~TC-046 均通过；PG 专项 `tests/api/test_console_store.py tests/api/test_conversation_store.py tests/api/test_static_data_source.py` 为 10 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 43 passed、5 skipped。
+- 边界说明：日报、审计日志未切 PostgreSQL；未执行 TC-039 飞书沙箱实发；未启用事件回调；缺配置或数据库不可用时回退内存。

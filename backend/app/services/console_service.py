@@ -13,8 +13,10 @@ from app.services.console_store import (
     PostgresConsoleStoreError,
     create_handoff_in_postgres,
     create_knowledge_gap_in_postgres,
+    create_notification_in_postgres,
     list_handoffs_from_postgres,
     list_knowledge_gaps_from_postgres,
+    list_notifications_from_postgres,
     update_handoff_status_in_postgres,
     update_knowledge_gap_status_in_postgres,
 )
@@ -241,6 +243,15 @@ def list_notifications(
     event_type: str | None = None,
     send_status: str | None = None,
 ) -> list[MockNotificationRecord]:
+    if _use_postgres_console_store():
+        records = _try_postgres_read(
+            list_notifications_from_postgres,
+            event_type,
+            send_status,
+        )
+        if records is not None:
+            return records
+
     records = list(_seed_notifications().values()) + list(_notifications.values())
     return [
         deepcopy(record)
@@ -272,6 +283,8 @@ def create_mock_notification(
         mock=delivery.mock,
     )
     _notifications[notification.notification_id] = notification
+    if _use_postgres_console_store():
+        _try_postgres_write(create_notification_in_postgres, notification)
     return deepcopy(notification)
 
 

@@ -130,6 +130,69 @@ def test_postgres_console_store_persists_handoff_and_gap(
     assert gap_row["scenario_pack_code"] == "product_business"
 
 
+@pytest.mark.skipif(
+    importlib.util.find_spec("psycopg") is None,
+    reason="psycopg is not installed",
+)
+def test_postgres_console_store_persists_notifications(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database_url = os.getenv("ZYCS_TEST_DATABASE_URL")
+    if not database_url:
+        pytest.skip("ZYCS_TEST_DATABASE_URL is not set")
+
+    import psycopg
+    from psycopg.rows import dict_row
+
+    monkeypatch.setenv("ZYCS_CONVERSATION_STORE", "postgres")
+    monkeypatch.setenv("ZYCS_DATABASE_URL", database_url)
+    monkeypatch.delenv("ZYCS_FEISHU_NOTIFY_MODE", raising=False)
+    monkeypatch.delenv("ZYCS_FEISHU_WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("ZYCS_FEISHU_WEBHOOK_SECRET", raising=False)
+
+    client = TestClient(create_app())
+    create_response = client.post(
+        "/api/v1/notifications/mock",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "event_type": "handoff",
+            "related_id": "handoff_pg_notification",
+            "target_type": "feishu",
+        },
+    )
+    assert create_response.status_code == 200
+    notification = create_response.json()["data"]
+
+    list_response = client.get(
+        "/api/v1/notifications/mock",
+        params={"event_type": "handoff", "send_status": "mocked"},
+    )
+    assert list_response.status_code == 200
+    assert notification["notification_id"] in {
+        item["notification_id"] for item in list_response.json()["data"]
+    }
+
+    with psycopg.connect(database_url, row_factory=dict_row) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, event_type, related_id, target_type, send_status, is_mock, payload
+                FROM zycs_notifications
+                WHERE id = %s
+                """,
+                (notification["notification_id"],),
+            )
+            row = cursor.fetchone()
+
+    assert row is not None
+    assert row["event_type"] == "handoff"
+    assert row["related_id"] == "handoff_pg_notification"
+    assert row["target_type"] == "feishu"
+    assert row["send_status"] == "mocked"
+    assert row["is_mock"] is True
+    assert row["payload"]["notify_mode"] == "mock"
+
+
 def _create_conversation(client: TestClient) -> str:
     response = client.post(
         "/api/v1/conversations",
