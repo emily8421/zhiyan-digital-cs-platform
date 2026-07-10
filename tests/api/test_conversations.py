@@ -57,6 +57,32 @@ def test_send_message_returns_mock_answer() -> None:
     assert body["data"]["knowledge_gap"] is None
 
 
+def test_send_message_with_demo_question_matches_knowledge() -> None:
+    cases = [
+        ("product_business", "灯带有什么规格？", "SRC-SP-PRODUCT-001"),
+        ("project_business", "项目开发有哪些阶段？", "SRC-SP-PROJECT-001"),
+    ]
+
+    for scenario_pack_code, content, source_ref in cases:
+        create_response = client.post(
+            "/api/v1/conversations",
+            json={"channel": "h5", "scenario_pack_code": scenario_pack_code},
+        )
+        conversation_id = create_response.json()["data"]["conversation_id"]
+
+        response = client.post(
+            f"/api/v1/conversations/{conversation_id}/messages",
+            json={"content": content},
+        )
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["data"]["answer_type"] == "knowledge"
+        assert body["data"]["source_ref"] == source_ref
+        assert body["data"]["handoff"] is None
+        assert body["data"]["knowledge_gap"] is None
+
+
 def test_send_message_for_missing_conversation_returns_error_contract() -> None:
     response = client.post(
         "/api/v1/conversations/conv_missing/messages",

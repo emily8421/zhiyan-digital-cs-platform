@@ -19,7 +19,7 @@
 
 ## 快速开始
 
-当前仓库已完成文档基线回梳，并已合并 Sprint-1 到 Sprint-6 的 Phase1 Demo 纵切实现。Phase1 使用 Mock / Demo 数据，Docker、PostgreSQL、真实飞书、真实业务系统和 LLM 默认关闭。
+当前仓库已完成文档基线回梳，并已合并 Sprint-1 到 Sprint-7：Phase1 本机 Demo 已通过验收，Phase2 Sprint-7 试点部署与运营配置已完成。当前进入 Sprint-8 前置阶段；PostgreSQL / pgvector 技术验证已 Go，但业务持久化尚未启用。真实飞书、真实业务系统和 LLM 默认关闭。
 
 固定运行手册见 `docs/env/local-demo-runbook.md`。
 
@@ -74,7 +74,7 @@ npm.cmd run dev -- --port 5174
 
 访问：`http://127.0.0.1:5174`。
 
-本机环境记录见 `docs/env/local-env.md`。当前记录显示 Docker 已安装但不可用，Phase1 默认允许使用 Mock / 本地临时数据降级。PowerShell 下如遇 `npm.ps1` 执行策略拦截，使用 `npm.cmd`。完整演示路径、常见问题和关闭方式见 `docs/env/local-demo-runbook.md`。
+本机环境记录见 `docs/env/local-env.md`。Docker 已完成 PostgreSQL / pgvector 技术验证并解除 RG-002 阻塞；当前演示仍默认使用 Mock / 本地临时数据，不启用业务持久化。PowerShell 下如遇 `npm.ps1` 执行策略拦截，使用 `npm.cmd`。完整演示路径、常见问题和关闭方式见 `docs/env/local-demo-runbook.md`。
 
 ## 文档入口
 
@@ -96,13 +96,13 @@ npm.cmd run dev -- --port 5174
 ## 重要边界
 
 - Phase1 只使用 Mock / Demo 数据，不使用真实客户隐私、合同、订单、报价、联系方式或生产会话。
-- 外部 API、飞书真实通知、LLM、Docker 镜像和新依赖默认关闭；如需引入，必须单独人工确认。
+- 外部 API、飞书真实通知、LLM、Docker 镜像和新依赖默认关闭；PostgreSQL / pgvector 仅完成技术验证，业务启用仍需单独 Sprint 和人工确认。
 - 企业微信客户群自动对外回复不进入 Phase1，客户侧入口默认 H5。
 - 所有回答必须能回溯到知识、规则、场景包或 Mock 数据；否则转人工或记录知识缺口。
 
 ## 开发计划
 
-当前开发进度：Sprint-1 到 Sprint-6 已完成并合并，Phase1 本机 Demo 已跑通；Phase2 Sprint-7 处于启动前确认状态。
+当前开发进度：Sprint-1 到 Sprint-7 已完成并合并；Phase1 本机 Demo 已跑通，Phase2 Sprint-7 试点部署与运营配置已完成；Sprint-8 可优先启动 DB 持久化实现，飞书沙箱仍待 RG-001 凭据 / 边界确认。
 
 1. 后端 API 骨架：已完成。
 2. 场景包与 Mock 服务：已完成。
@@ -115,7 +115,7 @@ npm.cmd run dev -- --port 5174
 
 ## 验证方式
 
-验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-016。Sprint-6 已完成后端 API 测试、H5 / Console 构建、三端本机启动和 HTTP 场景验证；后续真实集成或产品化能力再补新的验证层级。
+验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-020。Sprint-7 已完成后端 API 测试、H5 / Console 构建、三端本机启动、双场景包主链路、Demo 级角色权限和运营配置入口验证；RG-002 PostgreSQL / pgvector 技术验证已 Go。后续真实集成或产品化能力再补新的验证层级。
 
 ## 模板关系
 

@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from app.schemas.mock_business import MockBusinessRecordResponse
-from app.schemas.scenario_packs import KnowledgeItem, RuleItem
+from app.schemas.scenario_packs import IntentItem, KnowledgeItem, RuleItem
 from app.services.mock_business_service import MockRecordNotFoundError, get_mock_business_record
 from app.services.scenario_pack_service import ScenarioPackNotFoundError, get_scenario_pack
 
@@ -120,7 +120,7 @@ def _match_knowledge_or_rule(content: str, scenario_pack_code: str) -> MessageDe
             risk_level="low",
         )
 
-    knowledge_item = _find_knowledge_item(content, scenario_pack.knowledge_items)
+    knowledge_item = _find_knowledge_item(content, scenario_pack.knowledge_items, scenario_pack.intents)
     if knowledge_item is not None:
         return MessageDecision(
             intent="knowledge_lookup",
@@ -139,13 +139,79 @@ def _find_answer_rule(content: str, rules: list[RuleItem]) -> RuleItem | None:
     return None
 
 
-def _find_knowledge_item(content: str, knowledge_items: list[KnowledgeItem]) -> KnowledgeItem | None:
+def _find_knowledge_item(
+    content: str,
+    knowledge_items: list[KnowledgeItem],
+    intents: list[IntentItem],
+) -> KnowledgeItem | None:
+    best_match: KnowledgeItem | None = None
+    best_score = 0
     for knowledge_item in knowledge_items:
-        keywords = [knowledge_item.title, *re.split(r"[，。、\s]+", knowledge_item.title)]
-        meaningful_keywords = [keyword for keyword in keywords if len(keyword) >= 4]
-        if any(keyword in content for keyword in meaningful_keywords):
-            return knowledge_item
+        score = _text_match_score(content, knowledge_item.title)
+        if score > best_score:
+            best_match = knowledge_item
+            best_score = score
+    if best_score >= 2:
+        return best_match
+
+    matched_intent = _find_intent_by_example(content, intents)
+    if matched_intent is None:
+        return None
+    return _find_knowledge_item_for_intent(matched_intent, knowledge_items)
+
+
+def _find_intent_by_example(content: str, intents: list[IntentItem]) -> IntentItem | None:
+    best_match: IntentItem | None = None
+    best_score = 0
+    for intent in intents:
+        references = [intent.name, *intent.examples]
+        score = max((_text_match_score(content, reference) for reference in references), default=0)
+        if score > best_score:
+            best_match = intent
+            best_score = score
+    if best_score >= 2:
+        return best_match
     return None
+
+
+def _find_knowledge_item_for_intent(
+    intent: IntentItem,
+    knowledge_items: list[KnowledgeItem],
+) -> KnowledgeItem | None:
+    intent_reference = " ".join([intent.name, *intent.examples])
+    best_match: KnowledgeItem | None = None
+    best_score = 0
+    for knowledge_item in knowledge_items:
+        knowledge_reference = f"{knowledge_item.title} {knowledge_item.content}"
+        score = _text_match_score(intent_reference, knowledge_reference)
+        if score > best_score:
+            best_match = knowledge_item
+            best_score = score
+    if best_score >= 2:
+        return best_match
+    return None
+
+
+def _text_match_score(content: str, reference: str) -> int:
+    normalized_content = _normalize_text(content)
+    normalized_reference = _normalize_text(reference)
+    if not normalized_content or not normalized_reference:
+        return 0
+    if normalized_reference in normalized_content or normalized_content in normalized_reference:
+        return 4
+    content_grams = _character_ngrams(normalized_content)
+    reference_grams = _character_ngrams(normalized_reference)
+    return len(content_grams & reference_grams)
+
+
+def _normalize_text(value: str) -> str:
+    return re.sub(r"[^0-9a-zA-Z\u4e00-\u9fff]+", "", value).lower()
+
+
+def _character_ngrams(value: str, size: int = 2) -> set[str]:
+    if len(value) < size:
+        return {value} if value else set()
+    return {value[index : index + size] for index in range(len(value) - size + 1)}
 
 
 def _record_type_for_ref(external_ref: str) -> str | None:
