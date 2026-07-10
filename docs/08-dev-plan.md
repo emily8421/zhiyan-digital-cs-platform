@@ -5,8 +5,8 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09），Sprint 草案见 §2/§3 |
-| 最后更新 | 2026-07-09 |
+| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已细化（2026-07-10，单实例双场景包 / 本机部署 / 权限最小集），见 §2/§3 |
+| 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
 ## 1. Phase1 目标
@@ -25,7 +25,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-4 | Web 控制台 | 实现会话、待跟进、缺口、通知、摘要基础列表。 | F-006、F-007、F-008 | `frontend/console/`、`frontend/shared/`、`tests/acceptance/` | 已完成 |
 | Sprint-5 | 不编造与风险兜底 | 补充高风险规则、缺口流转、审计日志和验收样例。 | F-003、F-006、F-008、F-009 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` | 已完成 |
 | Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` | 已通过验收 |
-| Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 草案，待细化 |
+| Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已细化，待编码 |
 | Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`docker/`、`docs/research/` | 草案，待细化（DOC-C-003/004） |
 | Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | 草案，待细化（DOC-C-005） |
 
@@ -216,32 +216,38 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 ### Sprint-7：试点部署与运营配置（Phase2）
 
+> 状态：已细化（2026-07-10）。业务输入已确认：单实例双场景包（古晶产品型 + 乐式项目型，不做多租户）、本机演示优先部署、权限最小集（管理员可写 / 其余只读）。
+
 #### 目标
 
-面向单个试点客户（DOC-C-002）完成 MVP 部署、运营流程与基础权限 / 角色可见性。
+在 Phase1 本机 Demo 基础上，完成 Phase2 单个试点客户的 MVP 部署、运营流程与基础权限 / 角色可见性。试点形态为**单实例 + 双场景包**：同一本机实例同时承载古晶（产品型，签约目标）与乐式（项目型，数据 / 验证来源）两个场景包做演示，验证「统一架构 + 场景包可复制」核心假设；**不做多租户、不做客户级数据隔离**（Phase4）。
 
 #### 输入文档
 
-- `docs/03-prd.md` Phase2、`docs/04-architecture.md`、`docs/05-tech-spec.md` §12 Phase 技术约束（对应 doc-standards §5）
-- `docs/design/web-console.md`、`docs/design/frontend-interaction.md`
+- `docs/03-prd.md` Phase2（F-007 / F-008）、`docs/04-architecture.md`、`docs/05-tech-spec.md` §12 Phase 技术约束、§14 Readiness Gate
+- `docs/design/web-console.md`（WC-C-001 后端权限补齐口径）、`docs/design/frontend-interaction.md`（Console 页面状态 / 运营入口）
+- 关联 REQ：REQ-010、REQ-011、REQ-012（F-007 / F-008）；权限部分 REQ-016
 
 #### 修改范围
 
-- `backend/`（权限 / 角色可见性最小集）
-- `frontend/console/`（运营配置入口）
-- `docs/env/`（试点部署预案）
+- `backend/`：权限 / 角色可见性最小集（控制台写操作后端按角色放行，管理员可写、其余只读；对应 WC-C-001）。
+- `frontend/console/`：运营配置入口（当前演示场景包选择 / 切换、双场景包数据查看）。
+- `docs/env/`：试点部署预案（本机演示优先；端口 8000 / 5173 / 5174；Mock / 降级保留）。
 
-#### 验收标准
+#### 验收标准与验证包
 
-- 单个试点客户可部署并跑通主链路。
-- 基础权限 / 角色可见性由后端执行，不依赖前端隐藏。
-- Mock / 降级路径保留。
+- 单实例双场景包主链路跑通（TC-017）。
+- 基础权限 / 角色可见性由后端执行，不依赖前端隐藏（TC-018）。
+- 运营配置入口可用，双场景包可切换 / 查看（TC-019）。
+- 本机试点部署预案可复现（TC-020）；Mock / 降级路径保留。
+- 验证包：后端 `pytest tests/api tests/scenarios tests/acceptance`；前端 `npm run build`（customer-h5 / console）；本机三端部署手工验收。
 
 #### 禁止事项
 
 - 不接真实 CRM/ERP/OA/工单（Phase3）。
-- 不实现多租户 / 计费（Phase4）。
+- 不实现多租户 / 计费 / 客户级数据隔离（Phase4）。
 - 不处理真实客户隐私 / 生产会话。
+- 不引入新依赖、Docker 镜像、外部 SaaS API 或付费服务（需先人工确认）。
 
 ### Sprint-8：飞书沙箱联调 + DB 技术验证（Phase2）
 

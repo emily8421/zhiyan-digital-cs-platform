@@ -17,11 +17,11 @@
 
 | ID | 待确认项 | 需确认节点 | 阻塞关系 | 当前状态 |
 |---|---|---|---|---|
-| DOC-C-001 | 是否接受 Phase1 完成并进入 Phase2 / MVP 试点规划（Conditional Go） | Phase2 启动前 | 阻塞 Phase2 一切边界修订 | 待确认 |
-| DOC-C-002 | Phase2 是否以「单个试点客户 MVP」为目标 | Phase2 Sprint 规划前 | 条件阻塞 Phase2 范围 | 待确认 |
-| DOC-C-003 | 飞书通知是否进入沙箱 / 试点评估 | Phase2 飞书相关 Sprint 前 | 条件阻塞 | 待确认 |
-| DOC-C-004 | PostgreSQL / pgvector 是否作为 Phase2 必做项 | Phase2 存储 / 部署 Sprint 前 | 条件阻塞 | 待确认 |
-| DOC-C-005 | LLM 是否进入 Phase2 | Phase2 LLM 评估前 | 条件阻塞 | 待确认 |
+| DOC-C-001 | 是否接受 Phase1 完成并进入 Phase2 / MVP 试点规划（Conditional Go） | Phase2 启动前 | 阻塞 Phase2 一切边界修订 | 已确认 |
+| DOC-C-002 | Phase2 是否以「单个试点客户 MVP」为目标 | Phase2 Sprint 规划前 | 条件阻塞 Phase2 范围 | 已确认 |
+| DOC-C-003 | 飞书通知是否进入沙箱 / 试点评估 | Phase2 飞书相关 Sprint 前 | 条件阻塞 | 已确认 |
+| DOC-C-004 | PostgreSQL / pgvector 是否作为 Phase2 必做项 | Phase2 存储 / 部署 Sprint 前 | 条件阻塞 | 已确认 |
+| DOC-C-005 | LLM 是否进入 Phase2 | Phase2 LLM 评估前 | 条件阻塞 | 已确认 |
 | DOC-C-006 | 模板仓 issue #148（A13 同步闭环提案）处理 | 模板维护者侧 | 不阻塞项目 | 待模板仓处理（open） |
 | DOC-C-007 | `docs/design/*` 多数未套用 v1.43.0 设计标准元信息 | 触碰对应设计文档时 | 不阻塞（P2） | 可延后 |
 | IN-C-003 | 商业模式 / 定价详细策略归属（愿景定性已留，详细是否另立文档） | 实际报价验证后 | 不阻塞 | 暂缓（已决策：愿景定性 + 报价验证后 ADR） |
@@ -43,8 +43,8 @@
 | 需确认节点 | Phase2 启动前 |
 | 阻塞关系 | 阻塞 Phase2 一切边界修订（`ai/project-rules.md`、`docs/03-prd.md`、`08`、`09`） |
 | 回填位置 | `ai/project-rules.md` §1 Phase 边界、`docs/03-prd.md` §3 Phase2 状态 |
-| 当前状态 | 待确认 |
-| 关闭依据 | 待人工确认后回填 |
+| 当前状态 | 已确认 |
+| 关闭依据 | 2026-07-09 人工确认接受 Conditional Go（全按 AI 推荐）；已回填 `ai/project-rules.md` §1、`docs/03-prd.md` §3、`docs/08-dev-plan.md`、`docs/09-verification.md`（PR #29，commit `9ace31c`） |
 
 > Conditional Go 保留四条件（接受 Phase2 需同时接受）：① Phase2 先做 MVP 试点，不直接进入 Phase3 真实 CRM/ERP/OA/工单集成；② 真实飞书 / 业务系统 / LLM / PostgreSQL·pgvector 仍需单独技术验证、授权边界与安全评审；③ 任何新依赖、Docker 镜像、外部 SaaS API 或付费服务必须先人工确认；④ Phase2 继续保留 Mock / 降级路径。
 
@@ -62,8 +62,8 @@
 | 需确认节点 | Phase2 Sprint 规划前 |
 | 阻塞关系 | 条件阻塞 Phase2 范围 |
 | 回填位置 | `docs/03-prd.md` §3 Phase2、`docs/08-dev-plan.md` Phase2 Sprint 草案 |
-| 当前状态 | 待确认 |
-| 关闭依据 | 待人工确认后回填 |
+| 当前状态 | 已确认 |
+| 关闭依据 | 2026-07-09 人工确认：是（单个试点客户 MVP）；已回填 `docs/03-prd.md` §3、`docs/08-dev-plan.md` Phase2 Sprint 草案（PR #29，commit `9ace31c`） |
 
 ### DOC-C-003：飞书通知是否进入沙箱 / 试点评估
 
@@ -79,8 +79,8 @@
 | 需确认节点 | Phase2 飞书相关 Sprint 前 |
 | 阻塞关系 | 条件阻塞 |
 | 回填位置 | `ai/project-rules.md` §1/§2、`docs/05-tech-spec.md`、`docs/07-api-spec.md` 通知契约、`docs/09-verification.md` |
-| 当前状态 | 待确认 |
-| 关闭依据 | 待人工确认后回填 |
+| 当前状态 | 已确认 |
+| 关闭依据 | 2026-07-09 人工确认：作为 Phase2 技术验证任务推进（Sprint-8 / RG-001），不接真实组织数据；见 `ai/project-rules.md` §1、`docs/05-tech-spec.md` §14 |
 
 ### DOC-C-004：PostgreSQL / pgvector 是否作为 Phase2 必做项
 
@@ -96,8 +96,8 @@
 | 需确认节点 | Phase2 存储 / 部署 Sprint 前 |
 | 阻塞关系 | 条件阻塞 |
 | 回填位置 | `ai/project-rules.md` §2.5、`docs/05-tech-spec.md` Risk-ID / readiness gate、`docs/06-db-design.md`、`docs/09-verification.md` |
-| 当前状态 | 待确认 |
-| 关闭依据 | 待人工确认后回填 |
+| 当前状态 | 已确认 |
+| 关闭依据 | 2026-07-09 人工确认：先技术验证，不作全部功能前置（Sprint-8 / RG-002）；见 `ai/project-rules.md` §1、`docs/05-tech-spec.md` §14 |
 
 ### DOC-C-005：LLM 是否进入 Phase2
 
@@ -113,8 +113,8 @@
 | 需确认节点 | Phase2 LLM 评估前 |
 | 阻塞关系 | 条件阻塞 |
 | 回填位置 | `ai/project-rules.md` §1/§2、`docs/05-tech-spec.md`、新增 LLM 专项设计 `docs/design/*` |
-| 当前状态 | 待确认 |
-| 关闭依据 | 待人工确认后回填 |
+| 当前状态 | 已确认 |
+| 关闭依据 | 2026-07-09 人工确认：仅评估，不默认启用（Sprint-9 / RG-003）；见 `ai/project-rules.md` §1、`docs/05-tech-spec.md` §14 |
 
 ### DOC-C-006：模板仓 issue #148 处理
 
@@ -197,6 +197,11 @@
 | IN-C-001 | 输入材料四层次评估是否落盘 research 报告 | 已确认并落盘：`docs/research/2026-07-09-inputs-re-eval-by-four-layers.md`（2026-07-09） |
 | IN-C-002 | 是否据此修订 `product-vision` | 已执行：`docs/vision/product-vision.md` 按四层次口径补强（2026-07-09，新增 PV-DIFF / PV-CAP-013~017 / PV-NOT 系列） |
 | IN-C-004 | 企微会话存档措辞从"Phase 不接"改为"长期视合规条件评估" | 已落地：`product-vision` §5 长期定位 + §4.3 PV-NOT-001 |
+| DOC-C-001 | 是否接受 Phase2 Conditional Go | 2026-07-09 人工确认接受（全按 AI 推荐）；回填 `project-rules` §1 / `03-prd` §3 / `08` / `09`（PR #29） |
+| DOC-C-002 | Phase2 是否以单个试点客户 MVP 为目标 | 2026-07-09 人工确认：是；回填 `03-prd` §3 / `08` Sprint 草案（PR #29） |
+| DOC-C-003 | 飞书通知是否进入沙箱 / 试点评估 | 2026-07-09 人工确认：作为技术验证任务（Sprint-8 / RG-001），不接真实组织数据 |
+| DOC-C-004 | PostgreSQL / pgvector 是否 Phase2 必做 | 2026-07-09 人工确认：先技术验证（Sprint-8 / RG-002），不作功能前置 |
+| DOC-C-005 | LLM 是否进入 Phase2 | 2026-07-09 人工确认：仅评估（Sprint-9 / RG-003），不默认启用 |
 
 ## 4. 门禁与回填说明
 
