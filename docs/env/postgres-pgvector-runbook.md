@@ -215,3 +215,34 @@ python -m pytest -p no:cacheprovider tests/api/test_console_store.py
 ```
 
 注意：Sprint-8C-B 当前只持久化 `zycs_human_handoffs` 和 `zycs_knowledge_gaps`；通知、日报、审计日志、飞书沙箱、LLM 和真实业务系统仍后置。由于现有 `zycs_human_handoffs` 表尚无 `summary` / `resolution_note` 字段，PG 列表中的 `summary` 临时沿用 `reason`，转人工处理说明不写入 PG；如需完整运营工单字段，应另拆 schema 演进任务。
+
+## 11. Sprint-8E Feishu 通知适配器开关
+
+默认情况下，后端仍只生成 Mock 通知，不真实发送飞书消息：
+
+```powershell
+$env:ZYCS_FEISHU_NOTIFY_MODE='mock'
+```
+
+只有显式启用 sandbox 且本机提供沙箱 webhook URL / secret 时，才会尝试真实发送：
+
+```powershell
+$env:ZYCS_FEISHU_NOTIFY_MODE='sandbox'
+$env:ZYCS_FEISHU_WEBHOOK_URL='<仅本机填写，不提交>'
+$env:ZYCS_FEISHU_WEBHOOK_SECRET='<仅本机填写，不提交>'
+```
+
+可选超时配置：
+
+```powershell
+$env:ZYCS_FEISHU_REQUEST_TIMEOUT_SECONDS='5'
+```
+
+测试适配器骨架：
+
+```powershell
+$env:PYTHONPATH='backend'
+python -m pytest -p no:cacheprovider tests/api/test_feishu_notification_adapter.py tests/api/test_console.py
+```
+
+注意：当前只实现出站通知适配器骨架；未启用事件回调，未提交真实凭据，未接真实组织数据。缺 webhook URL / secret 或发送失败时，通知路径会降级为 Mock / failed，不阻塞 H5 / Console 主链路。

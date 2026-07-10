@@ -2,6 +2,7 @@ from copy import deepcopy
 from datetime import UTC, date, datetime
 from uuid import uuid4
 
+from app.adapters.feishu_notification_adapter import deliver_feishu_notification
 from app.schemas.console import (
     DailySummaryData,
     HandoffRecord,
@@ -254,14 +255,21 @@ def create_mock_notification(
     related_id: str,
     target_type: str,
 ) -> MockNotificationRecord:
+    delivery = deliver_feishu_notification(
+        event_type=event_type,
+        related_id=related_id,
+        target_type=target_type,
+        payload=_build_notification_payload(event_type, related_id, target_type),
+    )
     notification = MockNotificationRecord(
         notification_id=f"notif_{uuid4().hex[:8]}",
         event_type=event_type,
         related_id=related_id,
         target_type=target_type,
-        payload=_build_notification_payload(event_type, related_id, target_type),
+        payload=delivery.payload,
+        send_status=delivery.send_status,
         created_at=_now_iso(),
-        mock=True,
+        mock=delivery.mock,
     )
     _notifications[notification.notification_id] = notification
     return deepcopy(notification)

@@ -80,6 +80,28 @@ def test_create_and_list_mock_notification() -> None:
     assert created["notification_id"] in notification_ids
 
 
+def test_create_mock_notification_sandbox_without_secret_falls_back_to_mock(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("ZYCS_FEISHU_NOTIFY_MODE", "sandbox")
+    monkeypatch.setenv("ZYCS_FEISHU_WEBHOOK_URL", "https://example.invalid/hook")
+    monkeypatch.delenv("ZYCS_FEISHU_WEBHOOK_SECRET", raising=False)
+
+    response = client.post(
+        "/api/v1/notifications/mock",
+        headers={"X-Console-Role": "admin"},
+        json={"event_type": "handoff", "related_id": "handoff_001", "target_type": "feishu"},
+    )
+
+    assert response.status_code == 200
+    created = response.json()["data"]
+    assert created["send_status"] == "mocked"
+    assert created["mock"] is True
+    assert created["payload"]["notify_mode"] == "mock"
+    assert "fallback_reason" in created["payload"]
+    assert "https://example.invalid/hook" not in str(created["payload"])
+
+
 def test_daily_summary_returns_counts() -> None:
     response = client.get("/api/v1/summaries/daily?date=2026-07-05")
 

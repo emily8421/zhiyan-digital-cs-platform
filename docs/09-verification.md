@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书沙箱）Conditional Go（2026-07-10，TC-036~038，TC-039 待凭据）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书沙箱）Conditional Go（2026-07-10，TC-036~038，TC-039 待凭据，TC-040~043 适配器骨架通过）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 / §10.10 |
 | 最后更新 | 2026-07-10 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -315,3 +315,21 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-036~TC-038 通过；TC-039 待人工提供飞书沙箱 webhook URL / secret 后执行。
 - RG-001 结论：Conditional Go。可进入默认 Mock / 显式 sandbox 的 Feishu 通知适配器骨架设计；不得默认开启真实发送，不得启用事件回调。
 - 边界说明：本次未写入真实 webhook、token、secret、用户 ID、组织 ID 或生产数据；未联网调用飞书 API；未改变现有 H5 / Console 默认 Mock 演示链路。
+
+### 10.10 Sprint-8E 验证用例（Feishu 通知适配器骨架）
+
+> 2026-07-10 细化并执行。范围：实现默认 Mock / 显式 sandbox 的 Feishu 出站通知适配器骨架；不提交真实凭据，不执行沙箱实发，不启用事件回调。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-040 | `tasks/task-008e-feishu-notification-adapter.md`、`backend/app/adapters/feishu_notification_adapter.py` | RG-001、REQ-009 | 不设置 `ZYCS_FEISHU_NOTIFY_MODE`，创建 Mock 通知 | 仍返回 `send_status=mocked`、`mock=true`，默认演示链路不变 | 通过（2026-07-10） |
+| TC-041 | `backend/app/adapters/feishu_notification_adapter.py` | RG-001、REQ-009、REQ-016 | 校验 Feishu 签名构造 | 签名按时间戳 + secret 生成 HMAC-SHA256 + Base64；请求体不暴露 secret | 通过（2026-07-10） |
+| TC-042 | `backend/app/services/console_service.py`、API-009 | RG-001、REQ-009 | 设置 `ZYCS_FEISHU_NOTIFY_MODE=sandbox` 但缺少 secret，调用 `POST /api/v1/notifications/mock` | 不报错，不外发，降级 `send_status=mocked`，payload 不包含 webhook / secret | 通过（2026-07-10） |
+| TC-043 | `backend/app/adapters/feishu_notification_adapter.py`、`docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、NFR-002、NFR-003 | 构造 Feishu sandbox 文本消息 | 消息只包含事件类型、关联 ID、风险 / 缺口摘要和 sandbox 说明，不包含真实客户隐私或生产数据 | 通过（2026-07-10） |
+
+#### Sprint-8E 验收记录（2026-07-10）
+
+- 执行范围：`tasks/task-008e-feishu-notification-adapter.md`。
+- 改动范围：`backend/app/adapters/feishu_notification_adapter.py`、`backend/app/adapters/__init__.py`、`backend/app/services/console_service.py`、`tests/api/test_feishu_notification_adapter.py`、`tests/api/test_console.py`、`docs/env/postgres-pgvector-runbook.md`。
+- 验证结果：TC-040~TC-043 均通过；专项测试 `tests/api/test_feishu_notification_adapter.py tests/api/test_console.py` 为 18 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 43 passed、4 skipped。
+- 边界说明：未提交真实 webhook / token / secret；未执行 TC-039 沙箱实发；未启用事件回调；缺配置或发送失败时不阻塞主链路并降级。
