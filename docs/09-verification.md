@@ -454,4 +454,6 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 | TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
 |---|---|---|---|---|---|
-| TC-055 | `docs/design/web-console.md` §4.4、`frontend/console/src/App.tsx` | REQ-004、REQ-011 | Console 切到「知识条目」Tab：admin 转正 draft→active、归档、表单新增 draft；viewer 只读 | 列表展示 + 状态颜色区分（active 绿 / draft、archived 灰）；admin 可写、viewer 按钮禁用；`npm run build` 通过 | build 通过（2026-07-11）；UI 交互待人工浏览器验收 |
+| TC-055 | `docs/design/web-console.md` §4.4、`frontend/console/src/App.tsx` | REQ-004、REQ-011 | Console 切到「知识条目」Tab：admin 转正 draft→active、归档、表单新增 draft；viewer 只读 | 列表展示 + 状态颜色区分（active 绿 / draft、archived 灰）；admin 可写、viewer 按钮禁用；`npm run build` 通过 | 通过（2026-07-11）；build 通过，人工浏览器验收暂未发现问题 |
+
+- 人工浏览器验收记录（2026-07-11）：本机后端 `8000`、Console `5174`、H5 `5175` 均可访问；用户按 TC-055 路径检查 Console「知识条目」Tab 后反馈“暂时没发现”问题。

@@ -36,6 +36,6 @@
 
 - 2026-07-11：Console 新增「知识条目」Tab（独立），列表 + 转正 + 归档 + 新增表单（admin），viewer 只读；状态颜色区分（success/neutral）。
 - 改动文件：`frontend/shared/types.ts`、`frontend/shared/apiClient.ts`、`frontend/console/src/App.tsx`、`frontend/console/src/styles.css`。
-- 验证通过：`npm run build`（tsc + vite build）通过，17 modules transformed。
+- 验证通过：`npm run build`（tsc + vite build）通过，17 modules transformed；TC-055 人工浏览器验收暂未发现问题。
 - 边界：未改后端；未引入新依赖；LLM 默认关闭未变。
-- 后置项：UI 交互人工浏览器验收（TC-055）。
+- 后置项：暂无。若后续需要提升操作体验，可单独评估缺口状态中文化、accepted 后提示 draft 入库和跳转知识条目页。
