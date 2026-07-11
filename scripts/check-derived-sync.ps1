@@ -164,6 +164,7 @@ function Test-SyncFile {
 
   if ($ChangedFile -like "ai/doc-standards/*") { return $true }
   if ($ChangedFile -like "docs/_scaffold/*") { return $true }
+  if ($ChangedFile -eq "TEMPLATE-BASE.md") { return $true }
   return ($SyncFiles -contains $ChangedFile)
 }
 
@@ -282,7 +283,15 @@ function Invoke-NativeDerivedSyncCheck {
 
   Write-Host ""
   Write-Host "==> Root README template version consistency (non-blocking)"
-  if ((Test-Path -LiteralPath "VERSION") -and (Test-Path -LiteralPath "README.md")) {
+  if (Test-Path -LiteralPath "TEMPLATE-BASE.md") {
+    Write-Host "INFO  TEMPLATE-BASE.md detected: ordinary derived project dual-version mode uses VERSION for project version; inherited template version is read from TEMPLATE-BASE.md. Skip README/VERSION template-version consistency check."
+    $templateBaseText = Get-Content -Raw -Encoding UTF8 TEMPLATE-BASE.md
+    if ($templateBaseText -match '(?m)^- Current synced template version:\s*v[0-9]+\.[0-9]+\.[0-9]+') {
+      Pass "TEMPLATE-BASE.md records current synced template version"
+    } else {
+      Fail "TEMPLATE-BASE.md is missing Current synced template version"
+    }
+  } elseif ((Test-Path -LiteralPath "VERSION") -and (Test-Path -LiteralPath "README.md")) {
     $curVer = (Get-Content -Raw -Encoding UTF8 VERSION).Trim()
     $readmeVer = ""
     foreach ($line in (Get-Content -Encoding UTF8 README.md)) {
