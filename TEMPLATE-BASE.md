@@ -7,7 +7,8 @@
 - Current synced template version: v1.46.0
 - Synced at: 2026-07-11
 - Project version file: VERSION
-- Project version at sync time: v1.43.0
+- Project version at sync time: v1.43.0（legacy template-version value before project baseline reset）
+- Current project version baseline: v0.1.0（redefined 2026-07-11）
 
 ## Version Semantics
 

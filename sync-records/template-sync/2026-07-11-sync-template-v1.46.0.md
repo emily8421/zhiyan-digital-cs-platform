@@ -6,7 +6,7 @@
 - 同步日期：2026-07-11
 - 同步前模板版本：v1.43.0（旧语义下 `VERSION` 记录继承模板版本）
 - 目标模板版本：v1.46.0
-- 项目自身版本（`VERSION`）：v1.43.0（本次启用普通派生双版本模式后保留）
+- 项目自身版本（`VERSION`）：v0.1.0（同步后重新定义项目自有版本基线，不沿用旧 `v1.43.0`）
 - 继承版本记录（`TEMPLATE-BASE.md`）：新增；当前同步到 v1.46.0
 - 同步分支：`chore/sync-template-v1.46.0`
 - Bootstrap 提交：`840811e chore: bootstrap latest sync script`
@@ -58,7 +58,7 @@
 
 - 是否成功：成功
 - 新增 / 修改的方法论文件：见同步提交 `ced2c76`
-- `VERSION` / `CHANGELOG.md` 是否保持项目自身版本：是，`VERSION` 保持 `v1.43.0`，`CHANGELOG.md` 未被本次同步覆盖
+- `VERSION` / `CHANGELOG.md` 是否保持项目自身版本：是；同步提交先保留旧值，随后本分支将项目自有版本基线重定义为 `v0.1.0`，并将 `CHANGELOG.md` 改为项目变更记录
 - `TEMPLATE-BASE.md` 是否新增 / 更新继承模板版本：是，新增并记录当前同步模板版本 `v1.46.0`
 - 项目专属文件是否被误改：否；同步提交未包含根 `README.md`、`ai/project-rules.md`、`docs/00-09`、`frontend/`、`backend/`、`tests/`、`docker/`
 - 是否新增 / 刷新 `ai/doc-standards/00-09`：是，已刷新
@@ -69,7 +69,7 @@
 - `--preserve-project-version` 可在普通派生项目中保留 `VERSION` / `CHANGELOG.md`。
 - 新增 `TEMPLATE-BASE.md` 字段完整：模板仓、Base template version、Current synced template version、Synced at、Project version file、Project version at sync time。
 - `check-derived-sync` 在双版本模式下跳过 README ↔ `VERSION` 模板版本一致性检查，并改为校验 `TEMPLATE-BASE.md` 当前同步模板版本。
-- 迁移注意：`zhiyan` 旧语义下的 `VERSION=v1.43.0` 原本更像继承模板版本；本次保留为项目版本基线，后续如需建立真实项目版本号，应由人工单独决定。
+- 迁移结论：`zhiyan` 旧语义下的 `VERSION=v1.43.0` 原本是继承模板版本，不作为项目版本基线；本轮将项目自有版本基线重定义为 `v0.1.0`。
 
 ## 同步后整理摘要
 
@@ -77,8 +77,8 @@
 - README / `ai/project-rules.md` / docs 分区是否需整理：本次未发现同步误改；完整整理需另开任务
 - workflow：仅存在 `.github/workflows/project-check.yml`，未发现模板仓 `template-check.yml`
 - 已处理项：无项目事实文档迁移
-- 待确认项：是否把 `VERSION=v1.43.0` 作为 `zhiyan` 项目版本基线长期沿用，或另开版本语义整理任务
-- 建议回写 / 后续迁移任务：如准备合并本分支，建议先评审 `TEMPLATE-BASE.md` 双版本语义
+- 待确认项：无；用户已确认不沿用旧 `VERSION=v1.43.0`
+- 建议回写 / 后续迁移任务：后续模板同步继续使用 `--preserve-project-version`
 
 ## 文档体系审计摘要
 
@@ -100,14 +100,14 @@
 - `gh issue create` / `submit-proposal` 问题：未创建新 issue
 - 同步脚本问题：旧 `zhiyan` 同步脚本不支持 `--preserve-project-version`，已先 bootstrap 最新同步脚本
 - Prompt / 快捷命令理解问题：无新增
-- 文档说明不清：旧语义 `VERSION` 是否可直接视为项目版本需人工确认
+- 文档说明不清：已处理，项目版本基线改为 `v0.1.0`
 - 派生项目专属冲突：无
 
 ## 可优化点归纳
 
 | 问题 | 是否项目专属 | 是否建议回流模板 | 建议提案 |
 |---|---|---|---|
-| 旧派生项目从“继承模板 VERSION”迁移到“双版本”时，项目自身版本基线可能需要人工确认 | 否 | 暂不新增；先用本试点反馈观察 | 如多项目复现，再补迁移提示提案 |
+| 旧派生项目从“继承模板 VERSION”迁移到“双版本”时，项目自身版本基线可能需要人工确认 | 否 | 暂不新增；本项目已采用 `v0.1.0` 作为基线 | 如多项目复现，再补迁移提示提案 |
 
 ## 已生成的回流提案
 
