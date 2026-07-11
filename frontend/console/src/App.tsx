@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
 import {
   ApiClientError,
+  createKnowledgeItem,
   createMockNotification,
   getConsoleRole,
   getDailySummary,
@@ -9,11 +10,13 @@ import {
   listConversations,
   listHandoffs,
   listKnowledgeGaps,
+  listKnowledgeItems,
   listMockBusinessRecords,
   listMockNotifications,
   listScenarioPacks,
   setConsoleRole,
   updateHandoffStatus,
+  updateKnowledgeItemStatus,
   updateKnowledgeGapStatus
 } from '../../shared/apiClient';
 import type { ConsoleRole } from '../../shared/apiClient';
@@ -22,17 +25,19 @@ import type {
   DailySummaryData,
   HandoffRecord,
   KnowledgeGapRecord,
+  KnowledgeItemRecord,
   MockBusinessRecord,
   MockNotificationRecord,
   ScenarioPackDetail,
   ScenarioPackSummary
 } from '../../shared/types';
 
-type TabKey = 'overview' | 'conversations' | 'handoffs' | 'gaps' | 'notifications' | 'scenarios' | 'mockData';
+type TabKey = 'overview' | 'conversations' | 'handoffs' | 'gaps' | 'knowledgeItems' | 'notifications' | 'scenarios' | 'mockData';
 type DetailRecord =
   | ConversationListItem
   | HandoffRecord
   | KnowledgeGapRecord
+  | KnowledgeItemRecord
   | MockNotificationRecord
   | ScenarioPackSummary
   | MockBusinessRecord
@@ -45,6 +50,7 @@ type ConsoleState = {
   conversations: ConversationListItem[];
   handoffs: HandoffRecord[];
   gaps: KnowledgeGapRecord[];
+  knowledgeItems: KnowledgeItemRecord[];
   notifications: MockNotificationRecord[];
   scenarioPacks: ScenarioPackSummary[];
   mockRecords: MockBusinessRecord[];
@@ -55,6 +61,7 @@ const tabs: Array<{ key: TabKey; label: string }> = [
   { key: 'conversations', label: '会话' },
   { key: 'handoffs', label: '待跟进' },
   { key: 'gaps', label: '缺口' },
+  { key: 'knowledgeItems', label: '知识条目' },
   { key: 'notifications', label: '通知' },
   { key: 'scenarios', label: '场景包' },
   { key: 'mockData', label: 'Mock 数据' }
@@ -65,6 +72,7 @@ const initialState: ConsoleState = {
   conversations: [],
   handoffs: [],
   gaps: [],
+  knowledgeItems: [],
   notifications: [],
   scenarioPacks: [],
   mockRecords: []
@@ -106,6 +114,10 @@ function App() {
     [data.handoffs, scenarioFilter]
   );
   const visibleGaps = useMemo(() => filterByPack(data.gaps, scenarioFilter), [data.gaps, scenarioFilter]);
+  const visibleKnowledgeItems = useMemo(
+    () => filterByPack(data.knowledgeItems, scenarioFilter),
+    [data.knowledgeItems, scenarioFilter]
+  );
   const visibleMockRecords = useMemo(
     () => filterByPack(data.mockRecords, scenarioFilter),
     [data.mockRecords, scenarioFilter]
@@ -117,12 +129,13 @@ function App() {
       conversations: visibleConversations.length,
       handoffs: visibleHandoffs.length,
       gaps: visibleGaps.length,
+      knowledgeItems: visibleKnowledgeItems.length,
       notifications: data.notifications.length,
       scenarios: data.scenarioPacks.length,
       mockData: visibleMockRecords.length
     };
     return counts[activeTab];
-  }, [activeTab, data, visibleConversations, visibleHandoffs, visibleGaps, visibleMockRecords]);
+  }, [activeTab, data, visibleConversations, visibleHandoffs, visibleGaps, visibleKnowledgeItems, visibleMockRecords]);
 
   async function refreshConsoleData() {
     try {
@@ -133,6 +146,7 @@ function App() {
         conversationResponse,
         handoffResponse,
         gapResponse,
+        knowledgeItemResponse,
         notificationResponse,
         scenarioResponse,
         mockRecordResponse
@@ -141,6 +155,7 @@ function App() {
         listConversations(),
         listHandoffs(),
         listKnowledgeGaps(),
+        listKnowledgeItems(),
         listMockNotifications(),
         listScenarioPacks(),
         listMockBusinessRecords()
@@ -150,6 +165,7 @@ function App() {
         conversations: conversationResponse.data,
         handoffs: handoffResponse.data,
         gaps: gapResponse.data,
+        knowledgeItems: knowledgeItemResponse.data,
         notifications: notificationResponse.data,
         scenarioPacks: scenarioResponse.data,
         mockRecords: mockRecordResponse.data
@@ -188,6 +204,48 @@ function App() {
       setData((current) => ({
         ...current,
         gaps: current.gaps.map((item) => (item.gap_id === record.gap_id ? response.data : item))
+      }));
+      setSelected(response.data);
+    } catch (caughtError) {
+      setError(formatError(caughtError));
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
+  async function handleUpdateKnowledgeItem(record: KnowledgeItemRecord, status: string) {
+    try {
+      setIsUpdating(true);
+      setError(null);
+      const response = await updateKnowledgeItemStatus(record.item_id, status);
+      setData((current) => ({
+        ...current,
+        knowledgeItems: current.knowledgeItems.map((item) =>
+          item.item_id === record.item_id ? response.data : item
+        )
+      }));
+      setSelected(response.data);
+    } catch (caughtError) {
+      setError(formatError(caughtError));
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
+  async function handleCreateKnowledgeItem(payload: {
+    scenario_pack_code: string;
+    title: string;
+    content: string;
+    source_ref: string;
+    tags: string[];
+  }) {
+    try {
+      setIsUpdating(true);
+      setError(null);
+      const response = await createKnowledgeItem({ ...payload, status: 'draft' });
+      setData((current) => ({
+        ...current,
+        knowledgeItems: [response.data, ...current.knowledgeItems]
       }));
       setSelected(response.data);
     } catch (caughtError) {
@@ -326,6 +384,17 @@ function App() {
               onSelect={setSelected}
               onUpdate={handleGapUpdate}
               onNotify={handleCreateNotification}
+            />
+          ) : null}
+          {!isLoading && activeTab === 'knowledgeItems' ? (
+            <KnowledgeItemList
+              records={visibleKnowledgeItems}
+              scenarioPacks={data.scenarioPacks}
+              isUpdating={isUpdating}
+              canWrite={canWrite}
+              onSelect={setSelected}
+              onUpdate={handleUpdateKnowledgeItem}
+              onCreate={handleCreateKnowledgeItem}
             />
           ) : null}
           {!isLoading && activeTab === 'notifications' ? (
@@ -484,6 +553,142 @@ function GapList({
   );
 }
 
+function KnowledgeItemList({
+  records,
+  scenarioPacks,
+  isUpdating,
+  canWrite,
+  onSelect,
+  onUpdate,
+  onCreate
+}: {
+  records: KnowledgeItemRecord[];
+  scenarioPacks: ScenarioPackSummary[];
+  isUpdating: boolean;
+  canWrite: boolean;
+  onSelect: (record: DetailRecord) => void;
+  onUpdate: (record: KnowledgeItemRecord, status: string) => void;
+  onCreate: (payload: {
+    scenario_pack_code: string;
+    title: string;
+    content: string;
+    source_ref: string;
+    tags: string[];
+  }) => void;
+}) {
+  const defaultPack = scenarioPacks[0]?.code ?? '';
+  const [packCode, setPackCode] = useState(defaultPack);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [sourceRef, setSourceRef] = useState('');
+  const [tagsInput, setTagsInput] = useState('');
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!title.trim() || !content.trim() || !sourceRef.trim() || !packCode) return;
+    onCreate({
+      scenario_pack_code: packCode,
+      title: title.trim(),
+      content: content.trim(),
+      source_ref: sourceRef.trim(),
+      tags: tagsInput
+        .split(/[,，]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    });
+    setTitle('');
+    setContent('');
+    setSourceRef('');
+    setTagsInput('');
+  }
+
+  return (
+    <div className="record-list">
+      {canWrite ? (
+        <form className="knowledge-form" onSubmit={handleSubmit}>
+          <h3>新增知识候选（draft，转正后才生效）</h3>
+          <label>
+            场景包
+            <select value={packCode} onChange={(event) => setPackCode(event.target.value)}>
+              {scenarioPacks.map((pack) => (
+                <option key={pack.code} value={pack.code}>
+                  {pack.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            标题
+            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="知识标题" />
+          </label>
+          <label>
+            内容
+            <textarea
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              placeholder="知识正文"
+              rows={2}
+            />
+          </label>
+          <label>
+            来源(source_ref)
+            <input value={sourceRef} onChange={(event) => setSourceRef(event.target.value)} placeholder="SRC-XXX" />
+          </label>
+          <label>
+            标签(逗号分隔)
+            <input value={tagsInput} onChange={(event) => setTagsInput(event.target.value)} placeholder="产品规格,待确认" />
+          </label>
+          <button type="submit" disabled={isUpdating}>
+            新增 draft 知识候选
+          </button>
+        </form>
+      ) : null}
+      {!records.length ? (
+        <EmptyState text="暂无知识条目。可在「知识缺口」审核 accepted 后生成，或上方手动新增。" />
+      ) : null}
+      {records.map((record) => {
+        const tone: 'success' | 'neutral' = record.status === 'active' ? 'success' : 'neutral';
+        const label =
+          record.status === 'active'
+            ? '已生效·问答可命中'
+            : record.status === 'draft'
+              ? '知识候选'
+              : '已归档';
+        const origin = record.origin_gap_id ? `来自缺口 ${record.origin_gap_id}` : '手动新增';
+        return (
+          <article key={record.item_id} className="record-card" onClick={() => onSelect(record)}>
+            <div className="record-title">
+              <h3>{record.title}</h3>
+              <StatusBadge label={label} tone={tone} />
+            </div>
+            <p>{record.content}</p>
+            <MetaRow
+              values={[record.scenario_pack_code, record.source_ref, origin, record.updated_at]}
+              mock={record.mock}
+            />
+            <div className="action-row" onClick={(event) => event.stopPropagation()}>
+              {record.status === 'draft' ? (
+                <button disabled={isUpdating || !canWrite} onClick={() => onUpdate(record, 'active')}>
+                  转正为已生效
+                </button>
+              ) : null}
+              {record.status === 'active' ? (
+                <button
+                  className="secondary"
+                  disabled={isUpdating || !canWrite}
+                  onClick={() => onUpdate(record, 'archived')}
+                >
+                  归档
+                </button>
+              ) : null}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
 function NotificationList({ records, onSelect }: { records: MockNotificationRecord[]; onSelect: (record: DetailRecord) => void }) {
   if (!records.length) return <EmptyState text="暂无 Mock 通知记录。" />;
   return (
@@ -564,7 +769,13 @@ function MetaRow({ values, mock }: { values: Array<string | number>; mock?: bool
   );
 }
 
-function StatusBadge({ label, tone = 'default' }: { label: string; tone?: 'default' | 'danger' }) {
+function StatusBadge({
+  label,
+  tone = 'default'
+}: {
+  label: string;
+  tone?: 'default' | 'danger' | 'success' | 'neutral';
+}) {
   return <span className={`status-badge ${tone}`}>{label}</span>;
 }
 

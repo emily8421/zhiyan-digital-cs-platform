@@ -124,6 +124,19 @@ export type KnowledgeGapRecord = {
   mock: boolean;
 };
 
+export type KnowledgeItemRecord = {
+  item_id: string;
+  scenario_pack_code: string;
+  title: string;
+  content: string;
+  tags: string[];
+  source_ref: string;
+  status: string;
+  origin_gap_id: string | null;
+  updated_at: string;
+  mock: boolean;
+};
+
 export type MockNotificationRecord = {
   notification_id: string;
   event_type: string;

@@ -368,6 +368,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-11 | Sprint-9 知识运营强化完成 | 知识缺口 `accepted` 自动入库为 `draft` 知识条目（`zycs_knowledge_items`）；新增 API-006 `GET/POST /knowledge-items`（写操作需 admin）；内存默认 + PG 可选持久化。TC-050~052 通过；默认全量 48 passed、5 skipped，PG 专项 11 passed。见 `tasks/task-009b-knowledge-items-and-gap-acceptance.md`。 |
 | 2026-07-11 | M10 Phase2 MVP 验收通过 | Phase2 Sprint-7/8/9 全部完成；TC-017~052 通过；RG-001/RG-002 Go、RG-003 Conditional Go；默认全量 48 passed、6 skipped，PG 专项 11 passed；试点客户主链路可用，真实 CRM/ERP/OA/工单/LLM 未解锁（后置 Phase3）。见 `docs/09-verification.md` §10.15。 |
 | 2026-07-11 | 知识闭环完成（task-009c） | 知识条目 `PATCH` 转正（draft→active→archived，需 admin）；`active` 知识进入问答检索链路（与 seed 统一评分）；draft/archived 不参与。TC-053/054 通过；默认全量 54 passed、6 skipped，PG 专项 11 passed。见 `tasks/task-009c-knowledge-item-active-retrieval.md`。 |
+| 2026-07-11 | 前端知识条目管理页完成（task-009d） | Console 新增「知识条目」Tab（独立）：列表（active/draft/archived 颜色区分）、转正（draft→active）、归档、新增表单（admin）；viewer 只读；接 API-006 GET/POST/PATCH。`npm run build` 通过。见 `tasks/task-009d-console-knowledge-tab.md`。 |
 
 ## 7. 已确认口径与待执行
 

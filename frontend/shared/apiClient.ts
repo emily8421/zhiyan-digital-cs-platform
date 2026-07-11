@@ -6,6 +6,7 @@ import type {
   DailySummaryData,
   HandoffRecord,
   KnowledgeGapRecord,
+  KnowledgeItemRecord,
   MessageResponseData,
   MockBusinessRecord,
   MockNotificationRecord,
@@ -124,6 +125,36 @@ export function updateKnowledgeGapStatus(
     method: 'PATCH',
     headers: consoleRoleHeader(),
     body: JSON.stringify({ status, resolution_note: resolutionNote })
+  });
+}
+
+export function listKnowledgeItems(): Promise<ApiResponse<KnowledgeItemRecord[]>> {
+  return requestJson<KnowledgeItemRecord[]>('/knowledge-items');
+}
+
+export function createKnowledgeItem(payload: {
+  scenario_pack_code: string;
+  title: string;
+  content: string;
+  source_ref: string;
+  tags?: string[];
+  status?: string;
+}): Promise<ApiResponse<KnowledgeItemRecord>> {
+  return requestJson<KnowledgeItemRecord>('/knowledge-items', {
+    method: 'POST',
+    headers: consoleRoleHeader(),
+    body: JSON.stringify(payload)
+  });
+}
+
+export function updateKnowledgeItemStatus(
+  itemId: string,
+  status: string
+): Promise<ApiResponse<KnowledgeItemRecord>> {
+  return requestJson<KnowledgeItemRecord>(`/knowledge-items/${itemId}`, {
+    method: 'PATCH',
+    headers: consoleRoleHeader(),
+    body: JSON.stringify({ status })
   });
 }
 

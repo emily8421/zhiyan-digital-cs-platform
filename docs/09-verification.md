@@ -447,3 +447,11 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-053/054 通过；默认全量 `tests/api tests/scenarios tests/acceptance` 54 passed、6 skipped；PG 专项 `test_console_store + test_conversation_store + test_static_data_source` 11 passed。
 - 边界说明：`PATCH /knowledge-items/{item_id}` 需 admin，允许 draft/active/archived 任意合法 status；`active` 知识与 seed 统一评分参与检索，draft/archived 不参与；无 active 时检索行为不变。
 - 后置项：前端知识条目管理页（含转正操作 UI）。
+
+### 10.17 前端知识条目管理页验证用例（task-009d）
+
+> 2026-07-11 细化。范围：Console「知识条目」Tab UI（列表 / 转正 / 归档 / 新增），接 API-006。前端 build 通过；UI 交互由人工浏览器验收。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-055 | `docs/design/web-console.md` §4.4、`frontend/console/src/App.tsx` | REQ-004、REQ-011 | Console 切到「知识条目」Tab：admin 转正 draft→active、归档、表单新增 draft；viewer 只读 | 列表展示 + 状态颜色区分（active 绿 / draft、archived 灰）；admin 可写、viewer 按钮禁用；`npm run build` 通过 | build 通过（2026-07-11）；UI 交互待人工浏览器验收 |
