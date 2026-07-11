@@ -12,8 +12,8 @@
 | 覆盖 REQ / NFR | REQ-006、REQ-007、REQ-008、REQ-009、REQ-010、REQ-011、REQ-012、REQ-014、REQ-016 |
 | 所属 Phase | [P1] Demo（Phase2 基础权限 / 角色可见性待补） |
 | 交付物形态 | Demo |
-| 当前状态 | P1-已实现（控制台 Demo；无生产鉴权） |
-| 最后更新 | 2026-07-09 |
+| 当前状态 | P1-已实现（控制台 Demo；无生产鉴权）；知识条目管理页设计已补（task-009b/009c，2026-07-11） |
+| 最后更新 | 2026-07-11 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-4/7）、docs/09-verification.md（TC-006/009/010/011/012）、frontend/console/、tests/ |
 | UI 原型策略 | 代码原型（engineering-driven），见 ai/project-rules.md §2.7；跨入口交互见 docs/design/frontend-interaction.md |
 
@@ -33,6 +33,7 @@ Phase1 控制台采用顶部 Tab 导航；列表详情采用右侧详情栏，�
 | 会话列表 | 会话状态、最近消息、风险等级、场景包 | API-003 |
 | 待跟进 | 转人工原因、建议负责人、处理状态 | API-004 |
 | 知识缺口 | 问题、标签、状态、处理说明 | API-005、API-006 |
+| 知识条目 | 知识条目列表、状态（draft/active/archived）、来源、转正、新增 | API-006 |
 | 通知记录 | Mock 通知 payload、状态、关联对象 | API-009 |
 | 场景包 | 产品型 / 项目型配置摘要 | API-010、API-011 |
 | Mock 数据 | 订单 / 项目 / 售后样例数据 | API-008 |
@@ -42,6 +43,7 @@ Phase1 控制台采用顶部 Tab 导航；列表详情采用右侧详情栏，�
 - 会话筛选：`status`、`scenario_pack_code`、`risk_level`。
 - 转人工筛选：`status`、`risk_level`、`suggested_owner`。
 - 缺口筛选：`status`、`scenario_pack_code`、`tag`。
+- 知识条目筛选：`status`（draft/active/archived）、`scenario_pack_code`、`tag`。
 - 通知筛选：`event_type`、`send_status`。
 
 ## 4. 关键交互
@@ -86,7 +88,8 @@ sequenceDiagram
 
 1. 控制台调用 API-005 查询 `new` 状态。
 2. 用户标记为 `reviewing`、`accepted`、`rejected` 或 `closed`。
-3. 若接受为知识候选，调用 API-006 创建 `draft` 知识条目。
+3. 若接受为知识候选，调用 API-006 创建 `draft` 知识条目（自动入库，状态 `draft`，不立即生效）。
+4. `draft` 知识条目需在「知识条目」页人工转正为 `active` 后，才会进入问答检索（见 §4.4）。
 
 ### 4.3 查看日报摘要
 
@@ -94,11 +97,21 @@ sequenceDiagram
 2. 展示会话数、自动回答数、转人工数、缺口数、未结案数。
 3. 明确标记数据来自 Demo / Mock。
 
+### 4.4 知识条目管理（task-009b/009c）
+
+1. 控制台调用 API-006 `GET /knowledge-items` 查询知识条目列表，支持 `status` / `scenario_pack_code` / `tag` 筛选。
+2. 列表展示 `item_id`、`title`、`status`、`source_ref`、`scenario_pack_code`、来源（缺口入库 `origin_gap_id` / 手动新增 / seed）、`updated_at`。
+3. 转正：admin 可把 `draft` 条目 `PATCH` 为 `active`（转正后才进入问答检索）；`active` 可归档为 `archived`。
+4. 新增：admin 可通过表单 `POST` 一条知识候选（默认 `draft`），需填 `source_ref`。
+5. viewer 只读列表，不显示转正 / 新增按钮。
+
 ## 5. UI 文案约束
 
 - “Mock 数据”：用于订单 / 项目 / 售后进度和通知。
 - “待人工确认”：用于高风险、无依据、投诉、赔付、合同、价格、交期。
-- “知识候选”：不能直接称为已生效知识。
+- “知识候选”（`draft`）：不能直接称为已生效知识，未进入问答检索。
+- “已生效”（`active`）：知识条目已转正，会被问答检索命中。
+- “已归档”（`archived`）：已停用，不参与检索。
 - “Demo 控制台”：避免用户误解为生产系统。
 
 ## 6. 验收
@@ -157,3 +170,4 @@ sequenceDiagram
 | WC-C-001 | Phase2 后端权限补齐口径 | 控制台写操作（转人工 / 缺口 / 知识候选）后端补角色权限 | project-rules §1 Phase2、07 §6 | 仅前端可见性控制 | 不阻塞 Phase1；阻塞 Phase2 试点放行 |
 | WC-C-002 | Mock 数据替换为真实业务数据时点 | Phase3 接真实系统后 | project-rules §1 | 保持 Mock | 不阻塞 |
 | WC-C-003 | 场景包 / Mock 数据是否纳入控制台验收 | 纳入只读查看（TC-007/008/014） | §2 已有对应页面 | 不纳入 | 不阻塞 |
+| WC-C-004 | 知识条目 active 进检索的运营可见性 | active 条目标注「已生效·问答可命中」 | task-009c active 进检索已实现；用户确认 2026-07-11 | 仅标状态 | 不阻塞 |

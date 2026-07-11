@@ -240,7 +240,7 @@
 
 - 禁止写“系统已承诺赔偿 / 价格 / 交期 / 合同条款”。
 - 禁止写“已接入真实订单系统 / 真实项目系统 / 真实飞书通知”，除非后续文档和人工确认已变更。
-- 禁止写“知识已自动入库并立即生效”，Phase1 只能表达“候选 / 待确认”。
+- 禁止写"知识已自动入库并立即生效"——缺口 accepted 只生成 `draft` 候选，必须人工转正为 `active` 后才能说"已生效 / 会被问答命中"。
 - 禁止把 Mock 进度描述为真实进度。
 - 禁止在错误提示中暴露 token、服务器绝对路径、堆栈或客户敏感内容。
 
@@ -255,6 +255,7 @@
 | Console 会话列表 | API-003 | 无 | 支持筛选和查看详情。 |
 | Console 待跟进 | API-004 GET | API-004 PATCH | 更新中禁用按钮，失败保留原状态。 |
 | Console 知识缺口 | API-005 GET | API-005 PATCH、API-006 POST | 接受为知识候选不等于已生效。 |
+| Console 知识条目 | API-006 GET | API-006 POST、API-006 PATCH | draft 候选不生效；active 已转正才进问答检索；archived 不参与。写操作需 admin。 |
 | Console 通知记录 | API-009 GET | API-009 POST | Phase1 只展示 Mock payload，不真实外发。 |
 | Console 场景包 | API-010、API-011 | 无 | 只读展示配置摘要。 |
 | Console Mock 数据 | API-008、API-007 | 无 | API-008 用于列表；API-007 用于按 `record_type` 和 `external_ref` 查看单条 Mock 记录；所有记录展示 MockBadge。 |

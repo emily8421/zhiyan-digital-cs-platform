@@ -68,7 +68,7 @@ stateDiagram-v2
   closed --> [*]
 ```
 
-Phase1 可实现到 `new`、`reviewing`、`closed`，`accepted` 后入库作为 Sprint-9（知识运营强化）或 Phase2 强化。
+Phase1 可实现到 `new`、`reviewing`、`closed`；Phase2（Sprint-9 task-009b/009c）已补全 `accepted` → draft 知识条目入库 → 转正 `active` → 进入问答检索的完整闭环。
 
 ## 6. 高风险转人工规则
 
@@ -117,7 +117,8 @@ Phase1 可实现到 `new`、`reviewing`、`closed`，`accepted` 后入库作为 
 |---|---|---|---|---|---|---|
 | LLM 自动答复 | 证据约束 + 不编造 + 成本 + 兜底 | 默认关闭，规则 / 关键词匹配 | project-rules §1 Phase2 仅评估、05 RG | 否 | DOC-C-005 / Phase2 评估 | 当前验收不依赖 LLM |
 | 向量检索 / Embedding | 保留 source_ref + 证据回溯的向量召回 | 未启用，关键词 / 规则匹配 | Docker TEI 候选默认关闭 | 否 | Phase2 技术验证 | 不影响 Phase1 验收 |
-| accepted 缺口入库 | 人工审核后入知识库 | Phase1 到 closed，accepted 强化在 Sprint-9 | 范围控制 | 否 | Sprint-9 | 不影响 Phase1 |
+| accepted 缺口入库 | 人工审核后入知识库（draft） | accepted → draft 入库（task-009b）→ 转正 active（task-009c）→ 检索命中 | 范围控制 | 否 | 已实现 Sprint-9 | 知识闭环完整 |
+| active 知识进检索 | 转正后参与问答匹配 | task-009c 已实现（与 seed 统一评分） | 范围控制 | 是 | 已实现 task-009c | 知识越用越全 |
 
 ## 待人工确认项
 
