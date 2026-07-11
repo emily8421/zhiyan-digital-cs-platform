@@ -485,3 +485,16 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 新增 `docs/research/2026-07-11-phase3-integration-questionnaire.md`：覆盖试点客户、系统清单、接口详情、字段映射、事件回调、验收场景和 Go/No-Go 检查。
 - 新增 `docs/research/2026-07-11-phase3-security-data-boundary-review.md`：覆盖数据分类、凭据、接口访问、日志审计、前端展示、LLM / 外部 SaaS 边界和 RG-004~RG-008。
 - 结论：Phase3 可继续准备规划；客户 / IT / 安全负责人填写并确认前，真实 CRM / ERP / OA / 工单 / 生产飞书 / 真实 LLM 接入仍为 No-Go。
+
+### 10.20 Phase3 外部系统适配层契约设计（TC-058）
+
+> 2026-07-11 细化。范围：工程侧准备规划，只定义 Mock / sandbox / disabled / production_readonly 契约，不接真实系统、不写代码、不记录真实凭据。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-058 | `docs/design/integration-adapters.md`、`docs/research/2026-07-11-phase3-integration-questionnaire.md`、`docs/research/2026-07-11-phase3-security-data-boundary-review.md` | REQ-008、REQ-009、REQ-016 | 定义 ExternalBusinessAdapter、运行模式、统一结果、错误降级、字段脱敏、日志边界和 RG 对应关系 | 适配层契约清晰；真实实施仍受 RG-004/RG-005/RG-006 阻塞；无真实系统调用 | 通过（设计类）；契约已落盘，等待后续单独编码任务 |
+
+#### Phase3 适配层契约记录（2026-07-11）
+
+- 新增 `docs/design/integration-adapters.md`：定义外部业务系统适配层位置、运行模式、统一接口、查询结果、错误码、脱敏、日志、验收草案和后续编码边界。
+- 结论：可作为后续 Mock / sandbox 骨架编码依据；真实 CRM / ERP / OA / 工单 / 生产飞书 / 真实 LLM 接入仍需 RG-004/RG-005/RG-006 或单独授权任务。
