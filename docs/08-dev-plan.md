@@ -372,6 +372,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-11 | Phase3 升级评估完成 | 结论：Conditional Go（仅进入 Phase3 准备规划）+ No-Go（暂不解锁真实 CRM/ERP/OA/工单/LLM 实施接入）。Phase3 真实实施仍需试点客户接口与授权、安全评审、沙箱 / 测试账号、字段映射和验收场景。见 `docs/research/2026-07-11-phase3-upgrade-evaluation.md` 与 `docs/09-verification.md` §10.18。 |
 | 2026-07-11 | Phase3 准备材料已补 | 新增真实集成接口问卷与安全 / 数据边界评审清单，明确客户 / IT / 安全需提供系统清单、接口文档、授权范围、沙箱 / 测试账号、字段映射、验收场景和凭据 / 日志 / LLM 红线。见 `docs/research/2026-07-11-phase3-integration-questionnaire.md`、`docs/research/2026-07-11-phase3-security-data-boundary-review.md` 与 `docs/09-verification.md` §10.19。 |
 | 2026-07-11 | Phase3 适配层契约设计已补 | 新增 `docs/design/integration-adapters.md`，定义 ExternalBusinessAdapter、运行模式（disabled / mock / sandbox / production_readonly）、统一查询结果、错误降级、字段脱敏、日志审计和 RG-004~RG-008 对应关系；仅设计 Mock / sandbox 骨架，不接真实系统。见 `docs/09-verification.md` §10.20。 |
+| 2026-07-11 | Demo Sandbox 口径重评估完成 | 结论：真实 CRM/ERP/OA/工单仍 No-Go；标准化模拟业务数据 Go；飞书测试群出站通知 Go；LLM Sandbox Conditional Go（只处理模拟数据与证据约束回答，生产自动答复仍 No-Go）。见 `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` 与 `docs/09-verification.md` §10.21。 |
 
 ## 7. 已确认口径与待执行
 
@@ -382,3 +383,4 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Phase3 升级评估已完成（2026-07-11）：仅建议进入 Phase3 准备规划，不解锁真实外部系统或真实 LLM 接入；下一步优先真实集成接口问卷 + 安全与数据边界评审。
 - Phase3 真实集成接口问卷 + 安全与数据边界评审清单已落盘；客户 / IT / 安全负责人填写并确认前，真实集成实施仍为 No-Go。
 - Phase3 外部系统适配层契约已落盘；后续若进入编码，必须先只实现抽象 / Disabled / Mock 包装和 sandbox 骨架，不改变现有 API 行为、不调用真实生产接口。
+- Demo Sandbox 口径已重评估：为客户演示可推进标准化模拟数据、飞书测试群和 LLM Sandbox；真实业务系统、生产飞书、真实客户数据和生产 LLM 自动答复仍不解锁。

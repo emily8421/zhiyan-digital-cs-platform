@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-001（飞书出站通知沙箱）Go（2026-07-11）、RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14）、RG-003（LLM）评估完成 Conditional Go（2026-07-11，见 §14） |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-001（飞书出站通知沙箱）Go（2026-07-11）、RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14）、RG-003（LLM）评估完成 Conditional Go（2026-07-11，见 §14）；Demo Sandbox 口径已重评估（标准模拟数据 + 飞书测试群 + LLM Sandbox 可演示，真实系统仍 No-Go） |
 | 最后更新 | 2026-07-11 |
 | 当前阶段 | Phase2：MVP 试点 |
 | 覆盖架构组件 | COMP-001~012（见 `docs/04-architecture.md` §3） |
@@ -19,9 +19,9 @@
 | 后端 | Python + FastAPI | 已列入项目规则草稿 | REST API、服务层、适配层。 |
 | 数据库 | PostgreSQL + pgvector | 计划方向，Phase1 可降级 | Docker 不可用时先 Mock / 本地临时数据。 |
 | 向量检索 | pgvector / TEI | 预留，默认关闭 | Phase1 不强制向量服务。 |
-| 通知 | 飞书机器人适配 | 预留，Phase1 Mock | 默认不真实发送。 |
+| 通知 | 飞书机器人适配 | Phase2 沙箱 Go | 默认 Mock；显式 sandbox 可发送到飞书测试群。 |
 | 外部业务系统 | CRM / ERP / OA / 工单适配 | 预留，Phase3 | Phase1 仅 Mock。 |
-| LLM | Phase1 不启用 | 默认关闭 | 启用前需补成本、不编造、兜底、审计。 |
+| LLM | 外部 LLM API | 默认关闭；Demo Sandbox Conditional Go | 可在显式 sandbox 模式下只处理模拟数据；生产自动答复仍 No-Go。 |
 
 ## 2. 本机环境约束
 
@@ -51,7 +51,7 @@ Phase1 必须能本机运行：
 | TDR-001 | 前端单仓多入口 | `frontend/customer-h5` 与 `frontend/console` 分目录 | H5 与控制台职责不同，但共享类型和 API client | 前端框架已按 Phase1 确认为 React + Vite + TypeScript | 已验证（Phase1 build 通过） |
 | TDR-002 | 后端分层 | API / Service / Adapter / Data / Schema / Core | 避免外部系统与业务逻辑耦合 | 初期目录较多 | 已验证（Phase1 API 测试通过） |
 | TDR-003 | 场景包配置化 | 使用数据文件表达产品型 / 项目型场景 | 支持复用与追溯 | 需要设计校验规则 | 已验证（Phase1 场景包加载通过） |
-| TDR-004 | Mock 优先 | Phase1 所有外部系统走 Mock | 保证本机可跑与安全 | 与真实系统差异需标明 | 已启用（Phase1）；Phase2 部分转沙箱 |
+| TDR-004 | Mock / Demo Sandbox 优先 | 真实业务系统未授权前走标准模拟数据；飞书测试群和 LLM Sandbox 可用于演示 | 保证本机可跑、客户可看、真实系统不误接 | 与真实系统差异需标明，避免被误解为生产接入 | 已启用（Phase1/2）；Demo Sandbox 口径已评估（2026-07-11） |
 | TDR-005 | 不编造策略 | 无依据 / 高风险转人工 | 保护售后和承诺风险 | 演示时可能不够“智能” | 已启用（ADR-0004） |
 | TDR-006 | 数据库目标设计保留 | `docs/06` 写 PostgreSQL 目标结构 | 为后续 MVP / 集成铺路 | Phase1 实现可能降级 | 已验证（目标结构）；Phase1 降级运行 |
 
@@ -65,7 +65,7 @@ Phase1 必须能本机运行：
 | Node 包 | `frontend/customer-h5/package.json`、`frontend/console/package.json` | 前端构建 | Phase1 | 已启用 | package.json | 无 | `npm run build` 通过 |
 | 数据库 | PostgreSQL 16 + pgvector 0.8.0 | 持久化 / 向量 | Phase2 技术验证 | 已验证可用（RG-002 Go） | docker-compose（待 Sprint-8 实现） | 连接串（secret） | 已验证（2026-07-10，见 `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md`） |
 | 通知 | 飞书机器人 webhook | 员工通知 | Phase2 沙箱 | 出站通知沙箱 Go（默认 Mock 仍保留） | `.env.local` / 环境变量 | webhook URL / secret（secret） | 已完成启动前评估、默认 Mock / 显式 sandbox 骨架与沙箱实发（RG-001，见 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`） |
-| LLM | 外部 LLM API | 自动答复 | Phase2 评估完成（Conditional Go） | 默认关闭 | .env（待） | API key（secret） | 评估完成（RG-003，见 `docs/research/2026-07-11-tech-env-evaluation-llm.md`）；启用仍阻塞 |
+| LLM | 外部 LLM API | Demo Sandbox 证据改写 / 话术生成 | Demo Sandbox Conditional Go | 默认关闭；显式 `sandbox` 才可调用 | `.env` / 环境变量（待） | API key（secret） | RG-003 评估完成；Demo Sandbox 评估允许只处理模拟数据（见 `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md`），生产自动答复仍阻塞 |
 
 ## 4. 后端技术方案
 
@@ -165,7 +165,7 @@ Phase1 必须能本机运行：
 
 | Phase | 允许 | 禁止 | Mock / 降级 | 技术状态说明 | 权威源 |
 |---|---|---|---|---|---|
-| Phase2 | 强化知识库 / 缺口流转 / 权限 / 运营配置；飞书沙箱联调；PostgreSQL/pgvector 技术验证；单个试点客户部署 | 真实 CRM/ERP/OA/工单（Phase3）；多租户 / 计费（Phase4）；LLM 默认启用；真实客户隐私 / 生产会话 | 飞书沙箱不接真实组织数据；DB 验证不作功能前置；Mock / 降级路径保留 | Conditional Go（2026-07-09） | `ai/project-rules.md` §1、`docs/03-prd.md` §3 |
+| Phase2 | 强化知识库 / 缺口流转 / 权限 / 运营配置；飞书沙箱联调；PostgreSQL/pgvector 技术验证；单个试点客户部署；Demo Sandbox 演示准备 | 真实 CRM/ERP/OA/工单（Phase3）；多租户 / 计费（Phase4）；LLM 生产自动答复；真实客户隐私 / 生产会话 | 飞书测试群可演示；标准模拟数据可演示；LLM Sandbox 只处理模拟数据；DB 验证不作功能前置；Mock / 降级路径保留 | Conditional Go（2026-07-09）；Demo Sandbox Conditional Go（2026-07-11） | `ai/project-rules.md` §1、`docs/03-prd.md` §3、`docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` |
 
 ## 13. 技术风险与验证计划（P0 补强，2026-07-09）
 
@@ -177,12 +177,13 @@ Phase1 必须能本机运行：
 | RISK-P2-005 | ivfflat 索引小数据低召回 | pgvector 向量检索 | 影响检索召回 | 已知，不阻塞 | 数据量足后评估 HNSW | Sprint-9 / 知识运营 | 数据量足或改 HNSW |
 | RISK-P2-006 | embedding 维度 / 方案未定 | 向量字段启用 | 向量检索暂不可用 | 待 embedding 方案（Phase2 默认关闭） | 关键词 / 规则匹配降级 | Sprint-9 / Phase3 | embedding 方案确定 |
 | RISK-P2-002 | 飞书真实通知权限 / 回调边界未定 | Sprint-8 沙箱联调 | 影响员工侧触达 | 出站通知沙箱 Go；事件回调后置 | 沙箱联调 + 权限确认 | Sprint-8 / RG-001 | 真实生产群 / 生产组织数据仍需另行授权；回调另拆任务 |
-| RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 已评估（2026-07-11）→ Conditional Go；启用仍阻塞 | LLM 专项评估（见 `docs/research/2026-07-11-tech-env-evaluation-llm.md`） | Sprint-9 / RG-003 | 评估完成（已满足）；真实启用另需 DOC-C-005 解锁 + Phase 升级 + 安全评审 |
+| RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 已评估（2026-07-11）→ Conditional Go；Demo Sandbox 可只处理模拟数据；生产自动答复仍阻塞 | LLM 专项评估 + Demo Sandbox 评估 | Sprint-9 / RG-003 / TC-059 | 模拟数据 Sandbox 可进入；真实客户数据 / 生产自动答复另需安全评审 + 成本授权 |
 | RISK-P2-004 | 沙箱内 Vite `spawn EPERM` | 前端 build / dev | 沙箱内构建失败 | 已接受 | 非沙箱本机运行 | TC-015 | 非沙箱环境 |
 | RISK-P2-007 | LLM 幻觉承诺（价格 / 合同 / 赔付 / 交期） | LLM 启用后绕过高风险规则 | 业务承诺风险 | 候选，未启用 | 高风险关键词强制转人工，LLM 不得覆盖；温度调低 + system prompt 约束 | Phase3 LLM 启用前 | ADR-0004 在 LLM 链路强制执行 + 测试覆盖 |
 | RISK-P2-008 | LLM 成本失控 | 无预算上限 / 缓存 | 费用超支 | 候选，未启用 | 预算上限 + 告警 + 缓存 + 限流 | Phase3 LLM 启用前 | 成本授权 + 预算配置 |
 | RISK-P2-009 | 客户隐私泄露给 LLM | 真实隐私 / 订单 / 合同入 prompt | 合规风险 | 候选，未启用 | PII 脱敏 + 不发送真实隐私 / 合同 / 订单 / 联系方式 | Phase3 LLM 启用前 | 隐私脱敏 + 安全评审 |
 | RISK-P2-010 | LLM 超时 / 限流致主链路阻塞 | API 延迟或限流 | 体验下降 | 候选，未启用 | 超时降级回规则匹配 / 转人工，不阻塞 | Phase3 LLM 启用前 | 超时配置 + 降级测试 |
+| RISK-P2-011 | Demo Sandbox 被误解为真实生产接入 | 客户演示混淆 Mock / sandbox / prod | 商务与交付预期风险 | 新增（2026-07-11） | UI、回答、飞书文案和演示手册均标 Demo / Mock / Sandbox | Demo Sandbox | 展示标识 + 演示脚本校验 |
 
 ## 14. Readiness Gate（P0 补强，2026-07-09）
 
@@ -192,7 +193,8 @@ Phase1 必须能本机运行：
 |---|---|---|---|---|---|
 | RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限 / 回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Go（2026-07-11；出站通知沙箱） | 默认 Mock 保留；事件回调、真实生产群和生产组织数据另拆任务 |
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go / Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） | 已通过，可进 Sprint-8 DB 实现 |
-| RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | `docs/research/2026-07-11-tech-env-evaluation-llm.md` | Conditional Go（2026-07-11，评估完成） | LLM 默认仍关闭；真实启用需 DOC-C-005 解锁 + Phase 升级 + 安全评审 + 成本授权 |
+| RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | `docs/research/2026-07-11-tech-env-evaluation-llm.md`、`docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` | Conditional Go（2026-07-11，评估完成；Demo Sandbox 可演示） | LLM 默认仍关闭；sandbox 仅处理模拟数据；生产自动答复需安全评审 + 成本授权 |
+| RG-009 | Demo Sandbox | 标准模拟数据、飞书测试群和 LLM Sandbox 边界明确 | `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` | Conditional Go（2026-07-11） | 下一步先做标准模拟数据包，再做 LLM Sandbox 适配器和演示脚本 |
 
 Conditional Go 保留：上述 gate 在对应 Sprint 前必须由「待评估」推进到 Go / Conditional Go；No-Go 阻止相关 Sprint。详见 `docs/09-verification.md` §10.2。
 

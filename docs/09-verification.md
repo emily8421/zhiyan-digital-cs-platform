@@ -498,3 +498,17 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 - 新增 `docs/design/integration-adapters.md`：定义外部业务系统适配层位置、运行模式、统一接口、查询结果、错误码、脱敏、日志、验收草案和后续编码边界。
 - 结论：可作为后续 Mock / sandbox 骨架编码依据；真实 CRM / ERP / OA / 工单 / 生产飞书 / 真实 LLM 接入仍需 RG-004/RG-005/RG-006 或单独授权任务。
+
+### 10.21 Demo Sandbox 重新评估（TC-059）
+
+> 2026-07-11 评估。范围：客户演示用 Demo Sandbox；不接真实 CRM / ERP / OA / 工单，不处理真实客户数据；允许标准模拟数据、飞书测试群和 LLM Sandbox 进入后续实现评估。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-059 | `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md`、RG-001、RG-003、`docs/design/integration-adapters.md` | REQ-004、REQ-008、REQ-009、REQ-016 | 区分真实业务系统 No-Go 与 Demo Sandbox 可演示范围，评估标准模拟数据、飞书测试群和 LLM Sandbox | 演示能力边界清晰：真实系统不接；模拟数据规范化；飞书测试群可实发；LLM 只处理模拟数据且不编造 | 通过（评估类）；Demo Sandbox Conditional Go，后续需拆标准模拟数据包与 LLM Sandbox 任务 |
+
+#### Demo Sandbox 评估记录（2026-07-11）
+
+- 评估结论：真实 CRM / ERP / OA / 工单仍 No-Go；标准化模拟业务数据 Go；飞书测试群出站通知 Go；LLM Sandbox Conditional Go；生产 LLM 自动答复仍 No-Go。
+- 关键边界：所有业务记录必须标 Mock / Demo；LLM 只基于模拟数据和知识证据改写回答；无依据 / 高风险仍转人工；真实 key 不写入仓库或日志。
+- 下一步建议：优先做标准模拟业务数据包，再做 LLM Sandbox 适配器，最后补客户演示脚本。
