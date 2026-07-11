@@ -457,3 +457,17 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | TC-055 | `docs/design/web-console.md` §4.4、`frontend/console/src/App.tsx` | REQ-004、REQ-011 | Console 切到「知识条目」Tab：admin 转正 draft→active、归档、表单新增 draft；viewer 只读 | 列表展示 + 状态颜色区分（active 绿 / draft、archived 灰）；admin 可写、viewer 按钮禁用；`npm run build` 通过 | 通过（2026-07-11）；build 通过，人工浏览器验收暂未发现问题 |
 
 - 人工浏览器验收记录（2026-07-11）：本机后端 `8000`、Console `5174`、H5 `5175` 均可访问；用户按 TC-055 路径检查 Console「知识条目」Tab 后反馈“暂时没发现”问题。
+
+### 10.18 Phase3 升级评估（TC-056）
+
+> 2026-07-11 评估。范围：Phase2 → Phase3 升级 readiness，只评估，不接真实 CRM / ERP / OA / 工单 / LLM，不处理真实客户数据。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-056 | `docs/03-prd.md` §3、`ai/project-rules.md` §1、`docs/research/2026-07-11-phase3-upgrade-evaluation.md` | REQ-008、REQ-009、REQ-016 | 核对 Phase2 M10 退出、Phase3 进入标准、真实系统授权 / 安全 / 沙箱 / 字段映射前置条件 | 明确 Phase3 是否可进入；若不满足进入标准，列出阻塞与下一步 | 通过（评估类，非实发）；结论为 Phase3 准备规划 Conditional Go，真实实施 No-Go |
+
+#### Phase3 升级评估记录（2026-07-11）
+
+- 评估结论：可进入 Phase3 准备规划；暂不解锁真实 CRM / ERP / OA / 工单 / LLM 实施接入。
+- 阻塞项：试点客户接口清单、授权边界、沙箱 / 测试账号、字段映射、安全评审和验收场景均未提供。
+- 下一步建议：先做真实集成接口问卷 + 安全与数据边界评审；若做工程准备，仅做适配层契约设计和 Mock / sandbox 骨架。
