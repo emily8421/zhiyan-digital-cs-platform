@@ -4,7 +4,7 @@
 
 ## 1. 当前适用范围
 
-- 适用阶段：Phase1 本机 Demo 已验收通过；Phase2 启动前仍可用本手册查看既有效果。
+- 适用阶段：Phase1 本机 Demo 已验收通过；Phase2 MVP 已验收（M10，2026-07-11），本手册覆盖 Phase1 + Phase2 可演示能力（Phase2 增强见 §5.1）。
 - 交付形态：H5 客户对话页 + FastAPI 后端 + Web 控制台 + Mock / Demo 数据。
 - 验收依据：`docs/09-verification.md` §6 记录 Sprint-6 本机演示已通过，三端端口 `8000` / `5173` / `5174` 可访问。
 - 边界：不接真实飞书、CRM / ERP / OA / 工单系统，不处理真实客户隐私、合同、订单、报价、联系方式或生产会话，不启用 LLM。
@@ -131,8 +131,26 @@ npm.cmd run dev -- --port 5174
    - `http://127.0.0.1:8000/api/v1/conversations`
    - `http://127.0.0.1:8000/api/v1/handoffs`
    - `http://127.0.0.1:8000/api/v1/knowledge-gaps`
+   - `http://127.0.0.1:8000/api/v1/knowledge-items`
    - `http://127.0.0.1:8000/api/v1/notifications/mock`
    - `http://127.0.0.1:8000/api/v1/summaries/daily`
+
+### 5.1 Phase2 增强演示（Sprint-7/8/9 新能力）
+
+Phase2 MVP 验收通过（M10），在 Phase1 基础上可额外演示：
+
+| 演示点 | 操作 | 期望 |
+|---|---|---|
+| 双场景包切换（Sprint-7） | H5 / API 切换古晶（产品型）与乐式（项目型）场景包 | 不同场景包加载不同知识 / 规则 / Mock 数据，`scenario_pack_id` 正确区分 |
+| 控制台角色权限（Sprint-7） | 以 viewer / admin 调控制台写操作 | 后端按角色放行：admin 可写、viewer 返回 403 `FORBIDDEN_CONSOLE_WRITE`；前端隐藏绕不过后端 |
+| 知识缺口审核入库（Sprint-9） | `PATCH /api/v1/knowledge-gaps/{gap_id}`（header `X-Console-Role: admin`，body `{"status":"accepted","resolution_note":"已确认"}`） | 缺口变 `accepted`，自动生成一条 `draft` 知识条目；`GET /api/v1/knowledge-items` 可查回（`source_ref=knowledge_gap:{gap_id}`）；`rejected` 不生成 |
+| 知识条目管理（Sprint-9 API-006） | `POST /api/v1/knowledge-items`（需 admin）新增知识候选；`GET /api/v1/knowledge-items?status=draft` 查询 | 新增成功（`draft`），列表可查回；写操作需 admin |
+| 高风险不编造（产品红线） | H5 发送「如果客户要赔偿怎么办？」或含「赔偿 / 投诉 / 合同 / 最低价 / 保证交期」 | 不承诺，转人工，`answer_type=handoff`、风险 `high`、来源 `rule:high_risk_handoff` |
+| 产品咨询命中知识 | H5 发送「灯带有什么规格？」（产品型场景包 demo_question） | `answer_type=knowledge`、`source_ref=SRC-SP-PRODUCT-001`，回答带依据 |
+| 飞书沙箱通知（可选） | 配 `.env.local`：`ZYCS_FEISHU_NOTIFY_MODE=sandbox` + webhook URL / secret，触发转人工 / 缺口 | 飞书测试群真收到通知（`send_status=sent`、`mock=false`）；不配默认 Mock |
+| DB 持久化（可选） | 启 PG 容器 + `ZYCS_CONVERSATION_STORE=postgres` + `ZYCS_DATABASE_URL`，走主链路后查 `zycs_` 表 | 会话 / 消息 / 转人工 / 缺口 / 通知 / 知识条目落库；不启用走内存降级 |
+
+> 飞书沙箱与 DB 持久化均为可选增强，不配置时默认 Mock / 内存降级，不影响主链路演示。LLM 默认关闭，不接入真实 LLM API。详见 `docs/env/postgres-pgvector-runbook.md`、`docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`。
 
 ## 6. 常见问题
 
