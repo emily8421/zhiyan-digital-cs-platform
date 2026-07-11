@@ -1,23 +1,35 @@
-﻿{
+{
   "code": "product_business",
   "name": "产品型客户场景包",
   "description": "面向灯饰、制造、标准或半标准产品销售企业的 Phase1 Demo 场景包。",
-  "source_refs": ["SRC-SP-PRODUCT-001", "SRC-PRD-001"],
+  "source_refs": [
+    "SRC-SP-PRODUCT-001",
+    "SRC-PRD-001"
+  ],
   "intents": [
     {
       "code": "product_consultation",
       "name": "产品咨询",
-      "examples": ["灯带有什么规格", "可以定制颜色吗"]
+      "examples": [
+        "灯带有什么规格",
+        "可以定制颜色吗"
+      ]
     },
     {
       "code": "order_progress",
       "name": "订单进度",
-      "examples": ["我想查一下 HC-ORDER-001 的生产进度"]
+      "examples": [
+        "我想查一下 HC-ORDER-001 的生产进度",
+        "我想查一下 DEMO-ORDER-202607-001 的生产进度"
+      ]
     },
     {
       "code": "after_sales",
       "name": "售后规则",
-      "examples": ["灯带坏了怎么售后", "能退换货吗"]
+      "examples": [
+        "灯带坏了怎么售后",
+        "能退换货吗"
+      ]
     }
   ],
   "knowledge_items": [
@@ -51,7 +63,59 @@
       "summary": "Mock 订单 HC-ORDER-001 已进入生产排期，等待物料齐套。",
       "next_step": "物料齐套后进入生产。",
       "eta": "2026-07-10",
-      "is_mock": true
+      "is_mock": true,
+      "source_system": "demo_erp",
+      "environment": "demo_sandbox",
+      "stage": "pending_material",
+      "source_ref": "demo_erp:order:HC-ORDER-001",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_erp:order:HC-ORDER-001",
+        "source_system": "demo_erp",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_type": "demo_customer",
+          "display_name": "古晶照明样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "order_id": "HC-ORDER-001",
+          "external_ref": "HC-ORDER-001",
+          "record_type": "order",
+          "status": "生产排期中",
+          "stage": "pending_material",
+          "summary": "Mock 订单 HC-ORDER-001 已进入生产排期，等待物料齐套。",
+          "eta": "2026-07-10"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "material_ready",
+            "name": "物料齐套",
+            "status": "in_progress"
+          },
+          {
+            "node_id": "production",
+            "name": "生产",
+            "status": "pending"
+          },
+          {
+            "node_id": "quality_check",
+            "name": "质检",
+            "status": "pending"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
     },
     {
       "record_type": "order",
@@ -60,7 +124,202 @@
       "summary": "Mock 订单 HC-ORDER-002 已完成生产，正在质检。",
       "next_step": "质检通过后安排包装。",
       "eta": "2026-07-08",
-      "is_mock": true
+      "is_mock": true,
+      "source_system": "demo_erp",
+      "environment": "demo_sandbox",
+      "stage": "quality_check",
+      "source_ref": "demo_erp:order:HC-ORDER-002",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_erp:order:HC-ORDER-002",
+        "source_system": "demo_erp",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_type": "demo_customer",
+          "display_name": "古晶照明样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "order_id": "HC-ORDER-002",
+          "external_ref": "HC-ORDER-002",
+          "record_type": "order",
+          "status": "质检中",
+          "stage": "quality_check",
+          "summary": "Mock 订单 HC-ORDER-002 已完成生产，正在质检。",
+          "eta": "2026-07-08"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "material_ready",
+            "name": "物料齐套",
+            "status": "done"
+          },
+          {
+            "node_id": "production",
+            "name": "生产",
+            "status": "done"
+          },
+          {
+            "node_id": "quality_check",
+            "name": "质检",
+            "status": "in_progress"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
+    },
+    {
+      "record_type": "order",
+      "external_ref": "DEMO-ORDER-202607-001",
+      "status": "生产中",
+      "summary": "Demo 订单 DEMO-ORDER-202607-001 已完成物料齐套，当前处于生产中，预计完成后进入质检。",
+      "next_step": "生产完成后进入质检；如需确认具体交付承诺请转人工。",
+      "eta": "2026-07-20",
+      "is_mock": true,
+      "source_system": "demo_erp",
+      "environment": "demo_sandbox",
+      "stage": "in_production",
+      "source_ref": "demo_erp:order:DEMO-ORDER-202607-001",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_erp:order:DEMO-ORDER-202607-001",
+        "source_system": "demo_erp",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_type": "demo_customer",
+          "display_name": "古晶照明样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "order_id": "DEMO-ORDER-202607-001",
+          "external_ref": "DEMO-ORDER-202607-001",
+          "record_type": "order",
+          "status": "生产中",
+          "stage": "in_production",
+          "summary": "Demo 订单 DEMO-ORDER-202607-001 已完成物料齐套，当前处于生产中，预计完成后进入质检。",
+          "eta": "2026-07-20"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "order_confirmed",
+            "name": "订单确认",
+            "status": "done",
+            "updated_at": "2026-07-11T09:00:00+08:00"
+          },
+          {
+            "node_id": "material_ready",
+            "name": "物料齐套",
+            "status": "done",
+            "updated_at": "2026-07-12T10:30:00+08:00"
+          },
+          {
+            "node_id": "production",
+            "name": "生产",
+            "status": "in_progress",
+            "updated_at": "2026-07-15T14:00:00+08:00"
+          },
+          {
+            "node_id": "quality_check",
+            "name": "质检",
+            "status": "pending"
+          },
+          {
+            "node_id": "ready_to_ship",
+            "name": "待发货",
+            "status": "pending"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
+    },
+    {
+      "record_type": "order",
+      "external_ref": "DEMO-ORDER-202607-002",
+      "status": "质检中",
+      "summary": "Demo 订单 DEMO-ORDER-202607-002 已完成生产，正在进行出厂质检。",
+      "next_step": "质检通过后进入包装与发货准备。",
+      "eta": "2026-07-18",
+      "is_mock": true,
+      "source_system": "demo_erp",
+      "environment": "demo_sandbox",
+      "stage": "quality_check",
+      "source_ref": "demo_erp:order:DEMO-ORDER-202607-002",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_erp:order:DEMO-ORDER-202607-002",
+        "source_system": "demo_erp",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_type": "demo_customer",
+          "display_name": "古晶照明样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "order_id": "DEMO-ORDER-202607-002",
+          "external_ref": "DEMO-ORDER-202607-002",
+          "record_type": "order",
+          "status": "质检中",
+          "stage": "quality_check",
+          "summary": "Demo 订单 DEMO-ORDER-202607-002 已完成生产，正在进行出厂质检。",
+          "eta": "2026-07-18"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "order_confirmed",
+            "name": "订单确认",
+            "status": "done",
+            "updated_at": "2026-07-10T09:30:00+08:00"
+          },
+          {
+            "node_id": "production",
+            "name": "生产",
+            "status": "done",
+            "updated_at": "2026-07-14T17:20:00+08:00"
+          },
+          {
+            "node_id": "quality_check",
+            "name": "质检",
+            "status": "in_progress",
+            "updated_at": "2026-07-16T11:00:00+08:00"
+          },
+          {
+            "node_id": "ready_to_ship",
+            "name": "待发货",
+            "status": "pending"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
     }
   ],
   "handoff_rules": [
@@ -72,6 +331,8 @@
   "demo_questions": [
     "灯带有什么规格？",
     "我想查一下 HC-ORDER-001 的生产进度",
-    "如果客户要赔偿怎么办？"
+    "如果客户要赔偿怎么办？",
+    "我想查一下 DEMO-ORDER-202607-001 的生产进度",
+    "DEMO-ORDER-202607-002 现在到哪一步了？"
   ]
 }

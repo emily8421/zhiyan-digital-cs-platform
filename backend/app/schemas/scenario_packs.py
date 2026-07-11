@@ -1,4 +1,6 @@
-﻿from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class IntentItem(BaseModel):
@@ -35,6 +37,11 @@ class MockBusinessRecord(BaseModel):
     next_step: str
     eta: str | None = None
     is_mock: bool = True
+    source_ref: str = ""
+    source_system: str = "demo_sandbox"
+    environment: str = "demo_sandbox"
+    stage: str | None = None
+    payload: dict[str, Any] = Field(default_factory=dict)
 
 
 class ScenarioPack(BaseModel):

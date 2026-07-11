@@ -235,15 +235,17 @@ sequenceDiagram
 
 ### API-007 Mock 业务查询
 
-`GET /api/v1/mock-business/order/HC-ORDER-001`
+`GET /api/v1/mock-business/order/DEMO-ORDER-202607-001`
 
-响应字段：`record_type`、`external_ref`、`status`、`summary`、`next_step`、`eta`、`mock`。
+响应字段：`record_type`、`external_ref`、`scenario_pack_code`、`status`、`summary`、`next_step`、`eta`、`source_ref`、`source_system`、`environment`、`stage`、`payload`、`mock`。
+
+Demo Sandbox 标准模拟数据要求：`environment=demo_sandbox`、`mock=true`；`payload.schema_version=demo_sandbox.v1`；`payload` 内保留 `customer`、`business_object`、`progress_nodes`、`allowed_display_fields`、`redaction_applied` 等字段，供 LLM Sandbox 后续作为证据输入。
 
 ### API-008 Mock 数据列表
 
 `GET /api/v1/mock-business?record_type=project&scenario_pack_code=project_business`
 
-用于控制台查看样例数据。
+用于控制台查看样例数据。Phase2 / Demo Sandbox 保留旧 `HC-*` / `XS-*` 编号兼容，同时新增 `DEMO-*` 标准模拟编号。
 
 ### API-009 Mock 通知
 

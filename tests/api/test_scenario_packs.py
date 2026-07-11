@@ -1,4 +1,4 @@
-﻿from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from app.main import create_app
 
@@ -30,6 +30,9 @@ def test_get_scenario_pack_detail_returns_traceable_seed_data() -> None:
     assert all(item["source_ref"] for item in data["knowledge_items"])
     assert data["mock_business_records"]
     assert all(record["is_mock"] is True for record in data["mock_business_records"])
+    assert all(record["source_ref"] for record in data["mock_business_records"])
+    assert all(record["environment"] == "demo_sandbox" for record in data["mock_business_records"])
+    assert all(record["payload"]["schema_version"] == "demo_sandbox.v1" for record in data["mock_business_records"])
 
 
 def test_get_missing_scenario_pack_returns_error_contract() -> None:

@@ -1,23 +1,35 @@
-﻿{
+{
   "code": "project_business",
   "name": "项目型客户场景包",
   "description": "面向智能家居方案商、项目交付型企业的 Phase1 Demo 场景包。",
-  "source_refs": ["SRC-SP-PROJECT-001", "SRC-PRD-001"],
+  "source_refs": [
+    "SRC-SP-PROJECT-001",
+    "SRC-PRD-001"
+  ],
   "intents": [
     {
       "code": "project_consultation",
       "name": "方案咨询",
-      "examples": ["智能家居方案怎么配合", "项目开发有哪些阶段"]
+      "examples": [
+        "智能家居方案怎么配合",
+        "项目开发有哪些阶段"
+      ]
     },
     {
       "code": "project_progress",
       "name": "项目进度",
-      "examples": ["XS-PROJ-001 到哪个阶段了"]
+      "examples": [
+        "XS-PROJ-001 到哪个阶段了",
+        "DEMO-PROJ-202607-001 到哪个阶段了？"
+      ]
     },
     {
       "code": "ticket_progress",
       "name": "售后工单",
-      "examples": ["XS-TICKET-001 处理到哪了"]
+      "examples": [
+        "XS-TICKET-001 处理到哪了",
+        "DEMO-TICKET-202607-001 处理到哪了？"
+      ]
     }
   ],
   "knowledge_items": [
@@ -51,7 +63,59 @@
       "summary": "Mock 项目 XS-PROJ-001 已完成需求澄清，正在输出方案。",
       "next_step": "方案评审后进入联调准备。",
       "eta": "2026-07-12",
-      "is_mock": true
+      "is_mock": true,
+      "source_system": "demo_project",
+      "environment": "demo_sandbox",
+      "stage": "solution_design",
+      "source_ref": "demo_project:project:XS-PROJ-001",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_project:project:XS-PROJ-001",
+        "source_system": "demo_project",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_type": "demo_customer",
+          "display_name": "乐式智能家居样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "project_id": "XS-PROJ-001",
+          "external_ref": "XS-PROJ-001",
+          "record_type": "project",
+          "status": "方案开发阶段",
+          "stage": "solution_design",
+          "summary": "Mock 项目 XS-PROJ-001 已完成需求澄清，正在输出方案。",
+          "eta": "2026-07-12"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "requirement",
+            "name": "需求澄清",
+            "status": "done"
+          },
+          {
+            "node_id": "solution",
+            "name": "方案设计",
+            "status": "in_progress"
+          },
+          {
+            "node_id": "integration",
+            "name": "联调测试",
+            "status": "pending"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
     },
     {
       "record_type": "project",
@@ -60,7 +124,59 @@
       "summary": "Mock 项目 XS-PROJ-002 正在进行设备与平台联调。",
       "next_step": "联调通过后安排交付验收。",
       "eta": "2026-07-15",
-      "is_mock": true
+      "is_mock": true,
+      "source_system": "demo_project",
+      "environment": "demo_sandbox",
+      "stage": "integration_testing",
+      "source_ref": "demo_project:project:XS-PROJ-002",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_project:project:XS-PROJ-002",
+        "source_system": "demo_project",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_type": "demo_customer",
+          "display_name": "乐式智能家居样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "project_id": "XS-PROJ-002",
+          "external_ref": "XS-PROJ-002",
+          "record_type": "project",
+          "status": "联调测试阶段",
+          "stage": "integration_testing",
+          "summary": "Mock 项目 XS-PROJ-002 正在进行设备与平台联调。",
+          "eta": "2026-07-15"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "requirement",
+            "name": "需求澄清",
+            "status": "done"
+          },
+          {
+            "node_id": "solution",
+            "name": "方案设计",
+            "status": "done"
+          },
+          {
+            "node_id": "integration",
+            "name": "联调测试",
+            "status": "in_progress"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
     },
     {
       "record_type": "ticket",
@@ -69,7 +185,192 @@
       "summary": "Mock 售后单 XS-TICKET-001 已分配给售后同事处理。",
       "next_step": "售后同事确认现场信息后回复。",
       "eta": "2026-07-09",
-      "is_mock": true
+      "is_mock": true,
+      "source_system": "demo_ticket",
+      "environment": "demo_sandbox",
+      "stage": "processing",
+      "source_ref": "demo_ticket:ticket:XS-TICKET-001",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_ticket:ticket:XS-TICKET-001",
+        "source_system": "demo_ticket",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_type": "demo_customer",
+          "display_name": "乐式智能家居样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "ticket_id": "XS-TICKET-001",
+          "external_ref": "XS-TICKET-001",
+          "record_type": "ticket",
+          "status": "售后处理中",
+          "stage": "processing",
+          "summary": "Mock 售后单 XS-TICKET-001 已分配给售后同事处理。",
+          "eta": "2026-07-09"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "requirement",
+            "name": "需求澄清",
+            "status": "done"
+          },
+          {
+            "node_id": "solution",
+            "name": "方案设计",
+            "status": "done"
+          },
+          {
+            "node_id": "integration",
+            "name": "联调测试",
+            "status": "pending"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
+    },
+    {
+      "record_type": "project",
+      "external_ref": "DEMO-PROJ-202607-001",
+      "status": "联调准备中",
+      "summary": "Demo 项目 DEMO-PROJ-202607-001 已完成方案评审，正在准备设备与平台联调。",
+      "next_step": "确认测试设备清单后进入联调测试；上线承诺需人工确认。",
+      "eta": "2026-07-22",
+      "is_mock": true,
+      "source_system": "demo_project",
+      "environment": "demo_sandbox",
+      "stage": "integration_preparing",
+      "source_ref": "demo_project:project:DEMO-PROJ-202607-001",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_project:project:DEMO-PROJ-202607-001",
+        "source_system": "demo_project",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_type": "demo_customer",
+          "display_name": "乐式智能家居样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "project_id": "DEMO-PROJ-202607-001",
+          "external_ref": "DEMO-PROJ-202607-001",
+          "record_type": "project",
+          "status": "联调准备中",
+          "stage": "integration_preparing",
+          "summary": "Demo 项目 DEMO-PROJ-202607-001 已完成方案评审，正在准备设备与平台联调。",
+          "eta": "2026-07-22"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "requirement",
+            "name": "需求澄清",
+            "status": "done",
+            "updated_at": "2026-07-08T16:00:00+08:00"
+          },
+          {
+            "node_id": "solution_review",
+            "name": "方案评审",
+            "status": "done",
+            "updated_at": "2026-07-12T15:30:00+08:00"
+          },
+          {
+            "node_id": "integration_prepare",
+            "name": "联调准备",
+            "status": "in_progress",
+            "updated_at": "2026-07-16T10:00:00+08:00"
+          },
+          {
+            "node_id": "acceptance",
+            "name": "交付验收",
+            "status": "pending"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
+    },
+    {
+      "record_type": "ticket",
+      "external_ref": "DEMO-TICKET-202607-001",
+      "status": "处理中",
+      "summary": "Demo 工单 DEMO-TICKET-202607-001 已完成问题登记，售后角色正在核对现场信息。",
+      "next_step": "售后角色确认现场信息后给出处理建议；赔付或合同问题需转人工。",
+      "eta": "2026-07-19",
+      "is_mock": true,
+      "source_system": "demo_ticket",
+      "environment": "demo_sandbox",
+      "stage": "processing",
+      "source_ref": "demo_ticket:ticket:DEMO-TICKET-202607-001",
+      "payload": {
+        "schema_version": "demo_sandbox.v1",
+        "source_ref": "demo_ticket:ticket:DEMO-TICKET-202607-001",
+        "source_system": "demo_ticket",
+        "environment": "demo_sandbox",
+        "mock": true,
+        "customer": {
+          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_type": "demo_customer",
+          "display_name": "乐式智能家居样例客户",
+          "mock": true
+        },
+        "business_object": {
+          "ticket_id": "DEMO-TICKET-202607-001",
+          "external_ref": "DEMO-TICKET-202607-001",
+          "record_type": "ticket",
+          "status": "处理中",
+          "stage": "processing",
+          "summary": "Demo 工单 DEMO-TICKET-202607-001 已完成问题登记，售后角色正在核对现场信息。",
+          "eta": "2026-07-19"
+        },
+        "progress_nodes": [
+          {
+            "node_id": "created",
+            "name": "工单创建",
+            "status": "done",
+            "updated_at": "2026-07-15T09:20:00+08:00"
+          },
+          {
+            "node_id": "triage",
+            "name": "问题分派",
+            "status": "done",
+            "updated_at": "2026-07-15T10:10:00+08:00"
+          },
+          {
+            "node_id": "onsite_check",
+            "name": "现场信息核对",
+            "status": "in_progress",
+            "updated_at": "2026-07-16T14:00:00+08:00"
+          }
+        ],
+        "allowed_display_fields": [
+          "external_ref",
+          "status",
+          "summary",
+          "next_step",
+          "eta",
+          "progress_nodes"
+        ],
+        "redaction_applied": true
+      }
     }
   ],
   "handoff_rules": [
@@ -81,6 +382,8 @@
   "demo_questions": [
     "项目开发有哪些阶段？",
     "XS-PROJ-001 到哪个阶段了？",
-    "XS-TICKET-001 处理到哪了？"
+    "XS-TICKET-001 处理到哪了？",
+    "DEMO-PROJ-202607-001 到哪个阶段了？",
+    "DEMO-TICKET-202607-001 处理到哪了？"
   ]
 }

@@ -28,12 +28,15 @@ _HIGH_RISK_PATTERNS = [
     ("privacy_data", "手机|身份证|地址|账号|token|api[_-]?key|secret", "疑似隐私或凭据内容不得自动处理。", "high"),
 ]
 
-_MOCK_REF_PATTERN = re.compile(r"\b(HC-ORDER-\d+|XS-PROJ-\d+|XS-TICKET-\d+)\b", re.IGNORECASE)
+_MOCK_REF_PATTERN = re.compile(r"\b(HC-ORDER-\d+|XS-PROJ-\d+|XS-TICKET-\d+|DEMO-ORDER-\d{6}-\d+|DEMO-PROJ-\d{6}-\d+|DEMO-TICKET-\d{6}-\d+)\b", re.IGNORECASE)
 
 _MOCK_REF_TYPES = {
     "HC-ORDER": "order",
     "XS-PROJ": "project",
     "XS-TICKET": "ticket",
+    "DEMO-ORDER": "order",
+    "DEMO-PROJ": "project",
+    "DEMO-TICKET": "ticket",
 }
 
 
@@ -98,7 +101,7 @@ def _match_mock_business(content: str) -> MessageDecision | None:
         intent=f"{record.record_type}_progress",
         answer_type="mock_business",
         answer=f"这是 Mock 进度：{record.summary} 下一步：{record.next_step}",
-        source_ref=f"mock_business:{record.external_ref}",
+        source_ref=record.source_ref,
         risk_level="low",
         mock_record=record,
     )

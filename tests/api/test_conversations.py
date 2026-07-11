@@ -1,4 +1,4 @@
-﻿from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from app.main import create_app
 
@@ -52,9 +52,31 @@ def test_send_message_returns_mock_answer() -> None:
     assert body["data"]["message_id"].startswith("msg_")
     assert body["data"]["intent"] == "order_progress"
     assert body["data"]["answer_type"] == "mock_business"
-    assert body["data"]["source_ref"] == "mock_business:HC-ORDER-001"
+    assert body["data"]["source_ref"] == "demo_erp:order:HC-ORDER-001"
     assert body["data"]["handoff"] is None
     assert body["data"]["knowledge_gap"] is None
+
+
+def test_send_message_returns_standard_demo_sandbox_answer() -> None:
+    create_response = client.post(
+        "/api/v1/conversations",
+        json={"channel": "h5", "scenario_pack_code": "product_business"},
+    )
+    conversation_id = create_response.json()["data"]["conversation_id"]
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        json={"content": "我想查一下 DEMO-ORDER-202607-001 的生产进度"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["intent"] == "order_progress"
+    assert data["answer_type"] == "mock_business"
+    assert data["source_ref"] == "demo_erp:order:DEMO-ORDER-202607-001"
+    assert "Demo 订单" in data["answer"]
+    assert data["handoff"] is None
+    assert data["knowledge_gap"] is None
 
 
 def test_send_message_with_demo_question_matches_knowledge() -> None:

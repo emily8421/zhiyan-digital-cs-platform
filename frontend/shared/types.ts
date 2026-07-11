@@ -57,6 +57,11 @@ export type ScenarioPackDetail = {
     summary: string;
     next_step: string;
     eta: string | null;
+    source_ref: string;
+    source_system: string;
+    environment: string;
+    stage: string | null;
+    payload: Record<string, unknown>;
     is_mock: boolean;
   }>;
   handoff_rules: Array<{
@@ -168,5 +173,10 @@ export type MockBusinessRecord = {
   summary: string;
   next_step: string;
   eta: string | null;
+  source_ref: string;
+  source_system: string;
+  environment: string;
+  stage: string | null;
+  payload: Record<string, unknown>;
   mock: boolean;
 };

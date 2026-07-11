@@ -53,9 +53,23 @@ flowchart TD
 |---|---|---|---|
 | order | `HC-ORDER-001` | 产品型 | 生产排期中 |
 | order | `HC-ORDER-002` | 产品型 | 质检中 |
+| order | `DEMO-ORDER-202607-001` | 产品型 | 生产中 |
+| order | `DEMO-ORDER-202607-002` | 产品型 | 质检中 |
 | project | `XS-PROJ-001` | 项目型 | 方案开发阶段 |
 | project | `XS-PROJ-002` | 项目型 | 联调测试阶段 |
 | ticket | `XS-TICKET-001` | 项目型 | 售后处理中 |
+| project | `DEMO-PROJ-202607-001` | 项目型 | 联调准备中 |
+| ticket | `DEMO-TICKET-202607-001` | 项目型 | 处理中 |
+
+Demo Sandbox 标准模拟数据（task-010a）在保留上述旧编号兼容的同时，新增 `DEMO-*` 规范编号。每条标准记录必须包含：
+
+- `source_ref`：如 `demo_erp:order:DEMO-ORDER-202607-001`。
+- `source_system`：如 `demo_erp`、`demo_project`、`demo_ticket`。
+- `environment`: `demo_sandbox`。
+- `stage`：可迁移的英文状态码，如 `in_production`、`quality_check`、`integration_preparing`。
+- `payload.schema_version`: `demo_sandbox.v1`。
+- `payload.customer`、`payload.business_object`、`payload.progress_nodes`、`payload.allowed_display_fields`、`payload.redaction_applied`。
+- `mock`: `true` / `is_mock`: `true`，不得冒充真实生产数据。
 
 ## 4. 通知 payload
 
@@ -90,7 +104,7 @@ flowchart TD
 
 ## 6. 验收
 
-- TC-008、TC-009、TC-016 通过。
+- TC-008、TC-009、TC-016、TC-060 通过。
 - 外部集成默认关闭；误调用真实适配器返回 `EXTERNAL_INTEGRATION_DISABLED`。
 
 ## 上游依据与追溯

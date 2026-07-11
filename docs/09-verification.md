@@ -512,3 +512,17 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 评估结论：真实 CRM / ERP / OA / 工单仍 No-Go；标准化模拟业务数据 Go；飞书测试群出站通知 Go；LLM Sandbox Conditional Go；生产 LLM 自动答复仍 No-Go。
 - 关键边界：所有业务记录必须标 Mock / Demo；LLM 只基于模拟数据和知识证据改写回答；无依据 / 高风险仍转人工；真实 key 不写入仓库或日志。
 - 下一步建议：优先做标准模拟业务数据包，再做 LLM Sandbox 适配器，最后补客户演示脚本。
+
+### 10.22 标准模拟业务数据包验证（TC-060）
+
+> 2026-07-11 细化。范围：Demo Sandbox 标准模拟数据包；不接真实业务系统，不启用 LLM，不发送真实客户数据。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-060 | `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` §4、`docs/design/mock-integrations.md` §3、API-007/008 | REQ-008、REQ-014、REQ-016 | 查询 `DEMO-ORDER-202607-001`，并通过 H5 消息触发标准编号 Mock 进度；检查 `source_ref` / `environment` / `payload` | 返回标准模拟数据；`environment=demo_sandbox`、`mock=true`、`payload.schema_version=demo_sandbox.v1`、进度节点存在；无真实系统调用 | 通过（2026-07-11）；见 `tests/api/test_mock_business.py`、`tests/api/test_conversations.py`、`tests/api/test_scenario_packs.py` |
+
+#### task-010a 标准模拟数据包记录（2026-07-11）
+
+- 新增标准编号：`DEMO-ORDER-202607-001`、`DEMO-ORDER-202607-002`、`DEMO-PROJ-202607-001`、`DEMO-TICKET-202607-001`。
+- 扩展字段：`source_ref`、`source_system`、`environment`、`stage`、`payload`；保留旧字段兼容 H5 / Console。
+- 数据边界：全部为 Demo Sandbox 模拟数据，均标 `mock=true`；不含真实客户隐私、合同、报价、联系方式或生产数据。

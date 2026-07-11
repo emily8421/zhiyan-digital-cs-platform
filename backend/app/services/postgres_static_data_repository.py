@@ -63,7 +63,7 @@ def load_scenario_packs_from_postgres() -> dict[str, ScenarioPack]:
             mock_rows = _fetch_all(
                 connection,
                 """
-                SELECT record_type, external_ref, scenario_pack_id, status, summary, next_step, eta, is_mock
+                SELECT record_type, external_ref, scenario_pack_id, status, summary, next_step, eta, payload, is_mock
                 FROM zycs_mock_business_records
                 ORDER BY external_ref
                 """,
@@ -138,6 +138,9 @@ def _build_rule_item(row: dict[str, Any]) -> RuleItem:
 
 
 def _build_mock_business_record(row: dict[str, Any]) -> MockBusinessRecord:
+    payload = row.get("payload") or {}
+    if not isinstance(payload, dict):
+        payload = {}
     return MockBusinessRecord(
         record_type=str(row["record_type"]),
         external_ref=str(row["external_ref"]),
@@ -146,6 +149,11 @@ def _build_mock_business_record(row: dict[str, Any]) -> MockBusinessRecord:
         next_step=str(row["next_step"]),
         eta=str(row["eta"]) if row["eta"] is not None else None,
         is_mock=bool(row["is_mock"]),
+        source_ref=str(payload.get("source_ref") or f"demo_sandbox:{row['record_type']}:{row['external_ref']}"),
+        source_system=str(payload.get("source_system") or "demo_sandbox"),
+        environment=str(payload.get("environment") or "demo_sandbox"),
+        stage=str(payload["stage"]) if payload.get("stage") is not None else None,
+        payload=payload,
     )
 
 
