@@ -73,7 +73,7 @@ Conditional Go 保留条件（Phase2 全程有效）：
 > 本节用于约束架构与技术方案选择。Demo / MVP 阶段优先保证本机可运行；若本机资源不足，必须在 `docs/05-tech-spec.md` 中明确降级策略或服务器资源预案。
 
 - 本机环境文档：`docs/env/local-env.md`（已由 `scripts/collect-env.ps1` 生成，Phase1 关键资源口径已确认）
-- 当前本机概要：Windows 10 / PowerShell 5.1 / 约 31.73 GB 内存 / Python 3.14.3 / Node.js 22.17.1 / Docker 已安装但当前不可用 / 未检测到 GPU 信息。
+- 当前本机概要：Windows 10 / PowerShell 5.1 / 约 31.73 GB 内存 / Python 3.14.3 / Node.js 22.17.1 / Docker 已于 2026-07-10 RG-002 复测确认可用于 PostgreSQL / pgvector 技术验证；未检测到 GPU 信息。
 - Demo 阶段必须能在本机运行的部分：H5 对话页、FastAPI 后端、Web 控制台、Mock 数据、基础手工验证；数据库与向量服务不作为 Phase1 前置。
 - 允许降级 / Mock / 远程运行的部分：订单 / 项目进度等外部业务系统、Embedding / 向量检索、飞书通知；LLM 默认关闭。
 - 禁止在本机运行的重资源部分：本地大模型推理、模型训练、生产规模向量索引、真实生产数据处理。
@@ -101,7 +101,7 @@ Conditional Go 保留条件（Phase2 全程有效）：
 按项目形态裁剪说明：
 - `frontend/` 保留，用于 H5 对话页与 Web 控制台。
 - `backend/` 保留，用于 FastAPI 服务、知识 / 场景 / Mock 数据 / 集成层。
-- `docker/` 保留，用于 PostgreSQL / pgvector / TEI 等本地服务编排；当前 Docker 可用性待修复确认。
+- `docker/` 保留，用于 PostgreSQL / pgvector / TEI 等本地服务编排；Docker / PostgreSQL / pgvector 技术验证已 Go（RG-002，2026-07-10），但生产或客户侧启用仍需单独任务和人工确认。
 - `tests/` 保留，用于接口、规则、场景包与验收用例。
 - `docs/design/` 后续用于拆分 H5、Web 控制台、后端服务、知识库、场景包、Mock 集成层等详细设计。
 - `docs/decisions/` 后续用于记录入口选择、企微客户群自动回复证伪、高风险转人工、不编造等决策。

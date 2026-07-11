@@ -8,7 +8,7 @@
 - 计算机名：已脱敏（Windows 本机）
 - 当前用户：已脱敏
 - 工作目录：已脱敏（项目根目录）
-- 操作系统：Microsoft Windows 10.0.26200 
+- 操作系统：Microsoft Windows 10.0.26200
 - PowerShell：5.1.26100.8655
 - CPU：Intel64 Family 6 Model 154 Stepping 3, GenuineIntel
 - CPU 核心 / 线程：未知 核 / 16 线程
@@ -33,7 +33,7 @@
 - npm：11.11.0
 - Java：已安装（未获取到版本）
 - Docker：Docker version 29.5.2, build 79eb04c
-- Docker 运行状态：已安装但当前不可用
+- Docker 运行状态：自动采集时记录为已安装但当前不可用；2026-07-10 RG-002 复测已确认 Docker Desktop / PostgreSQL / pgvector 技术验证 Go，详见 `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md`。后续实际运行前仍以实时检查为准。
 
 ## 人工确认项（2026-07-04 已回填）
 

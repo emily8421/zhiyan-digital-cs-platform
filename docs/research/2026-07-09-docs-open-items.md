@@ -22,7 +22,7 @@
 | DOC-C-003 | 飞书通知是否进入沙箱 / 试点评估 | Phase2 飞书相关 Sprint 前 | 条件阻塞 | 已确认 |
 | DOC-C-004 | PostgreSQL / pgvector 是否作为 Phase2 必做项 | Phase2 存储 / 部署 Sprint 前 | 条件阻塞 | 已确认 |
 | DOC-C-005 | LLM 是否进入 Phase2 | Phase2 LLM 评估前 | 条件阻塞 | 已确认 |
-| DOC-C-006 | 模板仓 issue #148（A13 同步闭环提案）处理 | 模板维护者侧 | 不阻塞项目 | 待模板仓处理（open） |
+| DOC-C-006 | 模板仓 issue #148（A13 同步闭环提案）处理 | 模板维护者侧 | 不阻塞项目 | 已关闭 / 已归档 |
 | DOC-C-007 | `docs/design/*` 多数未套用 v1.43.0 设计标准元信息 | 触碰对应设计文档时 | 不阻塞（P2） | 可延后 |
 | IN-C-003 | 商业模式 / 定价详细策略归属（愿景定性已留，详细是否另立文档） | 实际报价验证后 | 不阻塞 | 暂缓（已决策：愿景定性 + 报价验证后 ADR） |
 | IN-C-005 | Channel Adapter Layer 设计（全渠道接入层） | Phase2 全渠道入口 Sprint 前 | 条件阻塞 Phase2 全渠道入口 | 暂缓（已决策：Phase2 readiness gate，届时补 `docs/design/channel-adapters.md`） |
@@ -122,16 +122,16 @@
 |---|---|
 | 提出时间 | 2026-07-08 |
 | 来源文档 / 位置 | `_proposals/TEMPLATE-UPGRADE-a13-sync-closure-and-dry-run-robustness.md` → https://github.com/emily8421/ai-project-template/issues/148 |
-| 待确认项 | 等模板维护者处理 #148（A13 同步闭环门禁矩阵、同步报告真实性约束、提案回流收口矩阵、`sync-template.ps1 --commit` dry-run 误报、大版本 dry-run 超时） |
-| AI 建议 | 跟踪至 closed；若长期无响应可补 follow-up |
-| 建议依据 | #102 已 closed 但 `sync-template.ps1 --commit` fallback 仍复现，#148 作为 follow-up 单独提交 |
-| 备选方案 | 重开 #102 或新建独立 issue |
+| 待确认项 | #148 已由模板仓处理并关闭；本地提案已归档到 `_archive/proposals/` |
+| AI 建议 | 已收口，无需 follow-up |
+| 建议依据 | `sync-records/template-sync/2026-07-11-sync-template-v1.46.0.md` 提案回流收口已记录 #148 closed，且本地 `_proposals/` 仅保留 README |
+| 备选方案 | 如后续发现新同步闭环问题，再新建独立提案 |
 | 取舍影响 | 不影响本项目业务；仅影响模板同步工具可用性与 A13 闭环门禁 |
 | 需确认节点 | 无（模板仓维护者侧） |
 | 阻塞关系 | 不阻塞项目 |
-| 回填位置 | #148 closed 后归档 `_proposals/TEMPLATE-UPGRADE-a13-sync-closure-and-dry-run-robustness.md` 到 `_archive/proposals/` |
-| 当前状态 | 待模板仓处理（open） |
-| 关闭依据 | 待 #148 关闭后回填 |
+| 回填位置 | 已归档 `_archive/proposals/TEMPLATE-UPGRADE-a13-sync-closure-and-dry-run-robustness.md` |
+| 当前状态 | 已关闭 / 已归档 |
+| 关闭依据 | 2026-07-11 模板同步 v1.46.0 提案回流收口；#148 已 closed，本地提案已归档 |
 
 ### DOC-C-007：`docs/design/*` v1.43.0 元信息兼容差异
 
@@ -202,6 +202,7 @@
 | DOC-C-003 | 飞书通知是否进入沙箱 / 试点评估 | 2026-07-09 人工确认：作为技术验证任务（Sprint-8 / RG-001），不接真实组织数据 |
 | DOC-C-004 | PostgreSQL / pgvector 是否 Phase2 必做 | 2026-07-09 人工确认：先技术验证（Sprint-8 / RG-002），不作功能前置 |
 | DOC-C-005 | LLM 是否进入 Phase2 | 2026-07-09 人工确认：仅评估（Sprint-9 / RG-003），不默认启用 |
+| DOC-C-006 | 模板仓 issue #148（A13 同步闭环提案）处理 | 已随模板 v1.46.0 同步收口：#148 closed，本地提案已归档到 `_archive/proposals/` |
 
 ## 4. 门禁与回填说明
 
