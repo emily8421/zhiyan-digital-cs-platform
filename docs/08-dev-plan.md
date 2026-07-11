@@ -5,8 +5,8 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，PR #34，单实例双场景包 / 本机部署 / 权限最小集），见 §2/§3 |
-| 最后更新 | 2026-07-10 |
+| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收；Sprint-8 已阶段性完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046），见 §2/§3 |
+| 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
 ## 1. Phase1 目标
@@ -26,7 +26,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-5 | 不编造与风险兜底 | 补充高风险规则、缺口流转、审计日志和验收样例。 | F-003、F-006、F-008、F-009 | `backend/app/services/`、`backend/app/data/`、`tests/scenarios/` | 已完成 |
 | Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` | 已通过验收 |
 | Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已完成（PR #34，2026-07-10） |
-| Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`docker/`、`docs/research/` | 草案，待细化（DOC-C-003/004） |
+| Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`backend/app/services/`、`docker/`、`docs/research/`、`tasks/` | 已完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046） |
 | Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | 草案，待细化（DOC-C-005） |
 
 ## 3. Sprint 详情
@@ -262,6 +262,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 > 2026-07-10 已拆出并完成 Sprint-8D「飞书沙箱启动前评估」：已明确出站通知凭据清单、默认 Mock / 显式 sandbox / 失败降级、回调后置边界；2026-07-11 TC-039 沙箱实发通过，RG-001 出站通知沙箱 Go。详见 `tasks/task-008d-feishu-sandbox-readiness.md` 与 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`。
 > 2026-07-10 已拆出并完成 Sprint-8E「Feishu 通知适配器骨架」：默认 Mock、显式 sandbox、缺配置 / 发送失败降级，不提交真实凭据、不启用事件回调；2026-07-11 TC-039 沙箱实发通过。详见 `tasks/task-008e-feishu-notification-adapter.md`。
 > 2026-07-10 已拆出并完成 Sprint-8F「通知记录持久化」：API-009 创建的通知记录可在显式启用后写入 PostgreSQL，并保留内存降级；日报和审计日志仍后置。详见 `tasks/task-008f-notification-postgres.md`。
+> 2026-07-11 Sprint-8 阶段性收尾：RG-001 飞书出站通知沙箱 Go，RG-002 PostgreSQL/pgvector Go；DB 可选持久化已覆盖静态数据、会话、消息、转人工、知识缺口、通知记录。后置项明确为日报持久化、审计日志 PG 化、飞书事件回调、真实生产群 / 生产组织数据、LLM RG-003。
 
 #### 输入文档
 
@@ -358,12 +359,15 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-09 | Phase2 Conditional Go 已确认 | DOC-C-001~C-005 全按 AI 推荐；新增 Phase2 Sprint-7/8/9 草案与 M8~M10 里程碑。 |
 | 2026-07-10 | Sprint-7 已完成并通过验收 | 单实例双场景包（古晶产品型 + 乐式项目型）部署、控制台角色权限最小集（WC-C-001，Demo 级 `X-Console-Role`）、运营配置入口（角色切换 + 场景包过滤）、试点部署预案；后端 `30 passed`、两端 build 通过、TC-017~020 手工验收通过。PR #34 已合并。 |
 | 2026-07-10 | Sprint-8A DB 地基已完成 | 新增 PostgreSQL + pgvector Compose、本机 schema / seed 初始化和运行手册；验证通过：Compose config、容器 healthy、pgvector `0.8.0`、11 张 `zycs_` 表、2 个场景包 seed、5 条 Mock 业务记录。后端业务尚未切 PG，Mock / 本地临时数据链路保留。 |
-| 2026-07-10 | Sprint-8B 静态数据读库已完成 | 新增 `psycopg[binary]`、静态数据源开关和 PostgreSQL 静态读取仓库；默认 JSON，`ZYCS_STATIC_DATA_SOURCE=postgres` 时优先读 PG，失败回退 JSON；PG 模式 `tests/api/test_static_data_source.py` 3 passed，默认全量后端 33 passed、1 skipped。会话 / 消息 / 转人工 / 缺口 / 通知 / 日报仍未切 PG。 |
-| 2026-07-10 | Sprint-8C-A 会话与消息持久化已完成 | 新增会话存储开关和 PostgreSQL 会话 / 消息仓库；默认内存，`ZYCS_CONVERSATION_STORE=postgres` 时写入 PG，失败回退内存；PG 模式 `tests/api/test_conversation_store.py` 4 passed，默认全量后端 35 passed、3 skipped。转人工 / 知识缺口 / 通知 / 日报仍未切 PG。 |
+| 2026-07-10 | Sprint-8B 静态数据读库已完成 | 新增 `psycopg[binary]`、静态数据源开关和 PostgreSQL 静态读取仓库；默认 JSON，`ZYCS_STATIC_DATA_SOURCE=postgres` 时优先读 PG，失败回退 JSON；PG 模式 `tests/api/test_static_data_source.py` 3 passed，默认全量后端 33 passed、1 skipped。后续会话 / 消息 / 转人工 / 缺口 / 通知已由 Sprint-8C-A/B/F 分步闭环，日报仍后置。 |
+| 2026-07-10 | Sprint-8C-A 会话与消息持久化已完成 | 新增会话存储开关和 PostgreSQL 会话 / 消息仓库；默认内存，`ZYCS_CONVERSATION_STORE=postgres` 时写入 PG，失败回退内存；PG 模式 `tests/api/test_conversation_store.py` 4 passed，默认全量后端 35 passed、3 skipped。后续转人工 / 知识缺口 / 通知已由 Sprint-8C-B/F 分步闭环，日报仍后置。 |
+| 2026-07-10 | Sprint-8C-B / 8F 运营数据持久化已完成 | 转人工、知识缺口、通知记录可在 `ZYCS_CONVERSATION_STORE=postgres` 时写入 PostgreSQL，失败回退内存；PG 专项分别覆盖转人工 / 缺口与通知记录，默认全量后端回归通过。日报和审计日志仍后置。 |
+| 2026-07-11 | Sprint-8D / 8E 飞书出站通知沙箱已通过 | 完成 RG-001 启动前评估、默认 Mock / 显式 sandbox 适配器骨架和 TC-039 沙箱实发；飞书测试群已收到通知，默认 Mock 保留，事件回调、真实生产群和生产组织数据后置。 |
+| 2026-07-11 | Sprint-8 阶段性完成 | RG-001（飞书出站通知沙箱）Go，RG-002（PostgreSQL/pgvector）Go；TC-021~046 已通过或完成记录，Sprint-8 可作为 Phase2 技术验证闭环进入 Sprint-9 前置评估。 |
 
 ## 7. 已确认口径与待执行
 
 - Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；后续不再从 Sprint-1 重新开始。
-- Phase2 Conditional Go 已确认（2026-07-09，DOC-C-001~C-005）；Sprint-7/8/9 为草案，各 Sprint 启动前仍需确认本次修改范围。
-- Phase2 存储优先继续 JSON / SQLite / 内存 Mock 降级；PostgreSQL / pgvector 作为技术验证任务（Sprint-8），不作全部功能前置（DOC-C-004）。
-- 飞书通知 Phase2 推进到沙箱 / 试点评估，不默认接真实组织数据（DOC-C-003）；LLM 仅评估，不默认启用（DOC-C-005）。
+- Phase2 Conditional Go 已确认（2026-07-09，DOC-C-001~C-005）；Sprint-7 与 Sprint-8 已阶段性完成，Sprint-9 启动前仍需确认本次修改范围。
+- Phase2 存储优先继续 JSON / SQLite / 内存 Mock 降级；PostgreSQL / pgvector 已完成 Sprint-8 技术验证与可选持久化，不作全部功能前置（DOC-C-004）。
+- 飞书通知 Phase2 已完成出站通知沙箱验证，不默认接真实组织数据；事件回调、真实生产群和生产组织数据后置（DOC-C-003）；LLM 仅评估，不默认启用（DOC-C-005）。

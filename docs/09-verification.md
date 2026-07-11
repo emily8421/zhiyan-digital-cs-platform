@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书出站通知沙箱）Go（2026-07-11，TC-036~043 通过，事件回调后置）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035）；Sprint-8F 通知记录持久化已完成并通过验证（TC-044~046），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 / §10.10 / §10.11 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；Sprint-8 已阶段性完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046）；RG-001（飞书出站通知沙箱）Go（2026-07-11，TC-036~043 通过，事件回调后置）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10），见 §6 / §10.2 / §10.4~§10.12 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -332,7 +332,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 执行范围：`tasks/task-008e-feishu-notification-adapter.md`。
 - 改动范围：`backend/app/adapters/feishu_notification_adapter.py`、`backend/app/adapters/__init__.py`、`backend/app/services/console_service.py`、`tests/api/test_feishu_notification_adapter.py`、`tests/api/test_console.py`、`docs/env/postgres-pgvector-runbook.md`。
 - 验证结果：TC-040~TC-043 均通过；专项测试 `tests/api/test_feishu_notification_adapter.py tests/api/test_console.py` 为 18 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 43 passed、4 skipped。
-- 边界说明：未提交真实 webhook / token / secret；未执行 TC-039 沙箱实发；未启用事件回调；缺配置或发送失败时不阻塞主链路并降级。
+- 边界说明：未提交真实 webhook / token / secret；TC-039 已于 2026-07-11 通过；未启用事件回调；缺配置或发送失败时不阻塞主链路并降级。
 
 ### 10.11 Sprint-8F 验证用例（通知记录持久化）
 
@@ -349,4 +349,25 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 执行范围：`tasks/task-008f-notification-postgres.md`。
 - 改动范围：`backend/app/services/console_store.py`、`backend/app/services/console_service.py`、`tests/api/test_console_store.py`、`docs/env/postgres-pgvector-runbook.md`。
 - 验证结果：TC-044~TC-046 均通过；PG 专项 `tests/api/test_console_store.py tests/api/test_conversation_store.py tests/api/test_static_data_source.py` 为 10 passed；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 43 passed、5 skipped。
-- 边界说明：日报、审计日志未切 PostgreSQL；未执行 TC-039 飞书沙箱实发；未启用事件回调；缺配置或数据库不可用时回退内存。
+- 边界说明：日报、审计日志未切 PostgreSQL；TC-039 已于 2026-07-11 通过；未启用事件回调；缺配置或数据库不可用时回退内存。
+
+### 10.12 Sprint-8 阶段性总体验收（飞书沙箱联调 + DB 技术验证）
+
+> 2026-07-11 收尾。Sprint-8 按 8A~8F 拆分执行，覆盖 RG-001 飞书出站通知沙箱与 RG-002 PostgreSQL/pgvector 技术验证；不接真实生产群 / 生产组织数据，不启用飞书事件回调，不默认启用 LLM。
+
+| 维度 | 验收结论 | 证据 |
+|---|---|---|
+| RG-001 飞书出站通知沙箱 | Go | TC-036~TC-043 通过；TC-039 于 2026-07-11 实发到飞书测试群，API-009 返回 `send_status=sent`、`mock=False`、`notify_mode=sandbox` |
+| RG-002 PostgreSQL/pgvector | Go | TC-021~TC-024 通过；pgvector `0.8.0`、11 张 `zycs_` 表、seed 数据验证通过 |
+| 静态数据读库 | 通过 | TC-025~TC-027 通过；场景包、知识、规则、Mock 业务记录可显式启用 PostgreSQL，默认 JSON 回退 |
+| 会话与消息持久化 | 通过 | TC-028~TC-031 通过；新建会话、客户消息、助手回答可显式写入 PostgreSQL，默认内存回退 |
+| 运营数据持久化 | 通过 | TC-032~TC-035、TC-044~TC-046 通过；转人工、知识缺口、通知记录可显式写入 PostgreSQL，默认内存回退 |
+| 安全边界 | 通过 | 未提交 webhook / secret；真实生产群、生产组织数据、飞书事件回调、日报 PG 化、审计日志 PG 化仍后置 |
+
+#### Sprint-8 收尾记录（2026-07-11）
+
+- 执行范围：Sprint-8A~8F，任务单 `tasks/task-008a-db-foundation.md` 至 `tasks/task-008f-notification-postgres.md`。
+- 总体验收：TC-021~TC-046 均已完成记录；RG-001 / RG-002 均为 Go。
+- 保留降级：默认仍保留 JSON / 内存 / Mock 路径；PostgreSQL 与 Feishu sandbox 均需显式环境变量启用。
+- 后置项：`zycs_daily_summaries`、`zycs_audit_logs`、飞书事件回调、真实生产群 / 生产组织数据、RG-003 LLM 评估。
+- 下一阶段建议：进入 Sprint-9 前先执行 RG-003 LLM 专项评估，只评估不接 API、不启用自动答复。
