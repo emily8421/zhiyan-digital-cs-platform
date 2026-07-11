@@ -389,3 +389,21 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-047~TC-049 通过（评估类，非实发）。
 - RG-003 结论：Conditional Go（评估完成）。LLM 默认仍关闭；真实接入后置 Phase3 或单独授权任务，需先解 DOC-C-005 + 不编造 / 成本 / 兜底 / 隐私四条硬约束 + 安全评审 + 成本授权。
 - 边界说明：本次未接真实 LLM API、未安装依赖、未写 API key、未发送真实客户隐私；未改变现有 H5 / Console 默认 Mock 演示链路；本地小模型不作为启用路线。
+
+### 10.14 Sprint-9 验证用例（知识运营强化 / 缺口 accepted 入库 + API-006）
+
+> 2026-07-11 细化。范围：知识缺口 `accepted` 自动入库为 `draft` 知识条目；新增 API-006 `GET/POST /knowledge-items`。不启用 LLM，不接外部系统。默认内存，PG 显式启用且失败回退内存。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-050 | `docs/07-api-spec.md` API-006、`docs/06-db-design.md` §4.4 | REQ-004、REQ-011 | `POST /knowledge-items` 新增知识候选，`GET /knowledge-items` 查询 | 新增成功（`draft` 状态、`source_ref` 存在）；GET 可查回；写操作需 admin | 通过（2026-07-11） |
+| TC-051 | `docs/design/knowledge-and-policy.md` §5、KP-C-003、`docs/06-db-design.md` §4.4/§4.8 | REQ-011 | `PATCH /knowledge-gaps/{id}` 到 `accepted` | 缺口状态变 `accepted`，且自动生成一条 `draft` 知识条目（`source_ref` 指向缺口），API-006 可查回 | 通过（2026-07-11） |
+| TC-052 | `docs/design/knowledge-and-policy.md` §5、ADR-0004 | REQ-011 | `PATCH /knowledge-gaps/{id}` 到 `rejected` | 缺口状态变 `rejected`，不生成知识条目 | 通过（2026-07-11） |
+
+#### Sprint-9 知识运营强化验收记录（2026-07-11）
+
+- 执行范围：`tasks/task-009b-knowledge-items-and-gap-acceptance.md`。
+- 改动范围：`backend/app/schemas/console.py`、`backend/app/services/console_service.py`、`backend/app/services/console_store.py`、`backend/app/api/console.py`、`tests/api/test_console.py`、`tests/api/test_console_store.py`。
+- 验证结果：TC-050~TC-052 通过；默认全量 `tests/api tests/scenarios tests/acceptance` 48 passed、5 skipped；PG 专项 `test_console_store + test_conversation_store + test_static_data_source` 11 passed。
+- 边界说明：缺口 `accepted` 自动生成 `draft` 知识条目（`source_ref = knowledge_gap:{gap_id}`）；`rejected` 不生成；`POST /knowledge-items` 需 admin；LLM 默认关闭未变；不接外部系统；未改前端；未引入新依赖。
+- 后置项：知识条目 `draft → active` 转正、`active` 知识进入检索链路、前端知识条目管理页。

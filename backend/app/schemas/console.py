@@ -32,6 +32,28 @@ class KnowledgeGapRecord(BaseModel):
     mock: bool = True
 
 
+class KnowledgeItemRecord(BaseModel):
+    item_id: str
+    scenario_pack_code: str
+    title: str
+    content: str
+    tags: list[str] = Field(default_factory=list)
+    source_ref: str
+    status: str
+    origin_gap_id: str | None = None
+    updated_at: str
+    mock: bool = True
+
+
+class KnowledgeItemCreateRequest(BaseModel):
+    scenario_pack_code: str
+    title: str
+    content: str
+    source_ref: str
+    tags: list[str] = Field(default_factory=list)
+    status: str = "draft"
+
+
 class MockNotificationRequest(BaseModel):
     event_type: str
     related_id: str

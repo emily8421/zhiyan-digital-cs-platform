@@ -9,6 +9,8 @@ from app.schemas.console import (
     DailySummaryData,
     HandoffRecord,
     KnowledgeGapRecord,
+    KnowledgeItemCreateRequest,
+    KnowledgeItemRecord,
     MockNotificationRecord,
     MockNotificationRequest,
     StatusUpdateRequest,
@@ -18,9 +20,11 @@ from app.services.console_service import (
     ConsoleRecordNotFoundError,
     InvalidConsoleStatusError,
     build_daily_summary,
+    create_knowledge_item,
     create_mock_notification,
     list_handoffs,
     list_knowledge_gaps,
+    list_knowledge_items,
     list_notifications,
     update_handoff_status,
     update_knowledge_gap_status,
@@ -113,6 +117,50 @@ def patch_knowledge_gap(
     return ApiResponse(
         request_id=new_request_id(),
         data=gap,
+        meta=ResponseMeta(mock=True),
+    )
+
+
+@router.get("/knowledge-items", response_model=ApiResponse[list[KnowledgeItemRecord]])
+def get_knowledge_items(
+    scenario_pack_code: str | None = None,
+    status: str | None = None,
+    tag: str | None = None,
+) -> ApiResponse[list[KnowledgeItemRecord]]:
+    return ApiResponse(
+        request_id=new_request_id(),
+        data=list_knowledge_items(
+            scenario_pack_code=scenario_pack_code,
+            status=status,
+            tag=tag,
+        ),
+        meta=ResponseMeta(mock=True),
+    )
+
+
+@router.post(
+    "/knowledge-items",
+    response_model=ApiResponse[KnowledgeItemRecord],
+    responses={400: {"model": ErrorResponse}},
+)
+def post_knowledge_item(
+    payload: KnowledgeItemCreateRequest,
+    _: None = Depends(require_console_admin),
+) -> ApiResponse[KnowledgeItemRecord]:
+    try:
+        item = create_knowledge_item(
+            scenario_pack_code=payload.scenario_pack_code,
+            title=payload.title,
+            content=payload.content,
+            source_ref=payload.source_ref,
+            tags=payload.tags,
+            status=payload.status,
+        )
+    except InvalidConsoleStatusError as error:
+        raise _invalid_status_error(error) from error
+    return ApiResponse(
+        request_id=new_request_id(),
+        data=item,
         meta=ResponseMeta(mock=True),
     )
 

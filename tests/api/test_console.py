@@ -165,8 +165,115 @@ def test_read_endpoints_open_without_admin_role() -> None:
     for path in (
         "/api/v1/handoffs",
         "/api/v1/knowledge-gaps",
+        "/api/v1/knowledge-items",
         "/api/v1/notifications/mock",
         "/api/v1/summaries/daily",
     ):
         response = client.get(path, headers={"X-Console-Role": "viewer"})
         assert response.status_code == 200, path
+
+
+# --- Sprint-9 知识运营强化（缺口 accepted 入库 + API-006，TC-050~052） ---
+
+
+def test_create_and_list_knowledge_items() -> None:
+    # TC-050：POST 新增知识候选，GET 可查回
+    create_response = client.post(
+        "/api/v1/knowledge-items",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "scenario_pack_code": "project_business",
+            "title": "项目验收资料清单",
+            "content": "Mock 知识：项目验收需提供资料清单（Demo 样例）。",
+            "source_ref": "SRC-SP-PROJECT-DEMO",
+            "tags": ["项目交付"],
+            "status": "draft",
+        },
+    )
+
+    assert create_response.status_code == 200
+    created = create_response.json()["data"]
+    assert created["item_id"].startswith("ki_")
+    assert created["status"] == "draft"
+    assert created["source_ref"] == "SRC-SP-PROJECT-DEMO"
+    assert created["mock"] is True
+
+    list_response = client.get("/api/v1/knowledge-items?scenario_pack_code=project_business")
+
+    assert list_response.status_code == 200
+    item_ids = {item["item_id"] for item in list_response.json()["data"]}
+    assert created["item_id"] in item_ids
+
+
+def test_accept_knowledge_gap_creates_draft_item() -> None:
+    # TC-051：缺口 accepted 自动入库为 draft 知识条目
+    response = client.patch(
+        "/api/v1/knowledge-gaps/gap_002",
+        headers={"X-Console-Role": "admin"},
+        json={"status": "accepted", "resolution_note": "已补充标准模板，入库为知识候选"},
+    )
+
+    assert response.status_code == 200
+    gap = response.json()["data"]
+    assert gap["gap_id"] == "gap_002"
+    assert gap["status"] == "accepted"
+
+    list_response = client.get("/api/v1/knowledge-items?status=draft")
+
+    assert list_response.status_code == 200
+    items = list_response.json()["data"]
+    matching = [item for item in items if item["source_ref"] == "knowledge_gap:gap_002"]
+    assert matching, "accepted 缺口应自动生成 draft 知识条目"
+    assert matching[0]["status"] == "draft"
+    assert matching[0]["origin_gap_id"] == "gap_002"
+
+
+def test_reject_knowledge_gap_does_not_create_item() -> None:
+    # TC-052：缺口 rejected 不生成知识条目
+    before = client.get("/api/v1/knowledge-items?status=draft").json()["data"]
+    before_count = sum(1 for item in before if item["source_ref"] == "knowledge_gap:gap_001")
+
+    response = client.patch(
+        "/api/v1/knowledge-gaps/gap_001",
+        headers={"X-Console-Role": "admin"},
+        json={"status": "rejected", "resolution_note": "不属于知识范围，拒绝"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["status"] == "rejected"
+
+    after = client.get("/api/v1/knowledge-items?status=draft").json()["data"]
+    after_count = sum(1 for item in after if item["source_ref"] == "knowledge_gap:gap_001")
+    assert after_count == before_count, "rejected 缺口不应生成知识条目"
+
+
+def test_create_knowledge_item_requires_admin_role() -> None:
+    response = client.post(
+        "/api/v1/knowledge-items",
+        json={
+            "scenario_pack_code": "product_business",
+            "title": "尝试越权新增",
+            "content": "x",
+            "source_ref": "SRC-X",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "FORBIDDEN_CONSOLE_WRITE"
+
+
+def test_create_knowledge_item_invalid_status_returns_error() -> None:
+    response = client.post(
+        "/api/v1/knowledge-items",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "scenario_pack_code": "product_business",
+            "title": "非法状态",
+            "content": "x",
+            "source_ref": "SRC-X",
+            "status": "published",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "INVALID_CONSOLE_STATUS"

@@ -7,14 +7,17 @@ from app.schemas.console import (
     DailySummaryData,
     HandoffRecord,
     KnowledgeGapRecord,
+    KnowledgeItemRecord,
     MockNotificationRecord,
 )
 from app.services.console_store import (
     PostgresConsoleStoreError,
     create_handoff_in_postgres,
+    create_knowledge_item_in_postgres,
     create_knowledge_gap_in_postgres,
     create_notification_in_postgres,
     list_handoffs_from_postgres,
+    list_knowledge_items_from_postgres,
     list_knowledge_gaps_from_postgres,
     list_notifications_from_postgres,
     update_handoff_status_in_postgres,
@@ -24,6 +27,7 @@ from app.services.conversation_store import should_use_postgres_conversation_sto
 
 _HANDOFF_STATUSES = {"open", "processing", "closed"}
 _GAP_STATUSES = {"new", "reviewing", "accepted", "rejected", "closed"}
+_KNOWLEDGE_ITEM_STATUSES = {"draft", "active", "archived"}
 
 _handoffs: dict[str, HandoffRecord] = {
     "handoff_001": HandoffRecord(
@@ -76,6 +80,8 @@ _knowledge_gaps: dict[str, KnowledgeGapRecord] = {
         mock=True,
     ),
 }
+
+_knowledge_items: dict[str, KnowledgeItemRecord] = {}
 
 _notifications: dict[str, MockNotificationRecord] = {}
 
@@ -198,23 +204,34 @@ def update_knowledge_gap_status(
 ) -> KnowledgeGapRecord:
     if status not in _GAP_STATUSES:
         raise InvalidConsoleStatusError("knowledge_gap", status)
+    gap: KnowledgeGapRecord | None = None
     if _use_postgres_console_store():
-        postgres_record = _try_postgres_read(
+        gap = _try_postgres_read(
             update_knowledge_gap_status_in_postgres,
             gap_id,
             status,
             resolution_note,
         )
-        if postgres_record is not None:
-            return postgres_record
-
-    record = _knowledge_gaps.get(gap_id)
-    if record is None:
-        raise ConsoleRecordNotFoundError("knowledge_gap", gap_id)
-    record.status = status
-    record.resolution_note = resolution_note
-    record.updated_at = _now_iso()
-    return deepcopy(record)
+    if gap is None:
+        record = _knowledge_gaps.get(gap_id)
+        if record is None:
+            raise ConsoleRecordNotFoundError("knowledge_gap", gap_id)
+        record.status = status
+        record.resolution_note = resolution_note
+        record.updated_at = _now_iso()
+        gap = deepcopy(record)
+    if status == "accepted":
+        # 知识缺口审核通过 → 自动入库为 draft 知识条目（KP-C-003 / knowledge-and-policy §5）
+        create_knowledge_item(
+            scenario_pack_code=gap.scenario_pack_code,
+            title=gap.question,
+            content=gap.question,
+            source_ref=f"knowledge_gap:{gap_id}",
+            tags=list(gap.tags),
+            status="draft",
+            origin_gap_id=gap_id,
+        )
+    return gap
 
 
 def create_knowledge_gap_record(
@@ -237,6 +254,59 @@ def create_knowledge_gap_record(
     if _use_postgres_console_store():
         _try_postgres_write(create_knowledge_gap_in_postgres, gap)
     return deepcopy(gap)
+
+
+def list_knowledge_items(
+    scenario_pack_code: str | None = None,
+    status: str | None = None,
+    tag: str | None = None,
+) -> list[KnowledgeItemRecord]:
+    if _use_postgres_console_store():
+        records = _try_postgres_read(
+            list_knowledge_items_from_postgres,
+            scenario_pack_code,
+            status,
+            tag,
+        )
+        if records is not None:
+            return records
+
+    return [
+        deepcopy(record)
+        for record in _knowledge_items.values()
+        if _matches_filter(record.scenario_pack_code, scenario_pack_code)
+        and _matches_filter(record.status, status)
+        and (tag is None or tag in record.tags)
+    ]
+
+
+def create_knowledge_item(
+    scenario_pack_code: str,
+    title: str,
+    content: str,
+    source_ref: str,
+    tags: list[str] | None = None,
+    status: str = "draft",
+    origin_gap_id: str | None = None,
+) -> KnowledgeItemRecord:
+    if status not in _KNOWLEDGE_ITEM_STATUSES:
+        raise InvalidConsoleStatusError("knowledge_item", status)
+    item = KnowledgeItemRecord(
+        item_id=f"ki_{uuid4().hex[:8]}",
+        scenario_pack_code=scenario_pack_code,
+        title=title,
+        content=content,
+        tags=tags or [],
+        source_ref=source_ref,
+        status=status,
+        origin_gap_id=origin_gap_id,
+        updated_at=_now_iso(),
+        mock=True,
+    )
+    _knowledge_items[item.item_id] = item
+    if _use_postgres_console_store():
+        _try_postgres_write(create_knowledge_item_in_postgres, item)
+    return deepcopy(item)
 
 
 def list_notifications(

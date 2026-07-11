@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from typing import Any
 
-from app.schemas.console import HandoffRecord, KnowledgeGapRecord, MockNotificationRecord
+from app.schemas.console import HandoffRecord, KnowledgeGapRecord, KnowledgeItemRecord, MockNotificationRecord
 from app.services.static_data_source import get_database_url
 
 
@@ -162,6 +162,67 @@ def update_knowledge_gap_status_in_postgres(
     return _knowledge_gap_from_row(row)
 
 
+def create_knowledge_item_in_postgres(record: KnowledgeItemRecord) -> None:
+    _execute(
+        """
+        INSERT INTO zycs_knowledge_items (
+          id, scenario_pack_id, title, content, tags, source_ref, status, is_mock, updated_at
+        )
+        VALUES (
+          %s,
+          (SELECT id FROM zycs_scenario_packs WHERE code = %s),
+          %s, %s, %s::jsonb, %s, %s, %s, %s
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          scenario_pack_id = EXCLUDED.scenario_pack_id,
+          title = EXCLUDED.title,
+          content = EXCLUDED.content,
+          tags = EXCLUDED.tags,
+          source_ref = EXCLUDED.source_ref,
+          status = EXCLUDED.status,
+          is_mock = EXCLUDED.is_mock,
+          updated_at = EXCLUDED.updated_at
+        """,
+        (
+            record.item_id,
+            record.scenario_pack_code,
+            record.title,
+            record.content,
+            json.dumps(record.tags, ensure_ascii=False),
+            record.source_ref,
+            record.status,
+            record.mock,
+            record.updated_at,
+        ),
+    )
+
+
+def list_knowledge_items_from_postgres(
+    scenario_pack_code: str | None = None,
+    status: str | None = None,
+    tag: str | None = None,
+) -> list[KnowledgeItemRecord]:
+    where_clauses: list[str] = []
+    params: list[str] = []
+    if scenario_pack_code is not None:
+        where_clauses.append("sp.code = %s")
+        params.append(scenario_pack_code)
+    if status is not None:
+        where_clauses.append("ki.status = %s")
+        params.append(status)
+
+    where_sql = ""
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
+    records = [
+        _knowledge_item_from_row(row)
+        for row in _fetch_all(_knowledge_item_select_sql(where_sql), tuple(params))
+    ]
+    if tag is None:
+        return records
+    return [record for record in records if tag in record.tags]
+
+
 def create_notification_in_postgres(record: MockNotificationRecord) -> None:
     _execute(
         """
@@ -245,6 +306,25 @@ def _knowledge_gap_select_sql(where_sql: str, table_name: str = "zycs_knowledge_
         LEFT JOIN zycs_scenario_packs sp ON sp.id = c.scenario_pack_id
         {where_sql}
         ORDER BY g.updated_at DESC, g.id
+        """
+
+
+def _knowledge_item_select_sql(where_sql: str, table_name: str = "zycs_knowledge_items") -> str:
+    return f"""
+        SELECT
+          ki.id,
+          COALESCE(sp.code, '') AS scenario_pack_code,
+          ki.title,
+          ki.content,
+          ki.tags,
+          ki.source_ref,
+          ki.status,
+          ki.is_mock,
+          ki.updated_at
+        FROM {table_name} ki
+        LEFT JOIN zycs_scenario_packs sp ON sp.id = ki.scenario_pack_id
+        {where_sql}
+        ORDER BY ki.updated_at DESC, ki.id
         """
 
 
@@ -342,6 +422,21 @@ def _knowledge_gap_from_row(row: dict[str, Any]) -> KnowledgeGapRecord:
         ),
         updated_at=_format_timestamp(row["updated_at"]),
         mock=True,
+    )
+
+
+def _knowledge_item_from_row(row: dict[str, Any]) -> KnowledgeItemRecord:
+    return KnowledgeItemRecord(
+        item_id=str(row["id"]),
+        scenario_pack_code=str(row["scenario_pack_code"] or ""),
+        title=str(row["title"]),
+        content=str(row["content"]),
+        tags=_tags_from_jsonb(row["tags"]),
+        source_ref=str(row["source_ref"]),
+        status=str(row["status"]),
+        origin_gap_id=None,
+        updated_at=_format_timestamp(row["updated_at"]),
+        mock=bool(row["is_mock"]),
     )
 
 

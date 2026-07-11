@@ -193,6 +193,109 @@ def test_postgres_console_store_persists_notifications(
     assert row["payload"]["notify_mode"] == "mock"
 
 
+@pytest.mark.skipif(
+    importlib.util.find_spec("psycopg") is None,
+    reason="psycopg is not installed",
+)
+def test_postgres_console_store_persists_knowledge_item_and_acceptance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database_url = os.getenv("ZYCS_TEST_DATABASE_URL")
+    if not database_url:
+        pytest.skip("ZYCS_TEST_DATABASE_URL is not set")
+
+    import psycopg
+    from psycopg.rows import dict_row
+
+    monkeypatch.setenv("ZYCS_CONVERSATION_STORE", "postgres")
+    monkeypatch.setenv("ZYCS_DATABASE_URL", database_url)
+
+    client = TestClient(create_app())
+
+    # 缺口 accepted → 自动生成 draft 知识条目
+    gap_conversation_id = _create_conversation(client)
+    gap_response = client.post(
+        f"/api/v1/conversations/{gap_conversation_id}/messages",
+        json={"content": "火星基地土豆种植方案是什么？"},
+    )
+    assert gap_response.status_code == 200
+    gap = gap_response.json()["data"]["knowledge_gap"]
+
+    accept_response = client.patch(
+        f"/api/v1/knowledge-gaps/{gap['gap_id']}",
+        headers={"X-Console-Role": "admin"},
+        json={"status": "accepted", "resolution_note": "PG 模式已确认入库"},
+    )
+    assert accept_response.status_code == 200
+    assert accept_response.json()["data"]["status"] == "accepted"
+
+    gap_item_list = client.get("/api/v1/knowledge-items", params={"status": "draft"})
+    assert gap_item_list.status_code == 200
+    gap_item_ids = {
+        item["item_id"]
+        for item in gap_item_list.json()["data"]
+        if item["source_ref"] == f"knowledge_gap:{gap['gap_id']}"
+    }
+    assert gap_item_ids, "accepted 缺口应自动生成 draft 知识条目"
+
+    # POST 新增知识候选
+    create_response = client.post(
+        "/api/v1/knowledge-items",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "scenario_pack_code": "product_business",
+            "title": "PG 模式知识候选",
+            "content": "Mock 知识内容（PG 持久化验证）。",
+            "source_ref": "SRC-PG-DEMO",
+            "tags": ["PG验证"],
+            "status": "draft",
+        },
+    )
+    assert create_response.status_code == 200
+    item = create_response.json()["data"]
+
+    list_response = client.get(
+        "/api/v1/knowledge-items",
+        params={"scenario_pack_code": "product_business", "status": "draft"},
+    )
+    assert list_response.status_code == 200
+    assert item["item_id"] in {i["item_id"] for i in list_response.json()["data"]}
+
+    # 直查 PG 验证持久化
+    with psycopg.connect(database_url, row_factory=dict_row) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT ki.id, ki.title, ki.source_ref, ki.status, ki.is_mock, sp.code AS scenario_pack_code
+                FROM zycs_knowledge_items ki
+                LEFT JOIN zycs_scenario_packs sp ON sp.id = ki.scenario_pack_id
+                WHERE ki.id = %s
+                """,
+                (item["item_id"],),
+            )
+            item_row = cursor.fetchone()
+            cursor.execute(
+                """
+                SELECT id, source_ref, status
+                FROM zycs_knowledge_items
+                WHERE source_ref = %s
+                """,
+                (f"knowledge_gap:{gap['gap_id']}",),
+            )
+            gap_item_row = cursor.fetchone()
+
+    assert item_row is not None
+    assert item_row["title"] == "PG 模式知识候选"
+    assert item_row["source_ref"] == "SRC-PG-DEMO"
+    assert item_row["status"] == "draft"
+    assert item_row["is_mock"] is True
+    assert item_row["scenario_pack_code"] == "product_business"
+
+    assert gap_item_row is not None
+    assert gap_item_row["status"] == "draft"
+    assert gap_item_row["source_ref"] == f"knowledge_gap:{gap['gap_id']}"
+
+
 def _create_conversation(client: TestClient) -> str:
     response = client.post(
         "/api/v1/conversations",
