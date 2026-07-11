@@ -27,7 +27,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-6 | 本机演示与文档回填 | 跑通端到端 Demo，更新验证记录和 README 快速开始。 | F-001~F-009 | `docs/09-verification.md`、`README.md`、`scripts/` | 已通过验收 |
 | Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已完成（PR #34，2026-07-10） |
 | Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`backend/app/services/`、`docker/`、`docs/research/`、`tasks/` | 已完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046） |
-| Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | 草案，待细化（DOC-C-005） |
+| Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | LLM 评估已完成（Conditional Go，2026-07-11）；知识运营强化待细化 |
 
 ## 3. Sprint 详情
 
@@ -364,6 +364,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-10 | Sprint-8C-B / 8F 运营数据持久化已完成 | 转人工、知识缺口、通知记录可在 `ZYCS_CONVERSATION_STORE=postgres` 时写入 PostgreSQL，失败回退内存；PG 专项分别覆盖转人工 / 缺口与通知记录，默认全量后端回归通过。日报和审计日志仍后置。 |
 | 2026-07-11 | Sprint-8D / 8E 飞书出站通知沙箱已通过 | 完成 RG-001 启动前评估、默认 Mock / 显式 sandbox 适配器骨架和 TC-039 沙箱实发；飞书测试群已收到通知，默认 Mock 保留，事件回调、真实生产群和生产组织数据后置。 |
 | 2026-07-11 | Sprint-8 阶段性完成 | RG-001（飞书出站通知沙箱）Go，RG-002（PostgreSQL/pgvector）Go；TC-021~046 已通过或完成记录，Sprint-8 可作为 Phase2 技术验证闭环进入 Sprint-9 前置评估。 |
+| 2026-07-11 | RG-003 LLM 专项评估完成 | 完成 LLM 证据约束 / 不编造 / 成本 / 兜底评估，结论 Conditional Go；RG-003 从「待评估」推进，LLM 默认仍关闭，真实接入后置 Phase3 / 授权任务；新增 RISK-P2-007~010（候选 / 未启用）、TC-047~049。见 `docs/research/2026-07-11-tech-env-evaluation-llm.md`。 |
 
 ## 7. 已确认口径与待执行
 

@@ -203,7 +203,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 |---|---|---|---|---|
 | RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Go（2026-07-11；TC-036~043 通过，事件回调后置） |
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go/Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） |
-| RG-003 | LLM | 证据约束/不编造/成本/兜底评估完成 | LLM 专项评估报告 | 待评估（Sprint-9） |
+| RG-003 | LLM | 证据约束/不编造/成本/兜底评估完成 | `docs/research/2026-07-11-tech-env-evaluation-llm.md` | Conditional Go（2026-07-11，评估完成；LLM 默认仍关闭） |
 
 ### 10.3 Phase2 不解锁验证
 
@@ -371,3 +371,21 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 保留降级：默认仍保留 JSON / 内存 / Mock 路径；PostgreSQL 与 Feishu sandbox 均需显式环境变量启用。
 - 后置项：`zycs_daily_summaries`、`zycs_audit_logs`、飞书事件回调、真实生产群 / 生产组织数据、RG-003 LLM 评估。
 - 下一阶段建议：进入 Sprint-9 前先执行 RG-003 LLM 专项评估，只评估不接 API、不启用自动答复。
+
+### 10.13 Sprint-9 验证用例（RG-003 LLM 专项评估）
+
+> 2026-07-11 细化并执行。范围：仅完成 LLM 证据约束 / 不编造 / 成本 / 兜底评估，输出 Conditional Go 结论；不接真实 LLM API，不安装依赖，不写 API key，不启用自动答复。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-047 | `docs/research/2026-07-11-tech-env-evaluation-llm.md` | RG-003、REQ-005 | 核对 LLM 评估是否覆盖证据约束 / 不编造 / 成本 / 兜底四项边界 | 四项边界均已盘点，结论 Conditional Go | 通过（2026-07-11，评估类） |
+| TC-048 | `docs/research/2026-07-11-tech-env-evaluation-llm.md`、`ai/project-rules.md` §1 | RG-003、DOC-C-005 | 核对 LLM 默认状态 | LLM 默认关闭，评估完成不等于已启用 | 通过（2026-07-11，评估类） |
+| TC-049 | `docs/research/2026-07-11-tech-env-evaluation-llm.md`、`docs/05-tech-spec.md` §13 | RG-003、RISK-P2-003 | 核对 LLM 启用前风险与降级边界是否已登记 | RISK-P2-003 已评估；新增 RISK-P2-007~010（候选 / 未启用）；降级走规则匹配 + 转人工 | 通过（2026-07-11，评估类） |
+
+#### Sprint-9 RG-003 评估验收记录（2026-07-11）
+
+- 执行范围：RG-003 LLM 专项评估。
+- 改动范围：`docs/research/2026-07-11-tech-env-evaluation-llm.md`、`docs/05-tech-spec.md`、`docs/08-dev-plan.md`、`docs/09-verification.md`、`docs/design/knowledge-and-policy.md`。
+- 验证结果：TC-047~TC-049 通过（评估类，非实发）。
+- RG-003 结论：Conditional Go（评估完成）。LLM 默认仍关闭；真实接入后置 Phase3 或单独授权任务，需先解 DOC-C-005 + 不编造 / 成本 / 兜底 / 隐私四条硬约束 + 安全评审 + 成本授权。
+- 边界说明：本次未接真实 LLM API、未安装依赖、未写 API key、未发送真实客户隐私；未改变现有 H5 / Console 默认 Mock 演示链路；本地小模型不作为启用路线。

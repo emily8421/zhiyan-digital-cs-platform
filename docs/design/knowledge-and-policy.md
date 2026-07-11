@@ -123,7 +123,7 @@ Phase1 可实现到 `new`、`reviewing`、`closed`，`accepted` 后入库作为 
 
 | ID | 待确认项 | AI 建议 | 建议依据 | 备选方案 | 取舍影响 / 阻塞关系 |
 |---|---|---|---|---|---|
-| KP-C-001 | LLM 启用边界（证据 / 不编造 / 成本 / 兜底） | Phase2 仅评估，不默认启用 | project-rules §1、05 RG、ADR-0004 | Phase3 启用 | 不阻塞当前；阻塞 LLM 上线 |
+| KP-C-001 | LLM 启用边界（证据 / 不编造 / 成本 / 兜底） | Phase2 评估完成（Conditional Go，2026-07-11），不默认启用；未来走外部 LLM API，不采用本地小模型 | project-rules §1、05 RG-003、ADR-0004、`docs/research/2026-07-11-tech-env-evaluation-llm.md` | Phase3 启用 | 不阻塞当前；阻塞 LLM 上线 |
 | KP-C-002 | 向量检索引入时点 | Phase2 技术验证后再定 | 05 TEI 候选默认关闭 | 保持关键词匹配 | 不阻塞当前 |
 | KP-C-003 | accepted 缺口入库归属 | Sprint-9（知识运营强化） | 08 Sprint-9 输入含本文 | Phase2 早期 | 不阻塞 Phase1；Sprint-9 前确认 |
 | KP-C-004 | 高风险规则是否配置化（zycs_rule_items rule_type=risk） | 规则入 06 表，不在代码硬编码 | project-rules §5.1 场景包 / 规则须可追溯配置 | 代码内置 | 不阻塞；硬编码违反 §5.1 |

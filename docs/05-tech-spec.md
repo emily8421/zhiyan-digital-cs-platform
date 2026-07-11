@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-001（飞书出站通知沙箱）Go（2026-07-11）、RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14） |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-001（飞书出站通知沙箱）Go（2026-07-11）、RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14）、RG-003（LLM）评估完成 Conditional Go（2026-07-11，见 §14） |
 | 最后更新 | 2026-07-11 |
 | 当前阶段 | Phase2：MVP 试点 |
 | 覆盖架构组件 | COMP-001~012（见 `docs/04-architecture.md` §3） |
@@ -65,7 +65,7 @@ Phase1 必须能本机运行：
 | Node 包 | `frontend/customer-h5/package.json`、`frontend/console/package.json` | 前端构建 | Phase1 | 已启用 | package.json | 无 | `npm run build` 通过 |
 | 数据库 | PostgreSQL 16 + pgvector 0.8.0 | 持久化 / 向量 | Phase2 技术验证 | 已验证可用（RG-002 Go） | docker-compose（待 Sprint-8 实现） | 连接串（secret） | 已验证（2026-07-10，见 `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md`） |
 | 通知 | 飞书机器人 webhook | 员工通知 | Phase2 沙箱 | 出站通知沙箱 Go（默认 Mock 仍保留） | `.env.local` / 环境变量 | webhook URL / secret（secret） | 已完成启动前评估、默认 Mock / 显式 sandbox 骨架与沙箱实发（RG-001，见 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`） |
-| LLM | 外部 LLM API | 自动答复 | Phase2 评估 | 默认关闭 | .env（待） | API key（secret） | 待专项评估（RG-003） |
+| LLM | 外部 LLM API | 自动答复 | Phase2 评估完成（Conditional Go） | 默认关闭 | .env（待） | API key（secret） | 评估完成（RG-003，见 `docs/research/2026-07-11-tech-env-evaluation-llm.md`）；启用仍阻塞 |
 
 ## 4. 后端技术方案
 
@@ -155,7 +155,7 @@ Phase1 必须能本机运行：
 |---|---|---|---|---|
 | DOC-C-003 | 飞书通知沙箱 / 试点评估 | Phase2 技术验证任务 | Phase1 已 Mock | 条件阻塞 Sprint-8（RG-001） |
 | DOC-C-004 | PostgreSQL / pgvector Phase2 必做性 | 先技术验证，不作前置 | Docker 不可用 | 条件阻塞 Sprint-8（RG-002） |
-| DOC-C-005 | LLM 是否进入 Phase2 | 仅评估，不默认启用 | 不编造/成本边界未评估 | 条件阻塞 Sprint-9（RG-003） |
+| DOC-C-005 | LLM 是否进入 Phase2 | 仅评估，不默认启用 | 不编造/成本边界已评估（Conditional Go，2026-07-11） | 条件阻塞 LLM 启用（RG-003 评估已完成，Sprint-9 不阻塞；启用另需 Phase 升级 + 安全评审） |
 | IN-C-005 | Channel Adapter Layer 设计 | Phase2 readiness gate 再补 | Phase1 仅 H5 | 条件阻塞 Phase2 全渠道入口 |
 | ARCH-C-001 | 04/05 doc-standards 合规改进 | 本次 P1 执行 | 评估报告 | 不阻塞 |
 
@@ -177,8 +177,12 @@ Phase1 必须能本机运行：
 | RISK-P2-005 | ivfflat 索引小数据低召回 | pgvector 向量检索 | 影响检索召回 | 已知，不阻塞 | 数据量足后评估 HNSW | Sprint-9 / 知识运营 | 数据量足或改 HNSW |
 | RISK-P2-006 | embedding 维度 / 方案未定 | 向量字段启用 | 向量检索暂不可用 | 待 embedding 方案（Phase2 默认关闭） | 关键词 / 规则匹配降级 | Sprint-9 / Phase3 | embedding 方案确定 |
 | RISK-P2-002 | 飞书真实通知权限 / 回调边界未定 | Sprint-8 沙箱联调 | 影响员工侧触达 | 出站通知沙箱 Go；事件回调后置 | 沙箱联调 + 权限确认 | Sprint-8 / RG-001 | 真实生产群 / 生产组织数据仍需另行授权；回调另拆任务 |
-| RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 待评估 | LLM 专项评估 | Sprint-9 / RG-003 | 评估结论 Go |
+| RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 已评估（2026-07-11）→ Conditional Go；启用仍阻塞 | LLM 专项评估（见 `docs/research/2026-07-11-tech-env-evaluation-llm.md`） | Sprint-9 / RG-003 | 评估完成（已满足）；真实启用另需 DOC-C-005 解锁 + Phase 升级 + 安全评审 |
 | RISK-P2-004 | 沙箱内 Vite `spawn EPERM` | 前端 build / dev | 沙箱内构建失败 | 已接受 | 非沙箱本机运行 | TC-015 | 非沙箱环境 |
+| RISK-P2-007 | LLM 幻觉承诺（价格 / 合同 / 赔付 / 交期） | LLM 启用后绕过高风险规则 | 业务承诺风险 | 候选，未启用 | 高风险关键词强制转人工，LLM 不得覆盖；温度调低 + system prompt 约束 | Phase3 LLM 启用前 | ADR-0004 在 LLM 链路强制执行 + 测试覆盖 |
+| RISK-P2-008 | LLM 成本失控 | 无预算上限 / 缓存 | 费用超支 | 候选，未启用 | 预算上限 + 告警 + 缓存 + 限流 | Phase3 LLM 启用前 | 成本授权 + 预算配置 |
+| RISK-P2-009 | 客户隐私泄露给 LLM | 真实隐私 / 订单 / 合同入 prompt | 合规风险 | 候选，未启用 | PII 脱敏 + 不发送真实隐私 / 合同 / 订单 / 联系方式 | Phase3 LLM 启用前 | 隐私脱敏 + 安全评审 |
+| RISK-P2-010 | LLM 超时 / 限流致主链路阻塞 | API 延迟或限流 | 体验下降 | 候选，未启用 | 超时降级回规则匹配 / 转人工，不阻塞 | Phase3 LLM 启用前 | 超时配置 + 降级测试 |
 
 ## 14. Readiness Gate（P0 补强，2026-07-09）
 
@@ -188,7 +192,7 @@ Phase1 必须能本机运行：
 |---|---|---|---|---|---|
 | RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限 / 回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Go（2026-07-11；出站通知沙箱） | 默认 Mock 保留；事件回调、真实生产群和生产组织数据另拆任务 |
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go / Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） | 已通过，可进 Sprint-8 DB 实现 |
-| RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | LLM 专项评估报告 | 待评估 | Sprint-9 前补 LLM 专项评估 |
+| RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | `docs/research/2026-07-11-tech-env-evaluation-llm.md` | Conditional Go（2026-07-11，评估完成） | LLM 默认仍关闭；真实启用需 DOC-C-005 解锁 + Phase 升级 + 安全评审 + 成本授权 |
 
 Conditional Go 保留：上述 gate 在对应 Sprint 前必须由「待评估」推进到 Go / Conditional Go；No-Go 阻止相关 Sprint。详见 `docs/09-verification.md` §10.2。
 
