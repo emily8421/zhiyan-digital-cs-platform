@@ -25,9 +25,9 @@
 - check-derived-sync：`powershell -ExecutionPolicy Bypass -File scripts/check-derived-sync.ps1 HEAD`
 - 是否使用 `--preserve-project-version`：是
 - 是否触发 PowerShell fallback（sync / check）：否，PowerShell 入口可用；脚本自行拉取模板远端
-- post-sync-cleanup：轻量执行，只读检查 workflow / 受保护文件 / docs 分区，不做迁移
-- docs-system-audit（同步后审计）：轻量执行，只确认规范镜像刷新与项目事实文档未被同步改动，不做完整 PLM 审计
-- 项目验证建议 / 已执行验证：已执行 `check-derived-sync`；未运行应用测试 / lint（本次不改业务代码）
+- post-sync-cleanup：完整执行（2026-07-12），见 `sync-records/template-sync/2026-07-12-post-sync-cleanup-v1.46.0.md`；结论为无物理迁移项，存在 README / open items / 运行环境口径回写建议。
+- docs-system-audit（同步后审计）：完整执行（2026-07-12），见 `sync-records/template-sync/2026-07-12-docs-system-audit-v1.46.0.md`；结论为主链路可用，存在 P1/P2 状态传播与规范兼容回梳项。
+- 项目验证建议 / 已执行验证：已执行 `check-derived-sync`；2026-07-12 在 `main` 上复核 `scripts/check-derived-sync.ps1 ced2c76` 通过（Git Bash 权限错误由 PowerShell fallback 覆盖）；未运行应用测试 / lint（本次不改业务代码）。
 
 ### 命令真实性记录
 
@@ -36,9 +36,9 @@
 | dry-run 预览 | `scripts/sync-template.ps1 --dry-run --no-stat --preserve-project-version` | 退出 0 | 是 | 否 | 不适用 | 预览模板清单变更，允许 `TEMPLATE-BASE.md`，未发现受保护项目文件 |
 | commit / 同步 | `scripts/sync-template.ps1 --commit --preserve-project-version` | 退出 0，提交 `ced2c76` | 是 | 否 | 不适用 | `VERSION` / `CHANGELOG.md` 保留，新增 `TEMPLATE-BASE.md` |
 | check-derived-sync | `scripts/check-derived-sync.ps1 HEAD` | 退出 0 | 是 | 否 | 不适用 | 同步边界检查通过 |
-| post-sync-cleanup | 只读轻量检查 | 完成 | 轻量执行 | 否 | 否 | 未修改 README / `ai/project-rules.md` / 项目事实文档 |
-| docs-system-audit | 只读轻量检查 | 完成 | 轻量执行 | 否 | 否 | 未做完整 00-09 / design PLM 审计 |
-| 项目验证 | `check-derived-sync` + Git 状态检查 | 通过 | 是 | 否 | 不适用 | 应用级测试未运行，记录为未验证 |
+| post-sync-cleanup | `15-post-sync-cleanup` 完整第一段审计与迁移计划 | 完成 | 完整执行 | 否 | 是 | 报告：`sync-records/template-sync/2026-07-12-post-sync-cleanup-v1.46.0.md`；未直接迁移 / 修改项目事实文档 |
+| docs-system-audit | `16-docs-system-audit` 同步后审计模式 | 完成 | 完整执行 | 否 | 是 | 报告：`sync-records/template-sync/2026-07-12-docs-system-audit-v1.46.0.md`；发现 README / open items / 环境口径回写项 |
+| 项目验证 | `check-derived-sync` + Git 状态检查；2026-07-12 复核 `check-derived-sync.ps1 ced2c76` | 通过 | 是 | 否 | 不适用 | 应用级测试未运行，记录为未验证 |
 
 ## A13 完成判据矩阵
 
@@ -47,12 +47,12 @@
 | 标准闭环计划 | 本轮执行前已说明同步分支、双版本模式、预期文件与验证方式 | 完成 |  |  |
 | dry-run 预览 | `--dry-run --no-stat --preserve-project-version` 退出 0 | 完成 |  |  |
 | commit + 边界验证 | `ced2c76` + `check-derived-sync` 通过 | 完成 |  |  |
-| post-sync-cleanup | workflow / 受保护文件 / 分区轻量检查 | 轻量执行 | 未按 `15-post-sync-cleanup` 完整生成迁移计划 | 如需严格闭环，单独执行 `/run post-sync-cleanup` 完整审计 |
-| docs-system-audit | 规范镜像刷新与项目事实文档未被同步改动的轻量检查 | 轻量执行 | 未按 `16-docs-system-audit` 完整审计 00-09 / design / env | 如需严格闭环，单独执行 `/run docs-system-audit` 同步后审计 |
+| post-sync-cleanup | `sync-records/template-sync/2026-07-12-post-sync-cleanup-v1.46.0.md` | 完整执行 |  | 后续按报告确认是否修订 README / open items / 环境口径 |
+| docs-system-audit | `sync-records/template-sync/2026-07-12-docs-system-audit-v1.46.0.md` | 完整执行 |  | 后续按报告确认是否执行 P1/P2 文档回梳 |
 | 提案回流收口 | #148、#160 远端 CLOSED；模板 changelog 已记录回流落地；本地提案已归档 | 完成 |  |  |
 | 同步报告留痕 | `sync-records/template-sync/2026-07-11-sync-template-v1.46.0.md` | 完成 |  |  |
 
-> 结论：同步主链完成；因 post-sync-cleanup 与 docs-system-audit 为轻量执行，本轮不称“A13 完整闭环完成”。
+> 结论：A13 同步治理闭环已补完整执行。剩余项为审计发现的项目事实文档回梳建议（README / open items / 运行环境口径 / design 兼容差异），不影响模板同步边界与 PR #37 合并结果。
 
 ## 同步结果
 
@@ -73,25 +73,25 @@
 
 ## 同步后整理摘要
 
-- 是否执行 `/run post-sync-cleanup`：轻量执行，不做迁移
-- README / `ai/project-rules.md` / docs 分区是否需整理：本次未发现同步误改；完整整理需另开任务
+- 是否执行 `/run post-sync-cleanup`：完整执行（2026-07-12），报告见 `sync-records/template-sync/2026-07-12-post-sync-cleanup-v1.46.0.md`
+- README / `ai/project-rules.md` / docs 分区是否需整理：无物理迁移项；README 当前阶段 / 开发计划 / 验证范围需回写；`ai/project-rules.md` 与 `docs/env/local-env.md` 的 Docker 可用性摘要需回写；open items 的 #148 状态需收口。
 - workflow：仅存在 `.github/workflows/project-check.yml`，未发现模板仓 `template-check.yml`
 - 已处理项：无项目事实文档迁移
-- 待确认项：无；用户已确认不沿用旧 `VERSION=v1.43.0`
-- 建议回写 / 后续迁移任务：后续模板同步继续使用 `--preserve-project-version`
+- 待确认项：是否执行审计报告中的 P1/P2 项目事实文档回梳；用户已确认不沿用旧 `VERSION=v1.43.0`
+- 建议回写 / 后续迁移任务：后续模板同步继续使用 `--preserve-project-version`；若修复审计发现，建议单独开文档状态回写任务，不与业务开发混合。
 
 ## 文档体系审计摘要
 
-- 是否执行 `/run docs-system-audit` 同步后审计模式：轻量执行
-- 规范基线缺口：未做完整审计
-- 可接受兼容差异：旧项目不要求机械重写 `docs/00-09`
-- 项目事实风险：本次同步未修改项目事实文档；仍需完整审计时另开任务
-- 回梳计划摘要：暂无，本轮仅验证同步机制
+- 是否执行 `/run docs-system-audit` 同步后审计模式：完整执行（2026-07-12），报告见 `sync-records/template-sync/2026-07-12-docs-system-audit-v1.46.0.md`
+- 规范基线缺口：`docs/design/*` 多个旧文档存在未编号 H2 与元信息 / readiness gate 兼容差异，已列 P2；不要求机械重写。
+- 可接受兼容差异：旧项目 `docs/00-09` 不要求逐字改写为 `ai/doc-standards` 示例骨架；优先保持语义等价和最小补齐。
+- 项目事实风险：README 入口状态落后；open items 中 #148 状态落后；`docs/env/local-env.md` / `ai/project-rules.md` Docker 可用性摘要落后于 RG-002 Go。
+- 回梳计划摘要：P1 修订 README 与运行环境摘要；P2 关闭 DOC-C-006、按需补齐 `docs/design/*` 结构兼容差异。
 
 ## 项目验证建议
 
 - 建议运行的测试 / lint / 文档检查 / 人工验收：如本分支进入 PR，可运行 `git diff --check`、项目既有前后端测试 / lint（若审查者要求）
-- 已执行验证与结果：`check-derived-sync` 通过；`git status --short --branch` 干净
+- 已执行验证与结果：`check-derived-sync` 通过；2026-07-12 在 `main` 上复核 `powershell -ExecutionPolicy Bypass -File scripts/check-derived-sync.ps1 ced2c76` 通过；`git status --short --branch` 干净（写入本补充报告前）
 - 未验证项与原因：未运行应用测试 / lint，因为本次只同步方法论与模板规范镜像，不修改业务代码
 
 ## 遇到的问题
@@ -128,9 +128,9 @@
 
 ## 后续动作
 
-- 是否需要 `/run post-sync-cleanup`：可选；若要严格 A13 完整闭环，需完整执行
-- 是否需要 `/run docs-system-audit`：可选；若要严格 A13 完整闭环，需完整执行
-- 是否需要按审计结果回梳 `docs/00-09` / `docs/design` / `docs/env`：本轮未发现必须项
-- 是否需要补项目验证入口：本轮不需要
+- 是否需要 `/run post-sync-cleanup`：已完整执行；后续仅需按报告确认是否修订项目事实文档。
+- 是否需要 `/run docs-system-audit`：已完整执行；后续仅需按报告确认是否执行 P1/P2 回梳。
+- 是否需要按审计结果回梳 `docs/00-09` / `docs/design` / `docs/env`：建议优先修订 README、`docs/env/local-env.md`、`ai/project-rules.md` 和 open items；`docs/design/*` 可延后或单独批量处理。
+- 是否需要补项目验证入口：本轮不需要；若修订 README / env / open items，建议运行 `git diff --check`。
 - 是否需要人工清理旧目录：未判断
 - 是否需要同步回模板仓库：暂不需要；本次无新回流提案
