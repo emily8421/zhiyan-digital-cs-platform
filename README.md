@@ -121,5 +121,6 @@ npm.cmd run dev -- --port 5174
 
 - 本项目由 `ai-project-template` 派生，通用 AI 行为规范在 `ai/`。
 - 项目专属规则在 `ai/project-rules.md`。
+- 项目自身版本见 `VERSION` 与 `CHANGELOG.md`；继承模板版本见 `TEMPLATE-BASE.md`。
 - 根 `README.md` 是项目说明，不参与模板下行同步。
 - 如需修改模板方法论，应在 `_proposals/` 起草提案，不直接修改模板同步文件。
