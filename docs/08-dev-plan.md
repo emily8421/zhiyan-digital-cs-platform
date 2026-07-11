@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~Sprint-6 已完成并通过本机 Demo 验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收；Sprint-8 已阶段性完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046），见 §2/§3 |
+| 当前状态 | Phase1 Sprint-1~6 已完成并通过本机 Demo 验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001/RG-002 Go、RG-003 Conditional Go；TC-017~052 通过，见 §2/§3 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -366,6 +366,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-11 | Sprint-8 阶段性完成 | RG-001（飞书出站通知沙箱）Go，RG-002（PostgreSQL/pgvector）Go；TC-021~046 已通过或完成记录，Sprint-8 可作为 Phase2 技术验证闭环进入 Sprint-9 前置评估。 |
 | 2026-07-11 | RG-003 LLM 专项评估完成 | 完成 LLM 证据约束 / 不编造 / 成本 / 兜底评估，结论 Conditional Go；RG-003 从「待评估」推进，LLM 默认仍关闭，真实接入后置 Phase3 / 授权任务；新增 RISK-P2-007~010（候选 / 未启用）、TC-047~049。见 `docs/research/2026-07-11-tech-env-evaluation-llm.md`。 |
 | 2026-07-11 | Sprint-9 知识运营强化完成 | 知识缺口 `accepted` 自动入库为 `draft` 知识条目（`zycs_knowledge_items`）；新增 API-006 `GET/POST /knowledge-items`（写操作需 admin）；内存默认 + PG 可选持久化。TC-050~052 通过；默认全量 48 passed、5 skipped，PG 专项 11 passed。见 `tasks/task-009b-knowledge-items-and-gap-acceptance.md`。 |
+| 2026-07-11 | M10 Phase2 MVP 验收通过 | Phase2 Sprint-7/8/9 全部完成；TC-017~052 通过；RG-001/RG-002 Go、RG-003 Conditional Go；默认全量 48 passed、6 skipped，PG 专项 11 passed；试点客户主链路可用，真实 CRM/ERP/OA/工单/LLM 未解锁（后置 Phase3）。见 `docs/09-verification.md` §10.15。 |
 
 ## 7. 已确认口径与待执行
 

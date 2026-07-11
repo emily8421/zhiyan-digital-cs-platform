@@ -25,9 +25,9 @@
 
 ## 1. Phase边界
 
-当前阶段：Phase2（MVP 试点；在 Phase1 本机 Demo 闭环基础上强化运营可用性，面向单个试点客户）
+当前阶段：Phase2（MVP 试点，已验收 M10 2026-07-11；在 Phase1 本机 Demo 闭环基础上强化运营可用性，面向单个试点客户）
 
-> Phase1 已通过本机 Demo 验收（2026-07-06，见 `docs/09-verification.md` §6）；Phase2 Conditional Go 已人工确认（2026-07-09，DOC-C-001~C-005 全按 AI 推荐）。
+> Phase1 已通过本机 Demo 验收（2026-07-06，见 `docs/09-verification.md` §6）；Phase2 Conditional Go 已人工确认（2026-07-09，DOC-C-001~C-005 全按 AI 推荐）；Phase2 MVP 验收通过（M10，2026-07-11，见 `docs/09-verification.md` §10.15）。当前不升 Phase3（Phase3 需试点客户授权 + 单独升级评估）。
 
 允许：
 - 在保留 H5 + Web 控制台 + FastAPI 主链路的基础上，强化知识库、知识缺口审核、运营配置和基础权限。

@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；Sprint-8 已阶段性完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046）；RG-001（飞书出站通知沙箱）Go（2026-07-11，TC-036~043 通过，事件回调后置）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10），见 §6 / §10.2 / §10.4~§10.12 |
+| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；TC-017~052 通过，见 §6 / §10.2 / §10.4~§10.15 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -407,3 +407,26 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 验证结果：TC-050~TC-052 通过；默认全量 `tests/api tests/scenarios tests/acceptance` 48 passed、5 skipped；PG 专项 `test_console_store + test_conversation_store + test_static_data_source` 11 passed。
 - 边界说明：缺口 `accepted` 自动生成 `draft` 知识条目（`source_ref = knowledge_gap:{gap_id}`）；`rejected` 不生成；`POST /knowledge-items` 需 admin；LLM 默认关闭未变；不接外部系统；未改前端；未引入新依赖。
 - 后置项：知识条目 `draft → active` 转正、`active` 知识进入检索链路、前端知识条目管理页。
+
+### 10.15 Phase2 MVP 验收（M10）
+
+> 2026-07-11 收尾。Phase2 Sprint-7/8/9 全部完成，M10 里程碑验收。
+
+| 维度 | 验收结论 | 证据 |
+|---|---|---|
+| Sprint-7 试点部署与运营配置 | 通过 | TC-017~020 通过（PR #34）；单实例双场景包、后端角色权限、运营配置入口、本机部署预案 |
+| Sprint-8 飞书沙箱 + DB 技术验证 | 通过 | TC-021~046 通过；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go |
+| Sprint-9 LLM 评估 + 知识运营强化 | 通过 | TC-047~052 通过；RG-003 LLM Conditional Go；缺口 accepted 入库 + API-006 |
+| Readiness gate | 全部有结论 | RG-001 Go、RG-002 Go、RG-003 Conditional Go |
+| 默认全量回归 | 通过 | `tests/api tests/scenarios tests/acceptance` 48 passed、6 skipped |
+| PG 专项回归 | 通过 | `test_console_store + test_conversation_store + test_static_data_source` 11 passed |
+| Phase2 退出标准 | 达成 | 试点客户主链路可用（H5 问答 / 转人工 / 缺口 / 知识条目 + Console 运营 + 飞书沙箱通知 + DB 可选持久化）；真实 CRM/ERP/OA/工单/LLM 未解锁（后置 Phase3） |
+
+#### Phase2 MVP 验收记录（2026-07-11）
+
+- 验收范围：Phase2 Sprint-7/8/9，M10 里程碑。
+- 验收结论：**Phase2 MVP 试点验收通过**。试点客户主链路可用，人工运营流程跑通；技术验证（飞书沙箱、PostgreSQL/pgvector、LLM 评估）均有 gate 结论。
+- 退出标准达成：试点客户可用；真实 CRM/ERP/OA/工单/LLM 不在本阶段解锁（DOC-C-003/004/005）。
+- 未解锁项（后置 Phase3/4）：真实 CRM/ERP/OA/工单集成（Phase3）、多租户 / 计费 / 监控 / 审计（Phase4）、LLM 自动答复默认启用、飞书事件回调、真实生产群 / 生产组织数据、日报 / 审计日志 PG 化。
+- 后置优化（不阻塞验收）：知识条目 `draft → active` 转正、`active` 知识进入检索链路、前端知识条目管理页、`zycs_daily_summaries` / `zycs_audit_logs` PG 持久化。
+- Phase 升级：Phase3 需试点客户授权 + 单独 `phase-upgrade` 评估，不在本次验收范围；当前阶段仍为 Phase2。
