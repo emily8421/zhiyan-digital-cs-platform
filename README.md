@@ -1,10 +1,10 @@
 # 知衍数字客服统一平台
 
-知衍数字客服统一平台面向古镇产业带及类似中小企业，解决“靠微信做生意、靠人盯群”的客户沟通问题。Phase1 已完成本机 Demo：客户通过 H5 提问，系统基于场景包、知识、规则和 Mock 数据回答；高风险或无依据问题转人工；员工侧 Web 控制台查看会话、缺口、待跟进和摘要。当前进入 Phase2 MVP 试点启动前准备。
+知衍数字客服统一平台面向古镇产业带及类似中小企业，解决“靠微信做生意、靠人盯群”的客户沟通问题。Phase1 已完成本机 Demo：客户通过 H5 提问，系统基于场景包、知识、规则和 Mock 数据回答；高风险或无依据问题转人工；员工侧 Web 控制台查看会话、缺口、待跟进和摘要。Phase2 MVP 已通过 M10 验收，当前仍处于 Phase2 收尾与 Demo Sandbox / Phase3 准备规划阶段，不解锁真实业务系统集成。
 
 ## 当前阶段
 
-- 当前阶段：Phase2（MVP 试点启动前）；Phase1 本机 Demo 已通过验收
+- 当前阶段：Phase2（MVP 已验收，M10，2026-07-11）；Phase3 仅进入准备规划，真实集成仍 No-Go
 - 已有交付物：H5 客户对话页 + FastAPI 后端 + Web 控制台 + Mock 数据
 - Phase1 已验证目标：演示产品型客户和项目型客户的数字客服闭环
 - 非目标：不接真实企业微信、飞书组织、CRM / ERP / OA / 工单系统，不处理真实客户数据，不启用本地大模型或生产级向量索引
@@ -19,7 +19,7 @@
 
 ## 快速开始
 
-当前仓库已完成文档基线回梳，并已合并 Sprint-1 到 Sprint-7：Phase1 本机 Demo 已通过验收，Phase2 Sprint-7 试点部署与运营配置已完成。当前进入 Sprint-8 前置阶段；PostgreSQL / pgvector 技术验证已 Go，但业务持久化尚未启用。真实飞书、真实业务系统和 LLM 默认关闭。
+当前仓库已完成文档基线回梳，并已合并 Sprint-1 到 Sprint-9：Phase1 本机 Demo 已通过验收，Phase2 Sprint-7/8/9 已完成，M10 里程碑已验收。RG-001 飞书出站通知沙箱与 RG-002 PostgreSQL / pgvector 为 Go，RG-003 LLM 为 Conditional Go；真实业务系统、生产飞书、真实客户数据和生产 LLM 自动答复仍保持 No-Go。
 
 固定运行手册见 `docs/env/local-demo-runbook.md`。
 
@@ -74,7 +74,7 @@ npm.cmd run dev -- --port 5174
 
 访问：`http://127.0.0.1:5174`。
 
-本机环境记录见 `docs/env/local-env.md`。Docker 已完成 PostgreSQL / pgvector 技术验证并解除 RG-002 阻塞；当前演示仍默认使用 Mock / 本地临时数据，不启用业务持久化。PowerShell 下如遇 `npm.ps1` 执行策略拦截，使用 `npm.cmd`。完整演示路径、常见问题和关闭方式见 `docs/env/local-demo-runbook.md`。
+本机环境记录见 `docs/env/local-env.md`。Docker 已完成 PostgreSQL / pgvector 技术验证并解除 RG-002 阻塞；当前演示默认仍可使用 Mock / 本地临时数据，按 Sprint-8 开关可验证 PostgreSQL 可选持久化路径。PowerShell 下如遇 `npm.ps1` 执行策略拦截，使用 `npm.cmd`。完整演示路径、常见问题和关闭方式见 `docs/env/local-demo-runbook.md`。
 
 ## 文档入口
 
@@ -96,13 +96,13 @@ npm.cmd run dev -- --port 5174
 ## 重要边界
 
 - Phase1 只使用 Mock / Demo 数据，不使用真实客户隐私、合同、订单、报价、联系方式或生产会话。
-- 外部 API、飞书真实通知、LLM、Docker 镜像和新依赖默认关闭；PostgreSQL / pgvector 仅完成技术验证，业务启用仍需单独 Sprint 和人工确认。
+- 外部 API、生产飞书、生产 LLM、Docker 镜像和新依赖默认关闭；PostgreSQL / pgvector 已完成技术验证与可选持久化路径验证，生产或客户侧启用仍需单独任务和人工确认。
 - 企业微信客户群自动对外回复不进入 Phase1，客户侧入口默认 H5。
 - 所有回答必须能回溯到知识、规则、场景包或 Mock 数据；否则转人工或记录知识缺口。
 
 ## 开发计划
 
-当前开发进度：Sprint-1 到 Sprint-7 已完成并合并；Phase1 本机 Demo 已跑通，Phase2 Sprint-7 试点部署与运营配置已完成；Sprint-8 可优先启动 DB 持久化实现，飞书沙箱仍待 RG-001 凭据 / 边界确认。
+当前开发进度：Sprint-1 到 Sprint-9 已完成并合并；Phase1 本机 Demo 已跑通，Phase2 M10 已验收；Sprint-8 飞书出站通知沙箱 + DB 技术验证已完成，Sprint-9 LLM 评估 + 知识运营强化已完成。后续优先围绕 Demo Sandbox、LLM Sandbox 适配器、客户演示脚本或 Phase3 准备规划拆独立任务。
 
 1. 后端 API 骨架：已完成。
 2. 场景包与 Mock 服务：已完成。
@@ -115,7 +115,7 @@ npm.cmd run dev -- --port 5174
 
 ## 验证方式
 
-验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-020。Sprint-7 已完成后端 API 测试、H5 / Console 构建、三端本机启动、双场景包主链路、Demo 级角色权限和运营配置入口验证；RG-002 PostgreSQL / pgvector 技术验证已 Go。后续真实集成或产品化能力再补新的验证层级。
+验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-060。Phase2 M10 已验收，RG-001 飞书出站通知沙箱与 RG-002 PostgreSQL / pgvector 为 Go，RG-003 LLM 为 Conditional Go；Demo Sandbox 标准模拟业务数据包已通过 TC-060。后续真实集成、生产飞书、生产 LLM 或产品化能力需另补验证层级。
 
 ## 模板关系
 
