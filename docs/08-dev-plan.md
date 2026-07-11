@@ -259,8 +259,8 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 > 2026-07-10 已拆出并完成 Sprint-8B「静态数据读库」：场景包、知识、规则、Mock 业务记录可在显式启用后从 PostgreSQL 读取，并保留 JSON 降级；详见 `tasks/task-008b-static-data-postgres.md`。
 > 2026-07-10 已拆出并完成 Sprint-8C-A「会话与消息持久化」：新建会话、客户消息和助手回答可在显式启用后写入 PostgreSQL，并保留内存降级；详见 `tasks/task-008c-a-conversation-message-postgres.md`。
 > 2026-07-10 已拆出并完成 Sprint-8C-B「运营数据持久化（转人工 / 知识缺口）」：高风险转人工与无依据知识缺口可在显式启用后写入 PostgreSQL，并保留内存降级；通知、日报和审计日志仍后置。详见 `tasks/task-008c-b-operational-data-postgres.md`。
-> 2026-07-10 已拆出并完成 Sprint-8D「飞书沙箱启动前评估」：RG-001 结论为 Conditional Go，已明确出站通知凭据清单、默认 Mock / 显式 sandbox / 失败降级、回调后置边界；真实沙箱实发待人工提供 webhook URL / secret。详见 `tasks/task-008d-feishu-sandbox-readiness.md` 与 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`。
-> 2026-07-10 已拆出并完成 Sprint-8E「Feishu 通知适配器骨架」：默认 Mock、显式 sandbox、缺配置 / 发送失败降级，不提交真实凭据、不启用事件回调；真实沙箱实发 TC-039 仍待人工提供 webhook URL / secret。详见 `tasks/task-008e-feishu-notification-adapter.md`。
+> 2026-07-10 已拆出并完成 Sprint-8D「飞书沙箱启动前评估」：已明确出站通知凭据清单、默认 Mock / 显式 sandbox / 失败降级、回调后置边界；2026-07-11 TC-039 沙箱实发通过，RG-001 出站通知沙箱 Go。详见 `tasks/task-008d-feishu-sandbox-readiness.md` 与 `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`。
+> 2026-07-10 已拆出并完成 Sprint-8E「Feishu 通知适配器骨架」：默认 Mock、显式 sandbox、缺配置 / 发送失败降级，不提交真实凭据、不启用事件回调；2026-07-11 TC-039 沙箱实发通过。详见 `tasks/task-008e-feishu-notification-adapter.md`。
 > 2026-07-10 已拆出并完成 Sprint-8F「通知记录持久化」：API-009 创建的通知记录可在显式启用后写入 PostgreSQL，并保留内存降级；日报和审计日志仍后置。详见 `tasks/task-008f-notification-postgres.md`。
 
 #### 输入文档
@@ -289,8 +289,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Sprint-8B 静态数据读库可在环境变量显式启用后读取 PostgreSQL seed，并在未配置 / 不可用时回退 JSON。
 - Sprint-8C-A 会话与消息可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于转人工 / 缺口 / 通知 / 日报已持久化。
 - Sprint-8C-B 转人工与知识缺口可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于通知 / 日报 / 审计日志已持久化。
-- Sprint-8D 飞书沙箱启动前评估给出 RG-001 Conditional Go：可进入默认 Mock / 显式 sandbox 的适配器设计；真实实发仍需人工提供凭据。
-- Sprint-8E Feishu 通知适配器骨架默认 Mock，显式 sandbox，缺配置 / 发送失败降级；不等同于 TC-039 沙箱实发已通过。
+- Sprint-8D / 8E 飞书出站通知沙箱已通过 TC-039：默认 Mock 保留，显式 sandbox 可实发到测试群；事件回调、真实生产群和生产组织数据仍后置。
 - Sprint-8F 通知记录可在环境变量显式启用后写入 PostgreSQL，并在未配置 / 不可用时回退内存；不等同于日报 / 审计日志已持久化。
 - 不真实发送未经授权的通知。
 
@@ -298,7 +297,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 - 不默认接入真实飞书组织数据。
 - 不把 DB 技术验证成功等同于功能已启用。
-- 不把 RG-001 Conditional Go 等同于飞书沙箱实发已通过；未提供凭据前不得真实发送飞书通知或启用事件回调。
+- 不把 RG-001 出站通知沙箱 Go 等同于真实生产飞书集成；不得启用事件回调，不得接真实生产群或生产组织数据。
 
 ### Sprint-9：知识运营强化 + LLM 评估（Phase2）
 

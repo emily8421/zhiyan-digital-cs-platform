@@ -41,5 +41,5 @@
 - 2026-07-10：已新增 Feishu 通知适配器骨架，默认 Mock，显式 sandbox，失败降级。
 - 验证通过：`tests/api/test_feishu_notification_adapter.py tests/api/test_console.py`，18 passed。
 - 验证通过：默认模式全量后端 `tests/api tests/scenarios tests/acceptance`，43 passed、4 skipped。
-- 待验证：TC-039 沙箱实发，需人工提供沙箱 webhook URL 与签名密钥后另行执行。
-- 边界确认：本任务未提交任何密钥，未启用事件回调，未接真实组织数据。
+- 验证通过：TC-039 沙箱实发（2026-07-11），用户本机配置沙箱 webhook URL / secret 后触发 API-009，接口返回 `send_status=sent`、`mock=False`、`notify_mode=sandbox`，且飞书测试群收到通知。
+- 边界确认：本任务未提交任何密钥，未启用事件回调，未接真实生产群 / 生产组织数据。

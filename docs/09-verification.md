@@ -5,8 +5,8 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书沙箱）Conditional Go（2026-07-10，TC-036~038，TC-039 待凭据，TC-040~043 适配器骨架通过）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035）；Sprint-8F 通知记录持久化已完成并通过验证（TC-044~046），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 / §10.10 / §10.11 |
-| 最后更新 | 2026-07-10 |
+| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；Sprint-7 已完成并通过验收（2026-07-10，TC-017~020）；RG-001（飞书出站通知沙箱）Go（2026-07-11，TC-036~043 通过，事件回调后置）；RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10）；Sprint-8A DB 地基已完成并通过验证（TC-021~024）；Sprint-8B 静态数据读库已完成并通过验证（TC-025~027）；Sprint-8C-A 会话与消息持久化已完成并通过验证（TC-028~031）；Sprint-8C-B 转人工与知识缺口持久化已完成并通过验证（TC-032~035）；Sprint-8F 通知记录持久化已完成并通过验证（TC-044~046），见 §6 / §10.2 / §10.4 / §10.5 / §10.6 / §10.7 / §10.8 / §10.9 / §10.10 / §10.11 |
+| 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
 ## 1. 验证策略
@@ -201,7 +201,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 | Gate | 验证对象 | 进入标准 | 证据 | 状态 |
 |---|---|---|---|---|
-| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Conditional Go（2026-07-10；TC-036~038 通过，TC-039 待凭据） |
+| RG-001 | 飞书真实通知 | 沙箱联调通过 + 权限/回调边界确认 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | Go（2026-07-11；TC-036~043 通过，事件回调后置） |
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go/Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） |
 | RG-003 | LLM | 证据约束/不编造/成本/兜底评估完成 | LLM 专项评估报告 | 待评估（Sprint-9） |
 
@@ -239,7 +239,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 改动范围：`docker/docker-compose.pgvector.yml`、`docker/postgres/init/001_schema.sql`、`docker/postgres/init/002_seed.sql`、`docs/env/postgres-pgvector-runbook.md`。
 - 验证结果：TC-021~TC-024 均通过。
 - 边界说明：后端业务未切 PostgreSQL；H5 / Console 仍走现有 Mock / 本地临时数据；embedding 字段保留但向量检索业务未启用。
-- 残留风险：飞书 RG-001 仍待凭据 / 回调边界；DB 业务读写需后续 Sprint-8B / Sprint-8C 单独实现。
+- 后续闭环：DB 业务读写已由 Sprint-8B~8F 分步落地；飞书 RG-001 出站通知沙箱已于 2026-07-11 通过，事件回调仍后置。
 
 ### 10.6 Sprint-8B 验证用例（静态数据读库）
 
@@ -257,7 +257,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 改动范围：`backend/requirements.txt`、`backend/app/services/static_data_source.py`、`backend/app/services/postgres_static_data_repository.py`、`backend/app/services/scenario_pack_service.py`、`tests/api/test_static_data_source.py`、`docs/env/postgres-pgvector-runbook.md`。
 - 验证结果：TC-025~TC-027 均通过；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 33 passed、1 skipped（PG 专项在未设置 `ZYCS_TEST_DATABASE_URL` 时跳过）。
 - 边界说明：会话、消息、转人工、知识缺口、通知和日报未切 PostgreSQL；PG 读取需显式环境变量启用；数据库不可用时保留 JSON 降级。
-- 残留风险：业务写库和会话持久化需 Sprint-8C 单独设计；飞书 RG-001 仍待凭据 / 回调边界。
+- 后续闭环：业务写库已由 Sprint-8C-A/B/F 分步落地；飞书 RG-001 出站通知沙箱已于 2026-07-11 通过，事件回调仍后置。
 
 ### 10.7 Sprint-8C-A 验证用例（会话与消息持久化）
 
@@ -276,7 +276,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 改动范围：`backend/app/services/conversation_store.py`、`backend/app/services/conversation_service.py`、`tests/api/test_conversation_store.py`、`docs/env/postgres-pgvector-runbook.md`。
 - 验证结果：TC-028~TC-031 均通过；默认全量后端回归 `tests/api tests/scenarios tests/acceptance` 为 35 passed、3 skipped。
 - 边界说明：转人工详情、知识缺口、通知、日报、审计日志未切 PostgreSQL；PG 写入需显式环境变量启用；数据库不可用时保留内存降级。
-- 残留风险：运营数据持久化需 Sprint-8C-B 单独设计；飞书 RG-001 仍待凭据 / 回调边界。
+- 后续闭环：运营数据持久化已由 Sprint-8C-B / 8F 分步落地；飞书 RG-001 出站通知沙箱已于 2026-07-11 通过，事件回调仍后置。
 
 ### 10.8 Sprint-8C-B 验证用例（转人工与知识缺口持久化）
 
@@ -306,15 +306,15 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | TC-036 | `tasks/task-008d-feishu-sandbox-readiness.md`、`docs/05-tech-spec.md` | RG-001、REQ-009、REQ-016 | 梳理出站通知配置项与密钥存放边界 | 明确 `ZYCS_FEISHU_NOTIFY_MODE`、`ZYCS_FEISHU_WEBHOOK_URL`、`ZYCS_FEISHU_WEBHOOK_SECRET`；密钥不落库不提交 | 通过（2026-07-10） |
 | TC-037 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、REQ-009 | 定义飞书通知出站行为 | 默认 Mock；仅显式 sandbox + URL + secret 时允许真实发送；失败回退不阻塞主链路 | 通过（2026-07-10） |
 | TC-038 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、NFR-002、NFR-003 | 定义事件回调边界 | 回调后置，启用前必须补验签 / 解密 / 去重 / 限流 / 脱敏日志，不接真实组织数据 | 通过（2026-07-10） |
-| TC-039 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、REQ-009 | 人工提供沙箱 webhook URL / secret 后执行实发 | 沙箱群收到转人工 / 知识缺口通知，日志无密钥；失败可回退 Mock | 待凭据 |
+| TC-039 | `docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md` | RG-001、REQ-009 | 人工提供沙箱 webhook URL / secret 后执行实发 | 沙箱群收到转人工 / 知识缺口通知，日志无密钥；失败可回退 Mock | 通过（2026-07-11） |
 
 #### Sprint-8D 验收记录（2026-07-10）
 
 - 执行范围：`tasks/task-008d-feishu-sandbox-readiness.md`。
 - 改动范围：`docs/research/2026-07-10-tech-env-evaluation-feishu-sandbox.md`、`docs/05-tech-spec.md`、`docs/08-dev-plan.md`、`docs/09-verification.md`。
-- 验证结果：TC-036~TC-038 通过；TC-039 待人工提供飞书沙箱 webhook URL / secret 后执行。
-- RG-001 结论：Conditional Go。可进入默认 Mock / 显式 sandbox 的 Feishu 通知适配器骨架设计；不得默认开启真实发送，不得启用事件回调。
-- 边界说明：本次未写入真实 webhook、token、secret、用户 ID、组织 ID 或生产数据；未联网调用飞书 API；未改变现有 H5 / Console 默认 Mock 演示链路。
+- 验证结果：TC-036~TC-039 通过；2026-07-11 用户在本机 PowerShell 配置沙箱 webhook URL / secret 后触发 API-009，返回 `send_status=sent`、`mock=False`、`notify_mode=sandbox`，并确认飞书测试群收到通知。
+- RG-001 结论：Go（出站通知沙箱）。默认 Mock 仍保留；真实生产群 / 生产组织数据仍不解锁；事件回调另拆任务。
+- 边界说明：本次未写入真实 webhook、token、secret、用户 ID、组织 ID 或生产数据；未启用事件回调；未改变现有 H5 / Console 默认 Mock 演示链路。
 
 ### 10.10 Sprint-8E 验证用例（Feishu 通知适配器骨架）
 
