@@ -120,7 +120,10 @@ def _match_knowledge_or_rule(content: str, scenario_pack_code: str) -> MessageDe
             risk_level="low",
         )
 
-    knowledge_item = _find_knowledge_item(content, scenario_pack.knowledge_items, scenario_pack.intents)
+    knowledge_candidates = list(scenario_pack.knowledge_items) + _load_active_knowledge_items(
+        scenario_pack_code
+    )
+    knowledge_item = _find_knowledge_item(content, knowledge_candidates, scenario_pack.intents)
     if knowledge_item is not None:
         return MessageDecision(
             intent="knowledge_lookup",
@@ -130,6 +133,24 @@ def _match_knowledge_or_rule(content: str, scenario_pack_code: str) -> MessageDe
             risk_level="low",
         )
     return None
+
+
+def _load_active_knowledge_items(scenario_pack_code: str) -> list[KnowledgeItem]:
+    from app.services.console_service import list_knowledge_items
+
+    try:
+        records = list_knowledge_items(scenario_pack_code=scenario_pack_code, status="active")
+    except Exception:
+        return []
+    return [
+        KnowledgeItem(
+            id=record.item_id,
+            title=record.title,
+            content=record.content,
+            source_ref=record.source_ref,
+        )
+        for record in records
+    ]
 
 
 def _find_answer_rule(content: str, rules: list[RuleItem]) -> RuleItem | None:

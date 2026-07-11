@@ -277,3 +277,78 @@ def test_create_knowledge_item_invalid_status_returns_error() -> None:
 
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "INVALID_CONSOLE_STATUS"
+
+
+# --- task-009c 知识闭环：PATCH 转正（TC-053） ---
+
+
+def test_update_knowledge_item_status_to_active() -> None:
+    create_response = client.post(
+        "/api/v1/knowledge-items",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "scenario_pack_code": "product_business",
+            "title": "待转正知识",
+            "content": "Mock 知识待转正（Demo）。",
+            "source_ref": "SRC-ACTIVATE-DEMO",
+            "status": "draft",
+        },
+    )
+    item_id = create_response.json()["data"]["item_id"]
+
+    response = client.patch(
+        f"/api/v1/knowledge-items/{item_id}",
+        headers={"X-Console-Role": "admin"},
+        json={"status": "active"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["item_id"] == item_id
+    assert data["status"] == "active"
+
+
+def test_update_knowledge_item_requires_admin_role() -> None:
+    create_response = client.post(
+        "/api/v1/knowledge-items",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "scenario_pack_code": "product_business",
+            "title": "x",
+            "content": "x",
+            "source_ref": "SRC-X",
+        },
+    )
+    item_id = create_response.json()["data"]["item_id"]
+
+    response = client.patch(
+        f"/api/v1/knowledge-items/{item_id}",
+        headers={"X-Console-Role": "viewer"},
+        json={"status": "active"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "FORBIDDEN_CONSOLE_WRITE"
+
+
+def test_update_knowledge_item_invalid_status_returns_error() -> None:
+    create_response = client.post(
+        "/api/v1/knowledge-items",
+        headers={"X-Console-Role": "admin"},
+        json={
+            "scenario_pack_code": "product_business",
+            "title": "x",
+            "content": "x",
+            "source_ref": "SRC-X",
+        },
+    )
+    item_id = create_response.json()["data"]["item_id"]
+
+    response = client.patch(
+        f"/api/v1/knowledge-items/{item_id}",
+        headers={"X-Console-Role": "admin"},
+        json={"status": "published"},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "INVALID_CONSOLE_STATUS"

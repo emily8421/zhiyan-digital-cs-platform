@@ -27,6 +27,7 @@ from app.services.console_service import (
     list_knowledge_items,
     list_notifications,
     update_handoff_status,
+    update_knowledge_item_status,
     update_knowledge_gap_status,
 )
 
@@ -156,6 +157,32 @@ def post_knowledge_item(
             tags=payload.tags,
             status=payload.status,
         )
+    except InvalidConsoleStatusError as error:
+        raise _invalid_status_error(error) from error
+    return ApiResponse(
+        request_id=new_request_id(),
+        data=item,
+        meta=ResponseMeta(mock=True),
+    )
+
+
+@router.patch(
+    "/knowledge-items/{item_id}",
+    response_model=ApiResponse[KnowledgeItemRecord],
+    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+)
+def patch_knowledge_item(
+    item_id: str,
+    payload: StatusUpdateRequest,
+    _: None = Depends(require_console_admin),
+) -> ApiResponse[KnowledgeItemRecord]:
+    try:
+        item = update_knowledge_item_status(
+            item_id=item_id,
+            status=payload.status,
+        )
+    except ConsoleRecordNotFoundError as error:
+        raise _not_found_error(error) from error
     except InvalidConsoleStatusError as error:
         raise _invalid_status_error(error) from error
     return ApiResponse(

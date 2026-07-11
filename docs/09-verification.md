@@ -430,3 +430,20 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 未解锁项（后置 Phase3/4）：真实 CRM/ERP/OA/工单集成（Phase3）、多租户 / 计费 / 监控 / 审计（Phase4）、LLM 自动答复默认启用、飞书事件回调、真实生产群 / 生产组织数据、日报 / 审计日志 PG 化。
 - 后置优化（不阻塞验收）：知识条目 `draft → active` 转正、`active` 知识进入检索链路、前端知识条目管理页、`zycs_daily_summaries` / `zycs_audit_logs` PG 持久化。
 - Phase 升级：Phase3 需试点客户授权 + 单独 `phase-upgrade` 评估，不在本次验收范围；当前阶段仍为 Phase2。
+
+### 10.16 知识闭环验证用例（task-009c：转正 + active 检索）
+
+> 2026-07-11 细化。范围：知识条目 `draft → active` 转正（`PATCH /knowledge-items/{item_id}`）；`active` 知识进入问答检索链路。不启用 LLM，不接外部系统。
+
+| TC-ID | 依据 | 关联 REQ / Gate | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-053 | `docs/07-api-spec.md` API-006、`docs/06-db-design.md` §4.4 | REQ-004、REQ-011 | `PATCH /knowledge-items/{item_id}`（admin）把 draft 改 active；viewer 尝试改 | admin 成功改 status；viewer 返回 403 | 通过（2026-07-11） |
+| TC-054 | `backend/app/services/message_policy_service.py`、KP-C-001 | REQ-004、REQ-011 | 新增一条 active 知识条目（含可命中关键词），发消息触发检索；对比 draft 同样内容不命中 | active 条目被检索命中（`answer_type=knowledge`、`source_ref` 为该条目来源）；draft 不命中；无 active 时行为不变 | 通过（2026-07-11） |
+
+#### task-009c 知识闭环验收记录（2026-07-11）
+
+- 执行范围：`tasks/task-009c-knowledge-item-active-retrieval.md`。
+- 改动范围：`backend/app/services/console_service.py`、`backend/app/services/console_store.py`、`backend/app/api/console.py`、`backend/app/services/message_policy_service.py`、`tests/api/test_console.py`、`tests/api/test_knowledge_retrieval.py`。
+- 验证结果：TC-053/054 通过；默认全量 `tests/api tests/scenarios tests/acceptance` 54 passed、6 skipped；PG 专项 `test_console_store + test_conversation_store + test_static_data_source` 11 passed。
+- 边界说明：`PATCH /knowledge-items/{item_id}` 需 admin，允许 draft/active/archived 任意合法 status；`active` 知识与 seed 统一评分参与检索，draft/archived 不参与；无 active 时检索行为不变。
+- 后置项：前端知识条目管理页（含转正操作 UI）。

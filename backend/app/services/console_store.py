@@ -223,6 +223,28 @@ def list_knowledge_items_from_postgres(
     return [record for record in records if tag in record.tags]
 
 
+def update_knowledge_item_status_in_postgres(
+    item_id: str,
+    status: str,
+) -> KnowledgeItemRecord | None:
+    row = _fetch_one(
+        f"""
+        WITH updated AS (
+          UPDATE zycs_knowledge_items
+          SET status = %s,
+              updated_at = now()
+          WHERE id = %s
+          RETURNING *
+        )
+        {_knowledge_item_select_sql("", table_name="updated")}
+        """,
+        (status, item_id),
+    )
+    if row is None:
+        return None
+    return _knowledge_item_from_row(row)
+
+
 def create_notification_in_postgres(record: MockNotificationRecord) -> None:
     _execute(
         """

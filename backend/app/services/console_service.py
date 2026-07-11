@@ -21,6 +21,7 @@ from app.services.console_store import (
     list_knowledge_gaps_from_postgres,
     list_notifications_from_postgres,
     update_handoff_status_in_postgres,
+    update_knowledge_item_status_in_postgres,
     update_knowledge_gap_status_in_postgres,
 )
 from app.services.conversation_store import should_use_postgres_conversation_store
@@ -307,6 +308,28 @@ def create_knowledge_item(
     if _use_postgres_console_store():
         _try_postgres_write(create_knowledge_item_in_postgres, item)
     return deepcopy(item)
+
+
+def update_knowledge_item_status(
+    item_id: str,
+    status: str,
+) -> KnowledgeItemRecord:
+    if status not in _KNOWLEDGE_ITEM_STATUSES:
+        raise InvalidConsoleStatusError("knowledge_item", status)
+    if _use_postgres_console_store():
+        postgres_record = _try_postgres_read(
+            update_knowledge_item_status_in_postgres,
+            item_id,
+            status,
+        )
+        if postgres_record is not None:
+            return postgres_record
+    record = _knowledge_items.get(item_id)
+    if record is None:
+        raise ConsoleRecordNotFoundError("knowledge_item", item_id)
+    record.status = status
+    record.updated_at = _now_iso()
+    return deepcopy(record)
 
 
 def list_notifications(
