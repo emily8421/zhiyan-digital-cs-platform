@@ -8,3 +8,8 @@
 - `_archive/proposals/` 是已处理提案的历史记录。
 - 提案归档后，模板变更事实仍以根目录 `VERSION`、README 版本记录和 Git 历史为准。
 - 归档内容不得作为当前待办事项重复执行；若要再次调整，应创建新的 `TEMPLATE-UPGRADE-*.md` 提案。
+
+## 2026-07-11 同步 v1.46.0 归档
+
+- `TEMPLATE-UPGRADE-a13-sync-closure-and-dry-run-robustness.md`：模板 issue #148 已关闭；A13 门禁、fallback 参数修复、dry-run 轻量预览已在模板 v1.44.x / v1.45.x / v1.46.0 链路中落地，本地归档。
+- `TEMPLATE-UPGRADE-demo-runbook-trigger.md`：模板 issue #160 已关闭；`show-demo` 命令与 `demo-runbook-template` 已在模板 v1.45.0+ 落地，本地归档。
