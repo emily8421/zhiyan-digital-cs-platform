@@ -1,6 +1,7 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
+from app.adapters.llm_adapter import generate_llm_answer
 from app.schemas.mock_business import MockBusinessRecordResponse
 from app.schemas.scenario_packs import IntentItem, KnowledgeItem, RuleItem
 from app.services.mock_business_service import MockRecordNotFoundError, get_mock_business_record
@@ -17,6 +18,7 @@ class MessageDecision:
     handoff_reason: str | None = None
     gap_question: str | None = None
     mock_record: MockBusinessRecordResponse | None = None
+    llm: dict[str, object] | None = None
 
 
 _HIGH_RISK_PATTERNS = [
@@ -40,27 +42,59 @@ _MOCK_REF_TYPES = {
 }
 
 
+_LLM_ELIGIBLE_ANSWER_TYPES = {"mock_business", "knowledge", "rule"}
+
+
 def decide_message_response(content: str, scenario_pack_code: str) -> MessageDecision:
     stripped_content = content.strip()
     high_risk_decision = _match_high_risk(stripped_content)
     if high_risk_decision is not None:
         return high_risk_decision
 
-    mock_decision = _match_mock_business(stripped_content)
-    if mock_decision is not None:
-        return mock_decision
+    decision = _match_mock_business(stripped_content)
+    if decision is None:
+        decision = _match_knowledge_or_rule(stripped_content, scenario_pack_code)
+    if decision is None:
+        decision = _default_gap(stripped_content)
+    return _maybe_llm_rewrite(decision, stripped_content)
 
-    knowledge_decision = _match_knowledge_or_rule(stripped_content, scenario_pack_code)
-    if knowledge_decision is not None:
-        return knowledge_decision
 
+def _default_gap(content: str) -> MessageDecision:
     return MessageDecision(
         intent="unknown_question",
         answer_type="gap",
         answer="这个问题当前知识库没有可追溯依据，我已记录为知识缺口，等待人工确认后再回复。",
         source_ref="policy:knowledge_gap",
         risk_level="medium",
-        gap_question=stripped_content,
+        gap_question=content,
+    )
+
+
+def _maybe_llm_rewrite(decision: MessageDecision, question: str) -> MessageDecision:
+    # 高风险 handoff 在 decide_message_response 入口短路，不会到达这里；
+    # 无依据 gap 不属于证据型，也不进入 LLM，避免编造业务事实。
+    if decision.answer_type not in _LLM_ELIGIBLE_ANSWER_TYPES:
+        return decision
+    llm_result = generate_llm_answer(
+        question=question,
+        base_answer_type=decision.answer_type,
+        base_answer=decision.answer,
+        source_ref=decision.source_ref,
+    )
+    if llm_result is None:
+        return decision
+    return replace(
+        decision,
+        answer_type="llm_sandbox",
+        answer=llm_result.answer,
+        source_ref=llm_result.source_ref,
+        llm={
+            "mode": llm_result.mode_used,
+            "base_answer_type": llm_result.base_answer_type,
+            "mock": llm_result.mock,
+            "evidence": list(llm_result.evidence),
+            "fallback_reason": llm_result.fallback_reason,
+        },
     )
 
 

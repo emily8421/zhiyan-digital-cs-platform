@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
@@ -135,3 +136,30 @@ def test_send_message_with_invalid_payload_returns_validation_error() -> None:
     assert body["request_id"]
     assert body["error"]["code"] == "VALIDATION_ERROR"
     assert "errors" in body["error"]["details"]
+
+
+def test_send_message_returns_llm_sandbox_answer_in_mock_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ZYCS_LLM_MODE", "mock")
+    create_response = client.post(
+        "/api/v1/conversations",
+        json={"channel": "h5", "scenario_pack_code": "product_business"},
+    )
+    conversation_id = create_response.json()["data"]["conversation_id"]
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        json={"content": "我想查一下 DEMO-ORDER-202607-001 的生产进度"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["answer_type"] == "llm_sandbox"
+    assert data["source_ref"] == "demo_erp:order:DEMO-ORDER-202607-001"
+    assert "LLM Sandbox 改写" in data["answer"]
+    assert data["llm"]["mode"] == "mock"
+    assert data["llm"]["base_answer_type"] == "mock_business"
+    assert "demo_erp:order:DEMO-ORDER-202607-001" in data["llm"]["evidence"]
+    assert data["handoff"] is None
+    assert data["knowledge_gap"] is None

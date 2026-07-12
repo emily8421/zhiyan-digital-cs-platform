@@ -42,3 +42,4 @@ class MessageResponseData(BaseModel):
     source_ref: str
     handoff: dict[str, object] | None = None
     knowledge_gap: dict[str, object] | None = None
+    llm: dict[str, object] | None = None

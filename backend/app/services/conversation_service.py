@@ -104,6 +104,7 @@ def build_demo_message_response(conversation_id: str, content: str) -> MessageRe
         source_ref=decision.source_ref,
         handoff=handoff,
         knowledge_gap=knowledge_gap,
+        llm=decision.llm,
     )
     if _use_postgres_conversation_store():
         _persist_message_exchange(conversation, content, response)

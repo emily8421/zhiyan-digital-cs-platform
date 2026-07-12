@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
@@ -81,3 +82,37 @@ def test_known_mock_record_returns_traceable_mock_answer() -> None:
     assert "Mock 进度" in data["answer"]
     assert data["handoff"] is None
     assert data["knowledge_gap"] is None
+
+
+def test_high_risk_overrides_llm_sandbox(monkeypatch: pytest.MonkeyPatch) -> None:
+    # RISK-P2-007：即使 LLM 开启，高风险问题仍强制转人工，LLM 不得介入。
+    monkeypatch.setenv("ZYCS_LLM_MODE", "mock")
+    conversation_id = _create_conversation()
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        json={"content": "如果客户投诉并要求赔偿，你们能保证赔多少钱？"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["answer_type"] == "handoff"
+    assert data["source_ref"] == "rule:high_risk_handoff"
+    assert data["llm"] is None
+    assert data["handoff"]["handoff_id"].startswith("handoff_")
+
+
+def test_gap_not_rewritten_by_llm_sandbox(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Demo Sandbox §5.2：无依据缺口不进入 LLM，避免编造业务事实。
+    monkeypatch.setenv("ZYCS_LLM_MODE", "mock")
+    conversation_id = _create_conversation("project_business")
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        json={"content": "请说明火星基地联调验收流程"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["answer_type"] == "gap"
+    assert data["llm"] is None

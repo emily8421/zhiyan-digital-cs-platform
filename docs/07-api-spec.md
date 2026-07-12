@@ -179,6 +179,33 @@ sequenceDiagram
 }
 ```
 
+`answer_type` 取值：`mock_business` / `knowledge` / `rule`（证据型）/ `handoff`（高风险转人工）/ `gap`（无依据缺口）/ `llm_sandbox`（LLM Sandbox 改写）。当 `ZYCS_LLM_MODE != disabled` 且命中证据型回答时，响应 `answer_type=llm_sandbox`、保留原 `source_ref`，并额外返回 `llm` 字段；高风险与无依据缺口不进入 LLM（`llm` 为 `null`）。默认 `ZYCS_LLM_MODE=disabled` 时 `llm` 恒为 `null`，行为与未接入 LLM 一致。
+
+LLM Sandbox 改写响应示例（`ZYCS_LLM_MODE=mock`）：
+
+```json
+{
+  "request_id": "req_004",
+  "data": {
+    "message_id": "msg_004",
+    "intent": "order_progress",
+    "answer_type": "llm_sandbox",
+    "answer": "【LLM Sandbox 改写】依据：demo_erp:order:DEMO-ORDER-202607-001。\n这是 Mock 订单进度……\n（以上进度来自 Demo 模拟业务数据，非真实系统查询。）",
+    "source_ref": "demo_erp:order:DEMO-ORDER-202607-001",
+    "handoff": null,
+    "knowledge_gap": null,
+    "llm": {
+      "mode": "mock",
+      "base_answer_type": "mock_business",
+      "mock": true,
+      "evidence": ["demo_erp:order:DEMO-ORDER-202607-001"],
+      "fallback_reason": null
+    }
+  },
+  "meta": { "mock": true }
+}
+```
+
 ### API-003 查询会话列表
 
 `GET /api/v1/conversations?status=open&scenario_pack_code=product_business`
