@@ -9,7 +9,9 @@ Usage:
 Notes:
   This script opens three PowerShell windows for the FastAPI backend, the H5
   customer page, and the Web console. It does not install dependencies or
-  start Docker / PostgreSQL / external services.
+  start Docker / PostgreSQL / external services. It fails fast when requested
+  ports are already occupied, avoiding accidental checks against another local
+  app.
 #>
 [CmdletBinding()]
 param(
@@ -56,14 +58,126 @@ function Start-DemoWindow {
   )
 
   $encodedCommand = New-EncodedPowerShellCommand -WorkingDirectory $WorkingDirectory -Command $Command
-  Start-Process -FilePath "powershell.exe" -ArgumentList @(
+  $process = Start-Process -FilePath "powershell.exe" -ArgumentList @(
     "-NoExit",
     "-ExecutionPolicy",
     "Bypass",
     "-EncodedCommand",
     $encodedCommand
-  ) | Out-Null
-  Write-Host "- Started $Name in a new PowerShell window"
+  ) -PassThru
+  Write-Host "- Started $Name in a new PowerShell window (pid=$($process.Id))"
+  return $process
+}
+
+function Get-PortListenerDetails {
+  param([int]$Port)
+
+  $connections = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+  $processIds = @($connections | Select-Object -ExpandProperty OwningProcess -Unique | Where-Object { $_ })
+  foreach ($processId in $processIds) {
+    $processName = "unknown"
+    $commandLine = ""
+    try {
+      $processName = (Get-Process -Id $processId -ErrorAction Stop).ProcessName
+    }
+    catch {
+      $processName = "unknown"
+    }
+
+    try {
+      $commandLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $processId" -ErrorAction Stop).CommandLine
+    }
+    catch {
+      $commandLine = ""
+    }
+
+    [pscustomobject]@{
+      Port = $Port
+      ProcessId = $processId
+      ProcessName = $processName
+      CommandLine = $commandLine
+    }
+  }
+}
+
+function Test-PortOpen {
+  param(
+    [string]$HostName,
+    [int]$Port,
+    [int]$TimeoutMilliseconds = 1000
+  )
+
+  $client = [System.Net.Sockets.TcpClient]::new()
+  try {
+    $asyncResult = $client.BeginConnect($HostName, $Port, $null, $null)
+    if (-not $asyncResult.AsyncWaitHandle.WaitOne($TimeoutMilliseconds, $false)) {
+      return $false
+    }
+    $client.EndConnect($asyncResult)
+    return $true
+  }
+  catch {
+    return $false
+  }
+  finally {
+    $client.Close()
+  }
+}
+
+function Assert-PortAvailable {
+  param(
+    [string]$Name,
+    [int]$Port
+  )
+
+  $isOpen = Test-PortOpen -HostName "127.0.0.1" -Port $Port
+  if (-not $isOpen) {
+    return
+  }
+
+  $listeners = @(Get-PortListenerDetails -Port $Port)
+
+  Write-Warning "$Name port $Port is already in use. Stop the existing process or pass a different port."
+  if ($listeners.Count -gt 0) {
+    foreach ($listener in $listeners) {
+      Write-Warning ("  - pid={0} process={1} command={2}" -f $listener.ProcessId, $listener.ProcessName, $listener.CommandLine)
+    }
+  }
+  else {
+    Write-Warning "  - TCP connection to 127.0.0.1:$Port succeeded, but process details could not be resolved on this machine."
+  }
+  throw "$Name port $Port is already in use."
+}
+
+function Write-RuntimeState {
+  param(
+    [string]$RepoRoot,
+    [int]$BackendPort,
+    [int]$H5Port,
+    [int]$ConsolePort,
+    [string]$H5LanUrl,
+    [string]$QrPath,
+    [int]$BackendPid,
+    [int]$H5Pid,
+    [int]$ConsolePid
+  )
+
+  $aiDir = Join-Path $RepoRoot ".ai"
+  if (-not (Test-Path -LiteralPath $aiDir)) {
+    New-Item -ItemType Directory -Path $aiDir | Out-Null
+  }
+
+  $runtimePath = Join-Path $aiDir "local-demo-runtime.json"
+  $state = [ordered]@{
+    started_at = (Get-Date).ToString("yyyy-MM-ddTHH:mm:sszzz")
+    backend = [ordered]@{ port = $BackendPort; url = "http://127.0.0.1:$BackendPort"; pid = $BackendPid }
+    customer_h5 = [ordered]@{ port = $H5Port; url = "http://127.0.0.1:$H5Port"; lan_url = $H5LanUrl; identity_marker = 'name="zycs-demo-app" content="customer-h5"'; pid = $H5Pid }
+    console = [ordered]@{ port = $ConsolePort; url = "http://127.0.0.1:$ConsolePort"; identity_marker = 'name="zycs-demo-app" content="console"'; pid = $ConsolePid }
+    qr_svg = $QrPath
+  }
+
+  $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $runtimePath -Encoding UTF8
+  return $runtimePath
 }
 
 function Get-LocalLanAddress {
@@ -120,6 +234,14 @@ if (-not (Test-CommandExists "npm.cmd")) {
   throw "npm.cmd is not available in PATH. See docs/env/local-demo-runbook.md."
 }
 
+if (@(@($BackendPort, $H5Port, $ConsolePort) | Select-Object -Unique).Count -ne 3) {
+  throw "BackendPort, H5Port, and ConsolePort must be different."
+}
+
+Assert-PortAvailable -Name "Backend API" -Port $BackendPort
+Assert-PortAvailable -Name "H5 customer page" -Port $H5Port
+Assert-PortAvailable -Name "Web console" -Port $ConsolePort
+
 Write-Host "==> Starting local demo services"
 Write-Host "Repository: $repoRoot"
 
@@ -140,20 +262,31 @@ if ($h5LanUrl) {
   }
 }
 
-Start-DemoWindow `
+$backendProcess = Start-DemoWindow `
   -Name "Backend API (:${BackendPort})" `
   -WorkingDirectory $repoRoot `
   -Command "`$env:PYTHONPATH='backend'; python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port $BackendPort"
 
-Start-DemoWindow `
+$h5Process = Start-DemoWindow `
   -Name "H5 customer page (:${H5Port})" `
   -WorkingDirectory $h5Dir `
-  -Command "npm.cmd run dev -- --host 0.0.0.0 --port $H5Port"
+  -Command "npm.cmd run dev -- --host 0.0.0.0 --port $H5Port --strictPort"
 
-Start-DemoWindow `
+$consoleProcess = Start-DemoWindow `
   -Name "Web console (:${ConsolePort})" `
   -WorkingDirectory $consoleDir `
-  -Command "npm.cmd run dev -- --port $ConsolePort"
+  -Command "npm.cmd run dev -- --port $ConsolePort --strictPort"
+
+$runtimePath = Write-RuntimeState `
+  -RepoRoot $repoRoot `
+  -BackendPort $BackendPort `
+  -H5Port $H5Port `
+  -ConsolePort $ConsolePort `
+  -H5LanUrl $h5LanUrl `
+  -QrPath $qrPath `
+  -BackendPid $backendProcess.Id `
+  -H5Pid $h5Process.Id `
+  -ConsolePid $consoleProcess.Id
 
 Write-Host ""
 Write-Host "==> URLs"
@@ -170,6 +303,7 @@ if ($h5LanUrl) {
 } else {
   Write-Warning "No LAN IPv4 address detected. Phone QR URL was not generated. Use -LanHost <computer-lan-ip> to set it manually."
 }
+Write-Host "- Runtime state:  $runtimePath"
 Write-Host ""
 Write-Host "After the windows finish starting, run:"
 Write-Host "  powershell -ExecutionPolicy Bypass -File scripts/check-local-demo.ps1 -BackendPort $BackendPort -H5Port $H5Port -ConsolePort $ConsolePort"

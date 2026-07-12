@@ -526,3 +526,20 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 新增标准编号：`DEMO-ORDER-202607-001`、`DEMO-ORDER-202607-002`、`DEMO-PROJ-202607-001`、`DEMO-TICKET-202607-001`。
 - 扩展字段：`source_ref`、`source_system`、`environment`、`stage`、`payload`；保留旧字段兼容 H5 / Console。
 - 数据边界：全部为 Demo Sandbox 模拟数据，均标 `mock=true`；不含真实客户隐私、合同、报价、联系方式或生产数据。
+
+### 10.23 Demo Sandbox 演示可用性 Smoke Test（TC-061）
+
+> 2026-07-12 收口。范围：本机三端可访问性、标准 Demo Sandbox 数据包、H5 主链路四类演示场景；不接真实业务系统、不启用真实 LLM、不提交本地二维码产物。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-061 | `docs/env/local-demo-runbook.md`、`docs/env/external-demo-script.md`、`docs/research/2026-07-12-demo-sandbox-smoke-test.md` | REQ-001、REQ-004、REQ-005、REQ-008、REQ-011、REQ-016 | 启动三端 Demo；运行健康检查；执行标准模拟数据包测试；通过本地 HTTP 验证知识回答、标准 Mock 进度、转人工、知识缺口；验证默认端口被占用时不会继续启动或误判 | 后端 / H5 / Console 均可访问且前端 identity marker 匹配；`DEMO-ORDER-202607-001` 返回 `demo_sandbox` 和 `source_ref`；四类 H5 主链路结果符合边界 | 通过（2026-07-12）；默认端口被占用时启动脚本失败告警，5173 被其他页面占用时检查脚本失败告警；备用端口 8001/5175/5176 通过；16 个聚焦 API 测试通过；本地 HTTP smoke 通过；手机扫码待人工复核 |
+
+#### Demo Sandbox smoke 记录（2026-07-12）
+
+- 发现并修复误判风险：5173 端口被其他页面占用时，旧检查只看 200 会误判；现检查 H5 / Console identity marker。
+- 启动命令：`scripts/start-local-demo.ps1 -BackendPort 8001 -H5Port 5175 -ConsolePort 5176`；检查命令：`scripts/check-local-demo.ps1 -BackendPort 8001 -H5Port 5175 -ConsolePort 5176`。
+- 健康检查：Backend health、Backend docs、H5、Console 均返回 200，且前端 identity marker 匹配。
+- 聚焦测试：`tests/api/test_mock_business.py`、`tests/api/test_conversations.py`、`tests/api/test_scenario_packs.py` 共 16 passed；存在 2 条非阻塞 warning。
+- 本地 HTTP 场景：产品知识、标准 Demo 订单进度、高风险转人工、未知问题缺口均通过。
+- 待人工复核：手机扫码访问 `.ai/local-demo-h5-qr.svg` 对应的局域网 H5 地址。
