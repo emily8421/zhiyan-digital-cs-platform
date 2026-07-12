@@ -7,14 +7,19 @@ Usage:
 
 Notes:
   This script only sends local HTTP requests. It does not start services,
-  install dependencies, or modify files.
+  install dependencies, or modify files. Frontend checks also validate app
+  identity markers so another local app on the same port is not mistaken for
+  this demo.
 #>
 [CmdletBinding()]
 param(
   [int]$BackendPort = 8000,
   [int]$H5Port = 5173,
   [int]$ConsolePort = 5174,
-  [int]$TimeoutSeconds = 3
+  [int]$TimeoutSeconds = 3,
+  [string]$BackendHealthMarker = '"status":"ok"',
+  [string]$H5IdentityMarker = 'name="zycs-demo-app" content="customer-h5"',
+  [string]$ConsoleIdentityMarker = 'name="zycs-demo-app" content="console"'
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,12 +27,19 @@ $ErrorActionPreference = "Stop"
 function Test-HttpEndpoint {
   param(
     [string]$Name,
-    [string]$Uri
+    [string]$Uri,
+    [string]$ExpectedContent = ""
   )
 
   try {
     $response = Invoke-WebRequest -UseBasicParsing -Uri $Uri -TimeoutSec $TimeoutSeconds
     if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400) {
+      if ($ExpectedContent -and -not ([string]$response.Content).Contains($ExpectedContent)) {
+        Write-Warning "[FAIL] $Name -> $Uri returned HTTP $($response.StatusCode), but identity marker was not found: $ExpectedContent"
+        Write-Warning "       Another local app may be using this port. Stop it or pass explicit ports."
+        return $false
+      }
+
       Write-Host "[OK]   $Name -> $Uri ($($response.StatusCode))"
       return $true
     }
@@ -42,17 +54,17 @@ function Test-HttpEndpoint {
 }
 
 $checks = @(
-  [pscustomobject]@{ Name = "Backend health"; Uri = "http://127.0.0.1:$BackendPort/health" },
-  [pscustomobject]@{ Name = "Backend docs"; Uri = "http://127.0.0.1:$BackendPort/docs" },
-  [pscustomobject]@{ Name = "H5 customer page"; Uri = "http://127.0.0.1:$H5Port" },
-  [pscustomobject]@{ Name = "Web console"; Uri = "http://127.0.0.1:$ConsolePort" }
+  [pscustomobject]@{ Name = "Backend health"; Uri = "http://127.0.0.1:$BackendPort/health"; ExpectedContent = $BackendHealthMarker },
+  [pscustomobject]@{ Name = "Backend docs"; Uri = "http://127.0.0.1:$BackendPort/docs"; ExpectedContent = "" },
+  [pscustomobject]@{ Name = "H5 customer page"; Uri = "http://127.0.0.1:$H5Port"; ExpectedContent = $H5IdentityMarker },
+  [pscustomobject]@{ Name = "Web console"; Uri = "http://127.0.0.1:$ConsolePort"; ExpectedContent = $ConsoleIdentityMarker }
 )
 
 Write-Host "==> Checking local demo services"
 $passed = 0
 
 foreach ($check in $checks) {
-  if (Test-HttpEndpoint -Name $check.Name -Uri $check.Uri) {
+  if (Test-HttpEndpoint -Name $check.Name -Uri $check.Uri -ExpectedContent $check.ExpectedContent) {
     $passed += 1
   }
 }

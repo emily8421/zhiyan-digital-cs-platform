@@ -115,7 +115,7 @@ npm.cmd run dev -- --port 5174
 
 ## 验证方式
 
-验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-060。Phase2 M10 已验收，RG-001 飞书出站通知沙箱与 RG-002 PostgreSQL / pgvector 为 Go，RG-003 LLM 为 Conditional Go；Demo Sandbox 标准模拟业务数据包已通过 TC-060。后续真实集成、生产飞书、生产 LLM 或产品化能力需另补验证层级。
+验证计划见 `docs/09-verification.md`，覆盖 TC-001 到 TC-061。Phase2 M10 已验收，RG-001 飞书出站通知沙箱与 RG-002 PostgreSQL / pgvector 为 Go，RG-003 LLM 为 Conditional Go；Demo Sandbox 标准模拟业务数据包已通过 TC-060，本机演示可用性 smoke 已通过 TC-061。后续真实集成、生产飞书、生产 LLM 或产品化能力需另补验证层级。
 
 ## 模板关系
 
