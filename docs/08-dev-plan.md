@@ -374,6 +374,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-11 | Phase3 适配层契约设计已补 | 新增 `docs/design/integration-adapters.md`，定义 ExternalBusinessAdapter、运行模式（disabled / mock / sandbox / production_readonly）、统一查询结果、错误降级、字段脱敏、日志审计和 RG-004~RG-008 对应关系；仅设计 Mock / sandbox 骨架，不接真实系统。见 `docs/09-verification.md` §10.20。 |
 | 2026-07-11 | Demo Sandbox 口径重评估完成 | 结论：真实 CRM/ERP/OA/工单仍 No-Go；标准化模拟业务数据 Go；飞书测试群出站通知 Go；LLM Sandbox Conditional Go（只处理模拟数据与证据约束回答，生产自动答复仍 No-Go）。见 `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` 与 `docs/09-verification.md` §10.21。 |
 | 2026-07-11 | 标准模拟业务数据包完成（task-010a） | 新增 `DEMO-*` 标准模拟编号与规范 payload，覆盖产品订单、项目进度、售后工单；API-007/008 兼容旧字段并新增 `source_ref` / `source_system` / `environment` / `stage` / `payload`，可作为后续 LLM Sandbox 证据输入。见 `tasks/task-010a-demo-sandbox-standard-mock-data.md` 与 `docs/09-verification.md` §10.22。 |
+| 2026-07-12 | LLM Sandbox 适配器骨架完成（task-010b，mock-first） | 新增 `backend/app/adapters/llm_adapter.py`（disabled / mock / sandbox 三态，默认 disabled）；接入 `message_policy_service`，证据型回答改写为 `answer_type=llm_sandbox` 并透传 `source_ref` / evidence；高风险仍转人工（RISK-P2-007）、无依据 gap 不改写；`mock` 为确定性模板改写零依赖，`sandbox` 留接口本增量降级 mock。默认全量 67 passed / 6 skipped，新增 11 用例通过。见 `tasks/task-010b-llm-sandbox-adapter-mock.md` 与 `docs/09-verification.md` §10.24。 |
 
 ## 7. 已确认口径与待执行
 

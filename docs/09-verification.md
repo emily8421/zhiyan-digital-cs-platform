@@ -543,3 +543,19 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 聚焦测试：`tests/api/test_mock_business.py`、`tests/api/test_conversations.py`、`tests/api/test_scenario_packs.py` 共 16 passed；存在 2 条非阻塞 warning。
 - 本地 HTTP 场景：产品知识、标准 Demo 订单进度、高风险转人工、未知问题缺口均通过。
 - 待人工复核：手机扫码访问 `.ai/local-demo-h5-qr.svg` 对应的局域网 H5 地址。
+
+### 10.24 LLM Sandbox 适配器（mock-first，TC-062）
+
+> 2026-07-12 收口（task-010b）。范围：在回答链路加入 LLM Sandbox 适配器骨架（mock-LLM-first），把已找到证据的回答改写为自然语言；默认 `ZYCS_LLM_MODE=disabled` 不影响既有链路。不接真实 LLM、不写 / 读 key、不联网。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-062 | `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` §5、`docs/research/2026-07-11-tech-env-evaluation-llm.md` §5/§8、`backend/app/adapters/llm_adapter.py`、RISK-P2-007 | REQ-004、REQ-005、REQ-016 | 默认 disabled 下全量回归不受影响；`ZYCS_LLM_MODE=mock` 下证据型问题返回 `answer_type=llm_sandbox` 并保留 `source_ref`/evidence；高风险问题即使开启 LLM 仍转人工；无依据缺口不被改写；sandbox 缺 key 安全降级 mock | 默认 disabled 全量 67 passed / 6 skipped；mock 下 `llm_sandbox` 命中且 `source_ref` 透传；高风险覆盖 LLM（`answer_type=handoff`、`llm=null`）；gap 不改写；sandbox 缺 key 降级 mock 带 `fallback_reason`；key 不进结果 / 日志 | 通过（2026-07-12）；见 `tests/api/test_llm_adapter.py`、`tests/api/test_conversations.py`、`tests/scenarios/test_risk_fallback.py` |
+
+#### LLM Sandbox 适配器记录（2026-07-12）
+
+- 新增 `backend/app/adapters/llm_adapter.py`（照飞书三态：disabled / mock / sandbox，默认 disabled）。
+- 接入 `message_policy_service.decide_message_response`：证据型回答（mock_business / knowledge / rule）命中后改写为 `llm_sandbox`，强制透传 `source_ref` 与 evidence；高风险 handoff 在入口短路，无依据 gap 不进入 LLM。
+- `ZYCS_LLM_MODE=mock` 为确定性模板改写，零依赖、不联网、不引模型文件；`sandbox` 留接口但本增量安全降级 mock（真实调用未实现，`fallback_reason` 标明）。
+- 边界：不接真实 LLM API、不写 / 读真实 key、不发送真实隐私；状态严格标 `mock`/`disabled`，不写"已启用"。
+- 真实 LLM 调用仍受 RG-003 阻塞，需 DOC-C-005 解锁 + Phase 升级 + 安全评审 + 成本授权。
