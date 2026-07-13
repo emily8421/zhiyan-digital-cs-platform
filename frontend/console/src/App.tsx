@@ -45,6 +45,14 @@ type DetailRecord =
   | DailySummaryData
   | null;
 
+type EvidenceTone = 'default' | 'danger' | 'success' | 'neutral';
+
+type EvidenceItem = {
+  label: string;
+  value: string;
+  tone?: EvidenceTone;
+};
+
 type ConsoleState = {
   summary: DailySummaryData | null;
   conversations: ConversationListItem[];
@@ -81,6 +89,60 @@ const initialState: ConsoleState = {
 function filterByPack<T extends { scenario_pack_code?: string }>(records: T[], packCode: string): T[] {
   if (packCode === 'all') return records;
   return records.filter((record) => record.scenario_pack_code === packCode);
+}
+
+function getRecordValue(record: Exclude<DetailRecord, null>, key: string): unknown {
+  return (record as Record<string, unknown>)[key];
+}
+
+function getTextValue(record: Exclude<DetailRecord, null>, key: string): string | null {
+  const value = getRecordValue(record, key);
+  return typeof value === 'string' && value.trim() ? value : null;
+}
+
+function getMockValue(record: Exclude<DetailRecord, null>): boolean {
+  const mockValue = getRecordValue(record, 'mock') ?? getRecordValue(record, 'is_mock');
+  return mockValue === true;
+}
+
+function formatEnvironment(environment: string): string {
+  if (environment === 'demo_sandbox') return 'Demo Sandbox';
+  return environment;
+}
+
+function buildEvidenceItems(record: Exclude<DetailRecord, null>): EvidenceItem[] {
+  const items: EvidenceItem[] = [];
+  const isMock = getMockValue(record);
+  const environment = getTextValue(record, 'environment');
+  const sourceSystem = getTextValue(record, 'source_system');
+  const sourceRef = getTextValue(record, 'source_ref');
+  const scenarioPackCode = getTextValue(record, 'scenario_pack_code') ?? getTextValue(record, 'code');
+  const answerType = getTextValue(record, 'answer_type');
+  const sourceRefsValue = getRecordValue(record, 'source_refs');
+
+  if (isMock) {
+    items.push({ label: '数据口径', value: 'Mock / Demo 数据', tone: 'success' });
+  }
+  if (environment) {
+    items.push({ label: 'environment', value: formatEnvironment(environment), tone: 'neutral' });
+  }
+  if (sourceSystem) {
+    items.push({ label: 'source_system', value: sourceSystem, tone: 'neutral' });
+  }
+  if (sourceRef) {
+    items.push({ label: 'source_ref', value: sourceRef, tone: 'default' });
+  }
+  if (Array.isArray(sourceRefsValue) && sourceRefsValue.length) {
+    items.push({ label: 'source_refs', value: sourceRefsValue.map(String).join(' / '), tone: 'default' });
+  }
+  if (scenarioPackCode) {
+    items.push({ label: '场景包', value: scenarioPackCode, tone: 'neutral' });
+  }
+  if (answerType) {
+    items.push({ label: 'answer_type', value: answerType, tone: answerType === 'handoff' ? 'danger' : 'default' });
+  }
+
+  return items;
 }
 
 function App() {
@@ -295,8 +357,10 @@ function App() {
           <p>查看会话、待跟进、知识缺口、Mock 通知和日报摘要；不接真实组织或生产数据。</p>
         </div>
         <div className="header-actions">
-          <span className="demo-badge">Demo</span>
+          <span className="demo-badge">Demo Sandbox</span>
           <span className="demo-badge">Mock 数据</span>
+          <span className="demo-badge muted">真实系统未接入</span>
+          <span className="demo-badge muted">LLM 默认关闭</span>
           <div className="role-switch" role="group" aria-label="控制台角色（Demo）">
             <button
               type="button"
@@ -355,6 +419,21 @@ function App() {
           ) : null}
         </div>
         <p>{isLoading ? '加载 Demo 数据中…' : `当前列表 ${activeCount} 条，最近刷新：${lastUpdatedAt || '待刷新'}`}</p>
+      </section>
+
+      <section className="sandbox-banner" aria-label="Demo Sandbox 演示边界">
+        <div>
+          <strong>Demo Sandbox 演示模式</strong>
+          <p>
+            当前 Console 只展示 Mock / Sandbox 证据：标准模拟业务数据、可追溯 source_ref 和可选飞书测试群；真实 CRM / ERP / OA / 工单与真实 LLM 自动答复均未启用。
+          </p>
+        </div>
+        <div className="sandbox-badges" aria-label="演示状态标签">
+          <span>Mock 数据</span>
+          <span>source_ref 可追溯</span>
+          <span>真实系统 No-Go</span>
+          <span>LLM 默认关闭</span>
+        </div>
       </section>
 
       <section className="content-grid">
@@ -742,7 +821,17 @@ function MockRecordList({ records, onSelect }: { records: MockBusinessRecord[]; 
             <StatusBadge label={record.status} />
           </div>
           <p>{record.summary}</p>
-          <MetaRow values={[record.record_type, record.scenario_pack_code, record.eta ?? '无 ETA']} mock={record.mock} />
+          <MetaRow
+            values={[
+              record.record_type,
+              record.scenario_pack_code,
+              formatEnvironment(record.environment),
+              record.source_system,
+              record.source_ref,
+              record.eta ?? '无 ETA'
+            ]}
+            mock={record.mock}
+          />
         </article>
       ))}
     </div>
@@ -752,8 +841,37 @@ function MockRecordList({ records, onSelect }: { records: MockBusinessRecord[]; 
 function RecordDetail({ record }: { record: Exclude<DetailRecord, null> }) {
   return (
     <div className="detail-body">
-      <MockBadge mock={Boolean('mock' in record && record.mock)} />
+      <DemoEvidenceSummary record={record} />
       <pre>{JSON.stringify(record, null, 2)}</pre>
+    </div>
+  );
+}
+
+function DemoEvidenceSummary({ record }: { record: Exclude<DetailRecord, null> }) {
+  const evidenceItems = buildEvidenceItems(record);
+  return (
+    <div className="evidence-summary">
+      <div className="record-title">
+        <h3>演示证据摘要</h3>
+        <MockBadge mock={getMockValue(record)} />
+      </div>
+      <p>用于演示讲解的边界摘要；完整原始响应仍保留在下方 JSON 中。</p>
+      <div className="evidence-grid">
+        {evidenceItems.length ? (
+          evidenceItems.map((item) => (
+            <span key={`${item.label}-${item.value}`} className={`evidence-chip ${item.tone ?? 'default'}`}>
+              <strong>{item.label}</strong>
+              {item.value}
+            </span>
+          ))
+        ) : (
+          <span className="evidence-chip neutral">
+            <strong>演示边界</strong>
+            当前记录未提供 source_ref；请以下方 JSON 为准。
+          </span>
+        )}
+      </div>
+      <p className="boundary-note">真实业务系统、生产飞书、真实客户数据和真实 LLM 自动答复仍未接入。</p>
     </div>
   );
 }

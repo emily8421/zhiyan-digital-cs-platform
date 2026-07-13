@@ -218,6 +218,97 @@ button:disabled {
   color: #027a48;
 }
 
+.demo-badge.muted {
+  background: var(--color-neutral-soft);
+  color: var(--color-neutral);
+}
+
+.sandbox-banner {
+  align-items: flex-start;
+  background: linear-gradient(135deg, #eff6ff, #ecfdf3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+}
+
+.sandbox-banner strong {
+  color: var(--color-primary);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.sandbox-banner p,
+.evidence-summary p {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.sandbox-badges,
+.evidence-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sandbox-badges span,
+.evidence-chip {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-primary);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.evidence-summary {
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  padding: 12px;
+}
+
+.evidence-summary .record-title {
+  margin-bottom: 8px;
+}
+
+.evidence-grid {
+  margin-top: 10px;
+}
+
+.evidence-chip.default {
+  background: var(--color-primary-soft);
+}
+
+.evidence-chip.success {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.evidence-chip.danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.evidence-chip.neutral {
+  background: var(--color-neutral-soft);
+  color: var(--color-neutral);
+}
+
+.boundary-note {
+  border-top: 1px dashed var(--color-border);
+  margin-top: 12px !important;
+  padding-top: 10px;
+}
+
 .action-row {
   margin-top: 12px;
 }
@@ -303,6 +394,10 @@ button:disabled {
 
   .hero-card {
     display: block;
+  }
+
+  .sandbox-banner {
+    flex-direction: column;
   }
 
   .content-grid {

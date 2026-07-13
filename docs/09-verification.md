@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；Demo Sandbox TC-060~063 已完成，见 §6 / §10.2 / §10.4~§10.25 |
+| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；Demo Sandbox TC-060~064 已完成，见 §6 / §10.2 / §10.4~§10.26 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -577,3 +577,20 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 手机与 Console：引用 `docs/research/2026-07-13-demo-manual-acceptance.md`，同日人工确认手机 H5 可打开、可发送并收到回答，Console 可看到联动数据。
 - 清理：验收后 `8021` / `5195` / `5196` 无监听；本地二维码、runtime JSON 和临时日志不提交。
 - 边界：当前仍为本机 Mock / Sandbox Demo；真实业务系统、生产飞书、真实客户数据和真实 LLM 自动答复仍未解锁。
+
+### 10.26 Console 演示标识增强（TC-064）
+
+> 2026-07-13 收口（task-010d）。范围：增强 Web Console 演示标识，仅修改前端展示层；不改后端 API，不接真实业务系统，不启用真实 LLM。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-064 | `docs/design/frontend-interaction.md`、`docs/env/external-demo-script.md`、`tasks/task-010d-console-demo-badges.md`、`frontend/console/src/App.tsx` | REQ-004、REQ-008、REQ-011、REQ-016 | 检查 Console 顶部边界提示、Mock 业务数据列表、右侧详情栏演示证据摘要；运行 Console 构建 | 顶部展示 `Demo Sandbox`、`Mock 数据`、`真实系统未接入`、`LLM 默认关闭`；Mock 数据卡片展示 `environment` / `source_system` / `source_ref`；详情栏 JSON 前展示可读证据摘要；构建通过 | 通过（2026-07-13）；`npm run build` 通过 |
+
+#### task-010d Console 演示标识记录（2026-07-13）
+
+- Header 从 `Demo` 升级为 `Demo Sandbox`，并新增 `真实系统未接入`、`LLM 默认关闭` 标签。
+- 新增 Demo Sandbox 横幅，明确 Console 只展示 Mock / Sandbox 证据，真实 CRM / ERP / OA / 工单与真实 LLM 自动答复未启用。
+- Mock 业务数据卡片新增 `environment`、`source_system`、`source_ref`，便于演示时解释数据来源。
+- 右侧详情栏新增“演示证据摘要”，在 JSON 前展示 Mock、environment、source_system、source_ref、source_refs、场景包和 answer_type 等关键证据。
+- 验证：`npm run build` 通过。
+- 边界：本任务未修改后端 API、未新增字段、未接真实业务系统、未启用真实 LLM。
