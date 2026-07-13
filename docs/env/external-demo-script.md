@@ -7,7 +7,7 @@
 | 项 | 内容 |
 |---|---|
 | 适用阶段 | Phase2 MVP 试点启动前；Phase1 本机 Demo 已通过验收，Sprint-7 试点部署与运营配置已完成 |
-| 演示形态 | 本机三端：FastAPI 后端 `8000`、H5 客户页 `5173`、Web 控制台 `5174` |
+| 演示形态 | 本机三端：FastAPI 后端、H5 客户页、Web 控制台；默认端口为 `8000` / `5173` / `5174`，如端口被占用可按启动脚本输出改用备用端口 |
 | 演示对象 | 外部客户初步沟通、内部产品评审、售前方案预演 |
 | 核心价值 | 用 H5 承接客户问题，用场景包和知识 / 规则 / Mock 数据回答；无依据和高风险问题转人工，不编造业务事实 |
 | 数据口径 | 全部为 Mock / Demo 数据，不包含真实客户隐私、真实订单、真实合同、真实报价或生产会话 |
@@ -29,26 +29,28 @@ powershell -ExecutionPolicy Bypass -File scripts/start-local-demo.ps1
 powershell -ExecutionPolicy Bypass -File scripts/check-local-demo.ps1
 ```
 
-通过标准：
+通过标准（默认端口或显式传入备用端口均可；以命令输出为准）：
 
 ```text
 Backend health   OK
 Backend docs     OK
 H5 customer page OK
 Web console      OK
-Result: 4 / 4 reachable
+H5 proxy API      OK
+Console proxy API OK
+Result: 6 / 6 reachable
 ```
 
-检查脚本会校验 H5 / Console 的项目 identity marker；若端口返回 200 但 marker 不匹配，说明看到的可能是其他本地应用页面，必须停止占用进程或改用显式端口后再演示。
+检查脚本会校验 H5 / Console 的项目 identity marker 与前端 `/api` 代理链路；若端口返回 200 但 marker 不匹配，说明看到的可能是其他本地应用页面，必须停止占用进程或改用显式端口后再演示。若默认端口被占用，可按 runbook 使用 `-BackendPort`、`-H5Port`、`-ConsolePort`，并以后续脚本输出和 `.ai/local-demo-runtime.json` 为准。
 
 ### 1.2 访问入口
 
 | 入口 | 地址 / 文件 | 用途 |
 |---|---|---|
-| H5 客户页 | `http://127.0.0.1:5173` | 客户侧提问、查看回答、触发转人工 / 知识缺口 |
-| H5 手机扫码 | `.ai/local-demo-h5-qr.svg` | 手机同局域网扫码体验 H5 |
-| Web 控制台 | `http://127.0.0.1:5174` | 员工侧查看会话、待跟进、知识缺口、Mock 通知、日报摘要 |
-| API 文档 | `http://127.0.0.1:8000/docs` | 技术评审时查看接口契约和响应结构 |
+| H5 客户页 | 默认 `http://127.0.0.1:5173`；实际以启动脚本输出的 `H5 customer` 为准 | 客户侧提问、查看回答、触发转人工 / 知识缺口 |
+| H5 手机扫码 | `.ai/local-demo-h5-qr.svg`；实际 URL 以启动脚本输出的 `H5 phone scan` / `.ai/local-demo-runtime.json` 为准 | 手机同局域网扫码体验 H5 |
+| Web 控制台 | 默认 `http://127.0.0.1:5174`；实际以启动脚本输出的 `Web console` 为准 | 员工侧查看会话、待跟进、知识缺口、Mock 通知、日报摘要 |
+| API 文档 | 默认 `http://127.0.0.1:8000/docs`；实际以启动脚本输出的 `Backend docs` 为准 | 技术评审时查看接口契约和响应结构 |
 
 ### 1.3 演示数据建议
 
@@ -84,7 +86,7 @@ Result: 4 / 4 reachable
 
 ### 3.1 H5 客户侧：产品型场景
 
-1. 打开 H5：`http://127.0.0.1:5173`。
+1. 打开 H5：默认 `http://127.0.0.1:5173`，若使用备用端口则打开启动脚本输出的 `H5 customer` 地址。
 2. 选择或确认当前场景包为产品型客户场景包。
 3. 输入：`灯带有什么规格？`
 4. 讲解要点：
@@ -128,7 +130,7 @@ Result: 4 / 4 reachable
 
 ### 3.5 Web 控制台：运营闭环
 
-1. 打开 Console：`http://127.0.0.1:5174`。
+1. 打开 Console：默认 `http://127.0.0.1:5174`，若使用备用端口则打开启动脚本输出的 `Web console` 地址。
 2. 展示“当前演示场景包”筛选：全部 / 产品型 / 项目型。
 3. 展示以下区域：
    - 会话列表：客户问题与最近状态。
@@ -191,7 +193,7 @@ Result: 4 / 4 reachable
 | 现象 | 现场处理 |
 |---|---|
 | 三端打不开 | 重新运行 `scripts/check-local-demo.ps1`，确认是哪一端失败；查看对应 PowerShell 服务窗口日志。 |
-| H5 没响应 | 刷新页面；确认后端 `http://127.0.0.1:8000/health` 正常。 |
+| H5 没响应 | 刷新页面；按启动脚本输出的后端地址确认 `/health` 正常，再运行 `scripts/check-local-demo.ps1`（如使用备用端口需带 `-BackendPort`、`-H5Port`、`-ConsolePort`）。 |
 | 手机扫码打不开 | 改用电脑浏览器演示；会后再排查局域网、防火墙或 `-LanHost`。 |
 | 问题进入知识缺口 | 可解释为“无依据不编造”的设计；换用推荐问题继续演示。 |
 | Console 数据为空或不更新 | 先在 H5 发起新会话 / 高风险 / 未知问题，再刷新 Console。 |

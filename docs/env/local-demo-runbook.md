@@ -35,7 +35,7 @@
 ### AI 输出模板
 
 ```text
-本机 Demo 入口：
+本机 Demo 入口（以下为默认端口；如启动脚本输出了备用端口，以脚本输出和 `.ai/local-demo-runtime.json` 为准）：
 - H5 客户页（电脑）：http://127.0.0.1:5173
 - H5 手机扫码：打开 .ai/local-demo-h5-qr.svg
 - Web 控制台：http://127.0.0.1:5174
@@ -68,9 +68,9 @@ powershell -ExecutionPolicy Bypass -File scripts/start-local-demo.ps1
 
 | 服务 | 端口 | 地址 |
 |---|---:|---|
-| 后端 API | 8000 | `http://127.0.0.1:8000` |
-| H5 客户页 | 5173 | `http://127.0.0.1:5173`；手机扫码用脚本输出的 `http://<电脑局域网IP>:5173` |
-| Web 控制台 | 5174 | `http://127.0.0.1:5174` |
+| 后端 API | 默认 8000 | 默认 `http://127.0.0.1:8000`；实际以脚本输出的 `Backend health` / `Backend docs` 为准 |
+| H5 客户页 | 默认 5173 | 默认 `http://127.0.0.1:5173`；实际以脚本输出的 `H5 customer` / `H5 phone scan` 为准 |
+| Web 控制台 | 默认 5174 | 默认 `http://127.0.0.1:5174`；实际以脚本输出的 `Web console` 为准 |
 
 脚本会自动尝试识别电脑局域网 IP，并生成 H5 二维码 SVG：`.ai/local-demo-h5-qr.svg`。手机扫码前确保手机和电脑连接同一个 Wi-Fi / 局域网；若脚本未识别到正确 IP，可手动指定：
 
@@ -103,7 +103,7 @@ $env:PYTHONPATH='backend'
 python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
 ```
 
-检查地址：
+检查地址（默认端口示例；如手动改端口，请同步替换 URL 中端口）：
 
 - 健康检查：`http://127.0.0.1:8000/health`
 - API 文档：`http://127.0.0.1:8000/docs`
@@ -115,7 +115,7 @@ cd frontend/customer-h5
 npm.cmd run dev -- --host 0.0.0.0 --port 5173
 ```
 
-电脑访问：`http://127.0.0.1:5173`。手机访问需要使用电脑局域网 IP，例如 `http://192.168.1.10:5173`。
+电脑访问默认 `http://127.0.0.1:5173`。手机访问需要使用电脑局域网 IP，例如 `http://192.168.1.10:5173`。如手动把后端改到非 `8000`，需在启动前设置 `ZYCS_BACKEND_PROXY_URL=http://127.0.0.1:<后端端口>`；一键脚本会自动设置。
 
 ### 4.3 Web 控制台
 
@@ -124,18 +124,18 @@ cd frontend/console
 npm.cmd run dev -- --port 5174
 ```
 
-访问：`http://127.0.0.1:5174`。
+访问默认 `http://127.0.0.1:5174`。如手动把后端改到非 `8000`，需在启动前设置 `ZYCS_BACKEND_PROXY_URL=http://127.0.0.1:<后端端口>`；一键脚本会自动设置。
 
 ## 5. 推荐演示路径
 
-1. 打开 H5 客户页：电脑访问 `http://127.0.0.1:5173`；手机扫码访问 `.ai/local-demo-h5-qr.svg` 对应的局域网地址。
+1. 打开 H5 客户页：默认电脑访问 `http://127.0.0.1:5173`；如使用备用端口，改用启动脚本输出的 `H5 customer` 地址；手机扫码访问 `.ai/local-demo-h5-qr.svg` 对应的局域网地址。
 2. 选择或使用默认场景包，依次尝试产品咨询、项目咨询、售后、高风险问题、未知问题、进度查询。
    - 推荐标准 Demo Sandbox 编号：`DEMO-ORDER-202607-001`、`DEMO-PROJ-202607-001`、`DEMO-TICKET-202607-001`。
 3. 观察回答是否标明依据、Mock / Demo 口径、转人工或知识缺口。
-4. 打开 Web 控制台：`http://127.0.0.1:5174`。
+4. 打开 Web 控制台：默认 `http://127.0.0.1:5174`；如使用备用端口，改用启动脚本输出的 `Web console` 地址。
 5. 查看会话列表、待跟进、知识缺口、知识条目、Mock 通知、日报摘要。
 6. （Console UI，task-009d）切到「知识条目」Tab：admin 可把 `draft` 知识条目「转正为已生效」（变 `active`，绿色徽标「已生效·问答可命中」）、归档（`archived`）、或在顶部表单手动新增 `draft` 知识候选；viewer 只读。转正后再到 H5 发同类问题可验证自动命中。
-7. 如需看接口响应，可打开 `http://127.0.0.1:8000/docs`，或访问下列只读 API：
+7. 如需看接口响应，可打开默认 `http://127.0.0.1:8000/docs`，或按实际后端端口访问下列只读 API（以下以默认 `8000` 为例）：
    - `http://127.0.0.1:8000/api/v1/scenario-packs`
    - `http://127.0.0.1:8000/api/v1/conversations`
    - `http://127.0.0.1:8000/api/v1/handoffs`
