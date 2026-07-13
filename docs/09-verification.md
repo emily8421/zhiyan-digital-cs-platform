@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；Demo Sandbox TC-060~064 已完成，见 §6 / §10.2 / §10.4~§10.26 |
+| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；Demo Sandbox TC-060~065 已完成，正式演示前全链路彩排通过，见 §6 / §10.2 / §10.4~§10.27 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -594,3 +594,21 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 右侧详情栏新增“演示证据摘要”，在 JSON 前展示 Mock、environment、source_system、source_ref、source_refs、场景包和 answer_type 等关键证据。
 - 验证：`npm run build` 通过。
 - 边界：本任务未修改后端 API、未新增字段、未接真实业务系统、未启用真实 LLM。
+
+### 10.27 正式演示前全链路彩排（TC-065）
+
+> 2026-07-13 彩排。范围：正式对外演示前的本机全链路检查；不接真实 CRM / ERP / OA / 工单，不处理真实客户数据，不启用真实 LLM。本轮手机扫码已由用户人工复核通过。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-065 | `docs/env/local-demo-runbook.md`、`docs/env/external-demo-script.md`、`docs/research/2026-07-13-formal-demo-rehearsal.md`、`docs/09-verification.md` §10.25~10.26 | REQ-001、REQ-004、REQ-005、REQ-008、REQ-011、REQ-016 | 启动 Backend / H5 / Console；运行健康检查；通过 H5 代理抽样知识、标准 Demo 订单、高风险转人工、未知缺口；检查 Console Mock 数据来源字段和演示标识依据；手机扫码复核 | 三端与代理检查 `6 / 6 reachable`；四类主路径结果符合边界；Console Mock 数据含 `environment` / `source_system` / `source_ref`；手机 H5 可访问并联动 Console | 通过（2026-07-13）：电脑端全链路通过，用户确认手机 H5 与 Console 联动通过 |
+
+#### 正式演示前彩排记录（2026-07-13）
+
+- 启动：`scripts/start-local-demo.ps1 -BackendPort 8021 -H5Port 5195 -ConsolePort 5196`，在 sandbox 外启动官方脚本。
+- 健康检查：`scripts/check-local-demo.ps1 -BackendPort 8021 -H5Port 5195 -ConsolePort 5196` 通过，`6 / 6 reachable`。
+- H5 代理抽样：产品知识返回 `knowledge` / `SRC-SP-PRODUCT-001`；标准 Demo 订单返回 `mock_business` / `demo_erp:order:DEMO-ORDER-202607-001`；高风险投诉返回 `handoff` / `rule:high_risk_handoff`；未知问题返回 `gap` / `policy:knowledge_gap`。
+- Console 数据来源：`/api/v1/mock-business` 返回标准 Demo Sandbox 记录，含 `environment=demo_sandbox`、`source_system`、`source_ref`、`mock=true`。
+- Console 演示标识：task-010d 已完成并构建通过，包含 `Demo Sandbox`、`真实系统未接入`、`LLM 默认关闭` 和“演示证据摘要”。
+- 手机扫码：用户人工确认手机 H5 可打开、可发送问题并收到回答，Console 可看到联动数据；正式演示当天如网络 / IP / 端口变化仍建议重新确认。
+- 边界：当前仍为本机 Mock / Demo Sandbox；真实业务系统、生产飞书、真实客户数据和真实 LLM 自动答复仍未解锁。

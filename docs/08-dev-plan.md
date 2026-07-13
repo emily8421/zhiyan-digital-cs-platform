@@ -377,6 +377,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-12 | LLM Sandbox 适配器骨架完成（task-010b，mock-first） | 新增 `backend/app/adapters/llm_adapter.py`（disabled / mock / sandbox 三态，默认 disabled）；接入 `message_policy_service`，证据型回答改写为 `answer_type=llm_sandbox` 并透传 `source_ref` / evidence；高风险仍转人工（RISK-P2-007）、无依据 gap 不改写；`mock` 为确定性模板改写零依赖，`sandbox` 留接口本增量降级 mock。默认全量 67 passed / 6 skipped，新增 11 用例通过。见 `tasks/task-010b-llm-sandbox-adapter-mock.md` 与 `docs/09-verification.md` §10.24。 |
 | 2026-07-13 | Demo Sandbox 对外演示彩排完成（task-010c） | 官方启动脚本在 sandbox 外启动 Backend `8021`、H5 `5195`、Console `5196` 后检查 `6 / 6 reachable`；聚焦 API 回归 `17 passed, 1 warning`；HTTP 抽样覆盖知识回答、标准 Demo 订单进度、高风险转人工、未知问题缺口；手机 H5 与 Console 联动复用同日人工验收记录。见 `tasks/task-010c-demo-sandbox-demo-rehearsal.md`、`docs/research/2026-07-13-demo-sandbox-demo-rehearsal.md` 与 `docs/09-verification.md` §10.25。 |
 | 2026-07-13 | Console 演示标识增强完成（task-010d） | Console 顶部新增 Demo Sandbox 边界横幅和“真实系统未接入 / LLM 默认关闭”标签；Mock 业务数据卡片展示 `environment`、`source_system`、`source_ref`；详情栏 JSON 前新增演示证据摘要。`npm run build` 通过。见 `tasks/task-010d-console-demo-badges.md` 与 `docs/09-verification.md` §10.26。 |
+| 2026-07-13 | 正式演示前全链路彩排通过 | Backend `8021`、H5 `5195`、Console `5196` 健康检查 `6 / 6 reachable`；通过 H5 代理抽样知识、标准 Demo 订单、高风险转人工、未知缺口四类主路径；Console Mock 数据 API 返回 `environment` / `source_system` / `source_ref`；用户人工确认手机 H5 可打开、可发送问题并收到回答，Console 可看到联动数据。见 `docs/research/2026-07-13-formal-demo-rehearsal.md` 与 `docs/09-verification.md` §10.27。 |
 
 ## 7. 已确认口径与待执行
 
@@ -391,3 +392,4 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - 标准模拟业务数据包已补齐；后续 LLM Sandbox 必须基于这些 `source_ref` / `payload` 证据生成回答，不得直接自由编造。
 - Demo Sandbox 对外演示彩排已完成；后续正式对外演示应按 `docs/env/external-demo-script.md` 执行人工讲解，并在 IP、端口或网络变化时重新复核手机扫码。
 - Console 演示标识增强已完成；后续演示时可直接用控制台说明 Mock / Sandbox / source_ref / 真实系统未接入边界。
+- 正式演示前全链路彩排已通过；正式演示当天如网络、IP、端口或防火墙状态变化，仍需重新确认局域网手机访问。
