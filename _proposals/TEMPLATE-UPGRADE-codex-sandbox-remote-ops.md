@@ -2,7 +2,8 @@
 
 > 来源：zhiyan-digital-cs-platform（emily8421/zhiyan-digital-cs-platform）派生项目回流
 > 类型：模板优化提案草稿
-> 状态：待提交模板仓 issue
+> 状态：已提交模板仓 issue，待模板维护者处理
+> 模板仓 issue：https://github.com/emily8421/ai-project-template/issues/195
 > 关联：`ai/session-rules.md`、`ai/commands/README.md`、`git-guide.md`、`ai/prompts/git/*`、远端 PR / issue / merge / push 收口流程
 
 ## 背景
