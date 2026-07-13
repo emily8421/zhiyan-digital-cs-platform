@@ -19,7 +19,9 @@ param(
   [int]$TimeoutSeconds = 3,
   [string]$BackendHealthMarker = '"status":"ok"',
   [string]$H5IdentityMarker = 'name="zycs-demo-app" content="customer-h5"',
-  [string]$ConsoleIdentityMarker = 'name="zycs-demo-app" content="console"'
+  [string]$ConsoleIdentityMarker = 'name="zycs-demo-app" content="console"',
+  [string]$H5ProxyMarker = 'product_business',
+  [string]$ConsoleProxyMarker = 'summary_date'
 )
 
 $ErrorActionPreference = "Stop"
@@ -57,7 +59,9 @@ $checks = @(
   [pscustomobject]@{ Name = "Backend health"; Uri = "http://127.0.0.1:$BackendPort/health"; ExpectedContent = $BackendHealthMarker },
   [pscustomobject]@{ Name = "Backend docs"; Uri = "http://127.0.0.1:$BackendPort/docs"; ExpectedContent = "" },
   [pscustomobject]@{ Name = "H5 customer page"; Uri = "http://127.0.0.1:$H5Port"; ExpectedContent = $H5IdentityMarker },
-  [pscustomobject]@{ Name = "Web console"; Uri = "http://127.0.0.1:$ConsolePort"; ExpectedContent = $ConsoleIdentityMarker }
+  [pscustomobject]@{ Name = "Web console"; Uri = "http://127.0.0.1:$ConsolePort"; ExpectedContent = $ConsoleIdentityMarker },
+  [pscustomobject]@{ Name = "H5 proxy API"; Uri = "http://127.0.0.1:$H5Port/api/v1/scenario-packs"; ExpectedContent = $H5ProxyMarker },
+  [pscustomobject]@{ Name = "Console proxy API"; Uri = "http://127.0.0.1:$ConsolePort/api/v1/summaries/daily"; ExpectedContent = $ConsoleProxyMarker }
 )
 
 Write-Host "==> Checking local demo services"

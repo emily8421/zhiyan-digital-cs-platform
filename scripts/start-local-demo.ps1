@@ -252,6 +252,7 @@ if (-not $resolvedLanHost) {
 
 $h5LocalUrl = "http://127.0.0.1:$H5Port"
 $h5LanUrl = if ($resolvedLanHost) { "http://${resolvedLanHost}:$H5Port" } else { $null }
+$backendProxyUrl = "http://127.0.0.1:$BackendPort"
 $qrPath = $null
 if ($h5LanUrl) {
   try {
@@ -270,12 +271,12 @@ $backendProcess = Start-DemoWindow `
 $h5Process = Start-DemoWindow `
   -Name "H5 customer page (:${H5Port})" `
   -WorkingDirectory $h5Dir `
-  -Command "npm.cmd run dev -- --host 0.0.0.0 --port $H5Port --strictPort"
+  -Command "`$env:ZYCS_BACKEND_PROXY_URL='$backendProxyUrl'; npm.cmd run dev -- --host 0.0.0.0 --port $H5Port --strictPort"
 
 $consoleProcess = Start-DemoWindow `
   -Name "Web console (:${ConsolePort})" `
   -WorkingDirectory $consoleDir `
-  -Command "npm.cmd run dev -- --port $ConsolePort --strictPort"
+  -Command "`$env:ZYCS_BACKEND_PROXY_URL='$backendProxyUrl'; npm.cmd run dev -- --port $ConsolePort --strictPort"
 
 $runtimePath = Write-RuntimeState `
   -RepoRoot $repoRoot `
@@ -292,6 +293,7 @@ Write-Host ""
 Write-Host "==> URLs"
 Write-Host "- Backend health: http://127.0.0.1:$BackendPort/health"
 Write-Host "- Backend docs:   http://127.0.0.1:$BackendPort/docs"
+Write-Host "- Frontend proxy: $backendProxyUrl"
 Write-Host "- H5 customer:    $h5LocalUrl"
 Write-Host "- Web console:    http://127.0.0.1:$ConsolePort"
 if ($h5LanUrl) {
