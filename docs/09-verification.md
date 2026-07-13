@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；TC-017~052 通过，见 §6 / §10.2 / §10.4~§10.15 |
+| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；Demo Sandbox TC-060~063 已完成，见 §6 / §10.2 / §10.4~§10.25 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -559,3 +559,21 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - `ZYCS_LLM_MODE=mock` 为确定性模板改写，零依赖、不联网、不引模型文件；`sandbox` 留接口但本增量安全降级 mock（真实调用未实现，`fallback_reason` 标明）。
 - 边界：不接真实 LLM API、不写 / 读真实 key、不发送真实隐私；状态严格标 `mock`/`disabled`，不写"已启用"。
 - 真实 LLM 调用仍受 RG-003 阻塞，需 DOC-C-005 解锁 + Phase 升级 + 安全评审 + 成本授权。
+
+### 10.25 Demo Sandbox 对外演示彩排（TC-063）
+
+> 2026-07-13 收口（task-010c）。范围：按现有演示 SOP 对 Demo Sandbox 做对外演示前本机彩排；不接真实 CRM / ERP / OA / 工单，不处理真实客户数据，不启用真实 LLM。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-063 | `docs/env/local-demo-runbook.md`、`docs/env/external-demo-script.md`、`docs/research/2026-07-13-demo-sandbox-demo-rehearsal.md`、`docs/research/2026-07-13-demo-manual-acceptance.md` | REQ-001、REQ-004、REQ-005、REQ-008、REQ-011、REQ-016 | 启动 Backend / H5 / Console；运行健康检查；执行聚焦 API 回归；通过运行中后端抽样知识、标准 Demo 订单、高风险转人工、未知缺口四类问题；复核手机 H5 与 Console 联动证据 | 三端与代理检查 `6 / 6 reachable`；聚焦 API 回归通过；四类主路径 answer_type / source_ref / handoff / gap 符合边界；移动端有同日人工验收证据；验收后无目标端口占用 | 通过（2026-07-13）；见 `tasks/task-010c-demo-sandbox-demo-rehearsal.md` 与 `docs/research/2026-07-13-demo-sandbox-demo-rehearsal.md` |
+
+#### Demo Sandbox 演示彩排记录（2026-07-13）
+
+- 启动：`scripts/start-local-demo.ps1 -BackendPort 8021 -H5Port 5195 -ConsolePort 5196`。CLI sandbox 内 Vite 曾因 `spawn EPERM` 无法启动；按授权在 sandbox 外重跑官方启动脚本后成功。
+- 健康检查：`scripts/check-local-demo.ps1 -BackendPort 8021 -H5Port 5195 -ConsolePort 5196` 通过，Backend health、Backend docs、H5、Console、H5 proxy API、Console proxy API 共 `6 / 6 reachable`。
+- 聚焦回归：`$env:PYTHONPATH='backend'; python -m pytest -p no:cacheprovider tests/api/test_mock_business.py tests/api/test_conversations.py tests/api/test_scenario_packs.py` 通过，`17 passed, 1 warning`。
+- HTTP 抽样：产品知识返回 `answer_type=knowledge` / `SRC-SP-PRODUCT-001`；标准 Demo 订单进度返回 `answer_type=mock_business` / `demo_erp:order:DEMO-ORDER-202607-001`；高风险投诉返回 `answer_type=handoff` / `rule:high_risk_handoff`；未知问题返回 `answer_type=gap` / `policy:knowledge_gap`。
+- 手机与 Console：引用 `docs/research/2026-07-13-demo-manual-acceptance.md`，同日人工确认手机 H5 可打开、可发送并收到回答，Console 可看到联动数据。
+- 清理：验收后 `8021` / `5195` / `5196` 无监听；本地二维码、runtime JSON 和临时日志不提交。
+- 边界：当前仍为本机 Mock / Sandbox Demo；真实业务系统、生产飞书、真实客户数据和真实 LLM 自动答复仍未解锁。

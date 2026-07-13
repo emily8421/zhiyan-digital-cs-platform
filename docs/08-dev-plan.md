@@ -5,7 +5,7 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~6 已完成并通过本机 Demo 验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001/RG-002 Go、RG-003 Conditional Go；TC-017~052 通过，见 §2/§3 |
+| 当前状态 | Phase1 Sprint-1~6 已完成并通过本机 Demo 验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001/RG-002 Go、RG-003 Conditional Go；Demo Sandbox 标准模拟数据、LLM Sandbox mock-first 与对外演示彩排已完成（TC-060~063），见 §2/§3/§6 |
 | 最后更新 | 2026-07-11 |
 | 当前 Phase | Phase2：MVP 试点 |
 
@@ -375,6 +375,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-11 | Demo Sandbox 口径重评估完成 | 结论：真实 CRM/ERP/OA/工单仍 No-Go；标准化模拟业务数据 Go；飞书测试群出站通知 Go；LLM Sandbox Conditional Go（只处理模拟数据与证据约束回答，生产自动答复仍 No-Go）。见 `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` 与 `docs/09-verification.md` §10.21。 |
 | 2026-07-11 | 标准模拟业务数据包完成（task-010a） | 新增 `DEMO-*` 标准模拟编号与规范 payload，覆盖产品订单、项目进度、售后工单；API-007/008 兼容旧字段并新增 `source_ref` / `source_system` / `environment` / `stage` / `payload`，可作为后续 LLM Sandbox 证据输入。见 `tasks/task-010a-demo-sandbox-standard-mock-data.md` 与 `docs/09-verification.md` §10.22。 |
 | 2026-07-12 | LLM Sandbox 适配器骨架完成（task-010b，mock-first） | 新增 `backend/app/adapters/llm_adapter.py`（disabled / mock / sandbox 三态，默认 disabled）；接入 `message_policy_service`，证据型回答改写为 `answer_type=llm_sandbox` 并透传 `source_ref` / evidence；高风险仍转人工（RISK-P2-007）、无依据 gap 不改写；`mock` 为确定性模板改写零依赖，`sandbox` 留接口本增量降级 mock。默认全量 67 passed / 6 skipped，新增 11 用例通过。见 `tasks/task-010b-llm-sandbox-adapter-mock.md` 与 `docs/09-verification.md` §10.24。 |
+| 2026-07-13 | Demo Sandbox 对外演示彩排完成（task-010c） | 官方启动脚本在 sandbox 外启动 Backend `8021`、H5 `5195`、Console `5196` 后检查 `6 / 6 reachable`；聚焦 API 回归 `17 passed, 1 warning`；HTTP 抽样覆盖知识回答、标准 Demo 订单进度、高风险转人工、未知问题缺口；手机 H5 与 Console 联动复用同日人工验收记录。见 `tasks/task-010c-demo-sandbox-demo-rehearsal.md`、`docs/research/2026-07-13-demo-sandbox-demo-rehearsal.md` 与 `docs/09-verification.md` §10.25。 |
 
 ## 7. 已确认口径与待执行
 
@@ -387,3 +388,4 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Phase3 外部系统适配层契约已落盘；后续若进入编码，必须先只实现抽象 / Disabled / Mock 包装和 sandbox 骨架，不改变现有 API 行为、不调用真实生产接口。
 - Demo Sandbox 口径已重评估：为客户演示可推进标准化模拟数据、飞书测试群和 LLM Sandbox；真实业务系统、生产飞书、真实客户数据和生产 LLM 自动答复仍不解锁。
 - 标准模拟业务数据包已补齐；后续 LLM Sandbox 必须基于这些 `source_ref` / `payload` 证据生成回答，不得直接自由编造。
+- Demo Sandbox 对外演示彩排已完成；后续正式对外演示应按 `docs/env/external-demo-script.md` 执行人工讲解，并在 IP、端口或网络变化时重新复核手机扫码。
