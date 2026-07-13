@@ -51,7 +51,7 @@
 
 - 在仓库根目录执行命令。
 - 本机可用 `python`、`node`、`npm.cmd`。
-- 端口 `8000` / `5173` / `5174` 未被其他服务占用；如已占用，使用 `-BackendPort`、`-H5Port`、`-ConsolePort` 显式改端口。
+- 端口 `8000` / `5173` / `5174` 未被其他服务占用；如已占用，使用 `-BackendPort`、`-H5Port`、`-ConsolePort` 显式改端口。启动脚本会把 `-BackendPort` 同步注入前端 `ZYCS_BACKEND_PROXY_URL`，避免 H5 / Console 继续代理到默认 `8000`。
 - 前端依赖已安装；如果缺少 `node_modules/`，先分别进入 `frontend/customer-h5` 与 `frontend/console` 执行 `npm.cmd install`，新增或升级依赖前仍需人工确认。
 - Docker / PostgreSQL / pgvector 不是 Phase1 Demo 前置；当前 Demo 默认使用 Mock / 本地临时数据。
 - PowerShell 如遇 `npm.ps1` 执行策略拦截，使用 `npm.cmd`。
@@ -78,13 +78,19 @@ powershell -ExecutionPolicy Bypass -File scripts/start-local-demo.ps1
 powershell -ExecutionPolicy Bypass -File scripts/start-local-demo.ps1 -LanHost 192.168.1.10
 ```
 
+如果默认端口被其他项目占用，可显式指定备用端口；脚本会同步设置前端代理目标：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-local-demo.ps1 -BackendPort 8001 -H5Port 5175 -ConsolePort 5176
+```
+
 启动后检查：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/check-local-demo.ps1
 ```
 
-如果检查失败，通常是服务还在启动、端口被占用、identity marker 不匹配或某个窗口报错；先查看对应 PowerShell 窗口日志，再重新运行检查脚本。若某个端口返回 200 但 marker 不匹配，说明该端口可能是别的本地应用。
+如果检查失败，通常是服务还在启动、端口被占用、identity marker 不匹配、前端代理未连到后端或某个窗口报错；先查看对应 PowerShell 窗口日志，再重新运行检查脚本。若某个端口返回 200 但 marker 不匹配，说明该端口可能是别的本地应用。检查脚本会同时访问 H5 / Console 的 `/api` 代理接口，用于发现 `ECONNREFUSED 127.0.0.1:8000` 这类代理端口不一致问题。
 
 ## 4. 手动启动
 
@@ -163,6 +169,7 @@ Phase2 MVP 验收通过（M10），在 Phase1 基础上可额外演示：
 | `npm.ps1 cannot be loaded` | 使用 `npm.cmd`，不要直接用 `npm`。 |
 | `address already in use` / 端口被占用 | 关闭旧服务窗口，或用脚本参数改端口：`-BackendPort`、`-H5Port`、`-ConsolePort`。 |
 | H5 / Console 页面打不开 | 确认对应 Vite 窗口没有报错，再运行 `scripts/check-local-demo.ps1`。 |
+| Vite 窗口出现 `ECONNREFUSED 127.0.0.1:8000` | 通常是前端代理目标仍指向默认后端端口。使用 `scripts/start-local-demo.ps1` 启动，并把 `-BackendPort`、`-H5Port`、`-ConsolePort` 一起传入；不要只手动改后端端口。 |
 | 手机扫码打不开 H5 | 确认手机和电脑在同一 Wi-Fi / 局域网；确认 H5 以 `--host 0.0.0.0` 启动；检查 Windows 防火墙是否拦截 Node / Vite；必要时用 `-LanHost <电脑局域网IP>` 重启。 |
 | `.ai/local-demo-h5-qr.svg` 打不开 | 这是本地生成文件，可用浏览器打开；若不存在，重新运行 `scripts/start-local-demo.ps1`。 |
 | H5 / Console 返回 200 但检查失败 | 页面 identity marker 不匹配，通常是端口被其他本地应用占用；停止占用进程或用 `-H5Port` / `-ConsolePort` 显式改端口重启。 |
