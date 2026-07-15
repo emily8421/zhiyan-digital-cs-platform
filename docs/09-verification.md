@@ -626,11 +626,11 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 
 | TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
 |---|---|---|---|---|---|
-| TC-066 | `docs/02-srs.md` REQ-017、`docs/07-api-spec.md` API-013 | REQ-017 | 查询 / 更新场景包数据源模式；检查 `demo_sandbox` 默认值和真实模式门禁状态 | Console / API 可显示 `source_mode`、`scenario_pack`、`Not configured / No-Go`；未授权不调用真实系统 | 待执行 |
+| TC-066 | `docs/02-srs.md` REQ-017、`docs/07-api-spec.md` API-013 | REQ-017 | 查询 / 更新场景包数据源模式；检查 `demo_sandbox` 默认值和真实模式门禁状态 | Console / API 可显示 `source_mode`、`scenario_pack`、`Not configured / No-Go`；未授权不调用真实系统 | ✅ 通过（2026-07-15，task-011a） |
 | TC-067 | `docs/02-srs.md` REQ-018、`docs/06-db-design.md` Product Sandbox 表占位 | REQ-018 | 切换产品型 / 项目型场景包，分别读取 Demo Dataset、业务记录、历史会话、缺口和摘要 | 不同场景包不串用模拟数据或运行态 | 待执行 |
 | TC-068 | `docs/02-srs.md` REQ-019、`docs/08-dev-plan.md` Sprint-10 | REQ-019 | 在一个场景包内产生会话、缺口、转人工、通知和摘要后执行 Demo reset | 当前场景包恢复初始演示态，其他场景包和真实配置不受影响 | 待执行 |
 | TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | 待执行 |
-| TC-070 | `docs/02-srs.md` REQ-021、`docs/design/integration-adapters.md` | REQ-021 | 尝试启用未授权真实只读数据模式 | 返回 No-Go / Not configured；不调用真实系统；记录门禁原因 | 待执行 |
+| TC-070 | `docs/02-srs.md` REQ-021、`docs/design/integration-adapters.md` | REQ-021 | 尝试启用未授权真实只读数据模式 | 返回 No-Go / Not configured；不调用真实系统；记录门禁原因 | ✅ 通过（2026-07-15，task-011a） |
 | TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | 待执行 |
 
 #### Product Sandbox 验收口径
@@ -638,3 +638,11 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - TC-066~TC-071 全部通过后，才可声明 M11 Product Sandbox 可试用版通过验收。
 - 若真实数据模式门禁未通过，不阻塞 `demo_sandbox` 可试用版验收，但必须在 UI / API / 验收记录中标记真实数据 No-Go。
 - 任一用例发现模拟数据与真实数据空间混用、来源标识缺失或静默降级，M11 不通过。
+
+#### task-011a 验收证据（2026-07-15，TC-066 / TC-070）
+
+- 实现：API-013 `GET/PATCH /api/v1/scenario-packs/{scenario_pack_id}/source-mode`（`backend/app/api/source_mode.py` + `services/source_mode_service.py` + `schemas/source_mode.py`）；Console banner 显示当前数据源模式 + admin 切换入口（`frontend/console/src/App.tsx`）。
+- 自动化：`tests/api/test_source_mode.py` 5 用例通过；全量 `PYTHONPATH=backend python -m pytest tests/` → 72 passed / 6 skipped / 0 failed；`frontend/console` `npm run build`（tsc + vite）通过。
+- API 端到端（真实运行后端 127.0.0.1:8000）：GET 默认 `demo_sandbox` / `go` / `source_ref=demo_dataset:product_business:v1`；PATCH `customer_sandbox_readonly`（admin）→ 200 `no_go` + 4 条原因（`missing_customer_authorization` 等）、`source_ref=""`；GET 再查仍 `demo_sandbox` / `go`（真实模式未切换、未调用真实系统）；PATCH（viewer）→ 403 `FORBIDDEN_CONSOLE_WRITE`。
+- Console UI（人工确认）：banner 显示「数据源模式：Demo Sandbox」+「真实系统 No-Go」；admin 下拉选真实模式回显「真实数据 Not configured / No-Go」+ 门禁原因；切回 demo 恢复；viewer 无切换入口。
+- 未覆盖：TC-067 / TC-068 / TC-069 / TC-071（依赖 task-011b~011e），M11 Product Sandbox 可试用版尚未完成。

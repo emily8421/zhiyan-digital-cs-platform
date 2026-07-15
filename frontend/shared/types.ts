@@ -180,3 +180,13 @@ export type MockBusinessRecord = {
   payload: Record<string, unknown>;
   mock: boolean;
 };
+
+export type SourceModeData = {
+  scenario_pack_id: string;
+  source_mode: string;
+  available_modes: string[];
+  gate_status: 'go' | 'no_go';
+  gate_reasons: string[];
+  source_ref: string;
+  mock: boolean;
+};

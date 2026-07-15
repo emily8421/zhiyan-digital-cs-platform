@@ -7,6 +7,7 @@ import {
   getConsoleRole,
   getDailySummary,
   getScenarioPack,
+  getScenarioPackSourceMode,
   listConversations,
   listHandoffs,
   listKnowledgeGaps,
@@ -17,7 +18,8 @@ import {
   setConsoleRole,
   updateHandoffStatus,
   updateKnowledgeItemStatus,
-  updateKnowledgeGapStatus
+  updateKnowledgeGapStatus,
+  updateScenarioPackSourceMode
 } from '../../shared/apiClient';
 import type { ConsoleRole } from '../../shared/apiClient';
 import type {
@@ -29,7 +31,8 @@ import type {
   MockBusinessRecord,
   MockNotificationRecord,
   ScenarioPackDetail,
-  ScenarioPackSummary
+  ScenarioPackSummary,
+  SourceModeData
 } from '../../shared/types';
 
 type TabKey = 'overview' | 'conversations' | 'handoffs' | 'gaps' | 'knowledgeItems' | 'notifications' | 'scenarios' | 'mockData';
@@ -155,8 +158,15 @@ function App() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>('');
   const [role, setRole] = useState<ConsoleRole>(getConsoleRole);
   const [scenarioFilter, setScenarioFilter] = useState<string>('all');
+  const [sourceMode, setSourceMode] = useState<SourceModeData | null>(null);
+  const [sourceModeLoading, setSourceModeLoading] = useState(false);
 
   const canWrite = role === 'admin';
+
+  const sourceModePack =
+    scenarioFilter !== 'all'
+      ? scenarioFilter
+      : data.scenarioPacks[0]?.code ?? 'product_business';
 
   function handleRoleChange(next: ConsoleRole) {
     setRole(next);
@@ -166,6 +176,11 @@ function App() {
   useEffect(() => {
     void refreshConsoleData();
   }, []);
+
+  useEffect(() => {
+    if (!sourceModePack) return;
+    void refreshSourceMode(sourceModePack);
+  }, [sourceModePack]);
 
   const visibleConversations = useMemo(
     () => filterByPack(data.conversations, scenarioFilter),
@@ -238,6 +253,32 @@ function App() {
       setError(formatError(caughtError));
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function refreshSourceMode(packCode: string) {
+    try {
+      setSourceModeLoading(true);
+      const response = await getScenarioPackSourceMode(packCode);
+      setSourceMode(response.data);
+    } catch (caughtError) {
+      setError(formatError(caughtError));
+    } finally {
+      setSourceModeLoading(false);
+    }
+  }
+
+  async function handleSourceModeChange(mode: string) {
+    if (!sourceModePack) return;
+    try {
+      setSourceModeLoading(true);
+      setError(null);
+      const response = await updateScenarioPackSourceMode(sourceModePack, mode);
+      setSourceMode(response.data);
+    } catch (caughtError) {
+      setError(formatError(caughtError));
+    } finally {
+      setSourceModeLoading(false);
     }
   }
 
@@ -429,11 +470,39 @@ function App() {
           </p>
         </div>
         <div className="sandbox-badges" aria-label="演示状态标签">
+          <span>数据源模式：{sourceMode ? formatEnvironment(sourceMode.source_mode) : '加载中…'}</span>
+          {sourceMode && sourceMode.gate_status === 'no_go' ? (
+            <span className="hint-badge">真实数据 Not configured / No-Go</span>
+          ) : null}
           <span>Mock 数据</span>
           <span>source_ref 可追溯</span>
           <span>真实系统 No-Go</span>
           <span>LLM 默认关闭</span>
         </div>
+        {canWrite && sourceModePack ? (
+          <div className="source-mode-switch">
+            <label htmlFor="source-mode-select">
+              切换数据源模式（场景包 {sourceModePack}）
+            </label>
+            <select
+              id="source-mode-select"
+              value={sourceMode?.source_mode ?? 'demo_sandbox'}
+              disabled={sourceModeLoading}
+              onChange={(event) => void handleSourceModeChange(event.target.value)}
+            >
+              {(sourceMode?.available_modes ?? ['demo_sandbox']).map((mode) => (
+                <option key={mode} value={mode}>
+                  {formatEnvironment(mode)}
+                </option>
+              ))}
+            </select>
+            {sourceMode && sourceMode.gate_status === 'no_go' ? (
+              <span className="hint-badge">
+                门禁未通过：{sourceMode.gate_reasons.join('、') || '未配置'}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       <section className="content-grid">
