@@ -1,6 +1,6 @@
 # Web 控制台详细设计
 
-> **定位：详细设计。** 本文细化 Phase1 员工 / 运营 Web 控制台，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束；跨入口前端交互、状态、边界文案和验收路径见 `docs/design/frontend-interaction.md`。
+> **定位：详细设计。** 本文细化 Phase1 员工 / 运营 Web 控制台及 Phase2.5 / Phase3A Product Sandbox Console 增量，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束；跨入口前端交互、状态、边界文案和验收路径见 `docs/design/frontend-interaction.md`。
 
 ## 0. 文档元信息
 
@@ -9,11 +9,11 @@
 | 设计对象 | 员工 / 运营 Web 控制台 |
 | 文档路径 | docs/design/web-console.md |
 | 输入来源 | docs/02-srs.md / 03-prd.md / 04-architecture.md / 05-tech-spec.md / 07-api-spec.md / 09-verification.md / docs/design/frontend-interaction.md |
-| 覆盖 REQ / NFR | REQ-006、REQ-007、REQ-008、REQ-009、REQ-010、REQ-011、REQ-012、REQ-014、REQ-016 |
+| 覆盖 REQ / NFR | REQ-006、REQ-010、REQ-011、REQ-017、REQ-018、REQ-019、REQ-020、REQ-021、REQ-022 |
 | 所属 Phase | [P1] Demo（Phase2 基础权限 / 角色可见性待补） |
-| 交付物形态 | Demo |
-| 当前状态 | P1-已实现（控制台 Demo；无生产鉴权）；知识条目管理页设计已补（task-009b/009c，2026-07-11） |
-| 最后更新 | 2026-07-11 |
+| 交付物形态 | Demo / Product Sandbox |
+| 当前状态 | P1-已实现；Product Sandbox Console 增量待实现 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-4/7）、docs/09-verification.md（TC-006/009/010/011/012）、frontend/console/、tests/ |
 | UI 原型策略 | 代码原型（engineering-driven），见 ai/project-rules.md §2.7；跨入口交互见 docs/design/frontend-interaction.md |
 
@@ -168,6 +168,18 @@ sequenceDiagram
 | ID | 待确认项 | AI 建议 | 建议依据 | 备选方案 | 取舍影响 / 阻塞关系 |
 |---|---|---|---|---|---|
 | WC-C-001 | Phase2 后端权限补齐口径 | 控制台写操作（转人工 / 缺口 / 知识候选）后端补角色权限 | project-rules §1 Phase2、07 §6 | 仅前端可见性控制 | 不阻塞 Phase1；阻塞 Phase2 试点放行 |
-| WC-C-002 | Mock 数据替换为真实业务数据时点 | Phase3 接真实系统后 | project-rules §1 | 保持 Mock | 不阻塞 |
+| WC-C-002 | Mock 数据替换为真实业务数据时点 | Phase3B 接真实系统后 | project-rules §1 | 保持 Mock | 不阻塞 |
 | WC-C-003 | 场景包 / Mock 数据是否纳入控制台验收 | 纳入只读查看（TC-007/008/014） | §2 已有对应页面 | 不纳入 | 不阻塞 |
 | WC-C-004 | 知识条目 active 进检索的运营可见性 | active 条目标注「已生效·问答可命中」 | task-009c active 进检索已实现；用户确认 2026-07-11 | 仅标状态 | 不阻塞 |
+
+## Product Sandbox Console 增量（Phase2.5 / Phase3A，2026-07-15）
+
+| 区域 | 增量交互 | 边界 |
+|---|---|---|
+| 顶部 / 概览 | 显示当前 `source_mode`、`scenario_pack`、`mock/real` 和真实数据门禁状态。 | 默认 `demo_sandbox`，真实数据 No-Go 不得伪装为已接入。 |
+| 场景包详情 | 展示 Demo Dataset、虚拟客户资料包、数据版本和 seed 来源。 | 不展示真实客户隐私或真实凭据。 |
+| 运营配置 | 提供数据源模式查看 / 切换入口；真实模式只显示门禁状态。 | 未授权不调用真实系统。 |
+| Demo reset | 对当前场景包执行 reset，展示确认提示和结果。 | 不影响其他场景包或真实配置。 |
+| 详情栏 | 所有会话、Mock 业务、通知、摘要展示 `source_ref`。 | 来源缺失时不得标记验收通过。 |
+
+关联验收：TC-066~TC-071。

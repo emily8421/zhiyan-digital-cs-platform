@@ -9,11 +9,11 @@
 | 设计对象 | 后端服务分层与核心服务职责 |
 | 文档路径 | docs/design/backend-service.md |
 | 输入来源 | docs/02-srs.md / 03-prd.md / 04-architecture.md / 05-tech-spec.md / 06-db-design.md / 07-api-spec.md / docs/env/local-env.md |
-| 覆盖 REQ / NFR | REQ-002、REQ-003、REQ-004、REQ-005、REQ-006、REQ-008、REQ-009、REQ-011、REQ-012、REQ-013、REQ-016 |
+| 覆盖 REQ / NFR | REQ-002、REQ-017、REQ-018、REQ-019、REQ-020、REQ-021、REQ-022 |
 | 所属 Phase | [P1] Demo（Phase2 MVP 增量待补） |
-| 交付物形态 | Demo |
-| 当前状态 | P1-已实现（Phase1 本机 Demo 已验收，见 docs/09-verification.md §6） |
-| 最后更新 | 2026-07-09 |
+| 交付物形态 | Demo / Product Sandbox |
+| 当前状态 | P1-已实现；Product Sandbox 服务增量待实现 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-1/2/5/9）、docs/09-verification.md（TC-002/003/012）、backend/、tests/ |
 
 ## 1. 目标与范围
@@ -128,7 +128,7 @@ Mock / 降级 / Demo 与真实能力差异：
 
 | 能力 | 目标设计 | 当前实现 / Demo | Mock / 降级原因 | 是否等价真实能力 | 补齐时点 | 对验收影响 |
 |---|---|---|---|---|---|---|
-| 业务查询（business_query_service） | 真实 ERP / OA / 工单 | Mock 适配层返回演示数据 | Phase 禁止接真实系统 | 否 | Phase3（需授权 / 安全评审） | Mock 路径已验收，真实路径未覆盖 |
+| 业务查询（business_query_service） | 真实 ERP / OA / 工单 | Mock 适配层返回演示数据 | Phase 禁止接真实系统 | 否 | Phase3B（需授权 / 安全评审） | Mock 路径已验收，真实路径未覆盖 |
 | 通知（notification_service） | 真实飞书机器人 | 生成 payload + send_status=mocked | Phase 禁止真实外发 | 否 | Phase2 / 3 沙箱联调 | Mock payload 已验收 |
 | 持久化 | PostgreSQL（06 目标结构） | SQLite / JSON / 内存优先 | Phase1 不强制 DB | 结构等价、性能不等价 | Phase2 技术验证 | API 契约稳定，验收不受影响 |
 
@@ -137,5 +137,16 @@ Mock / 降级 / Demo 与真实能力差异：
 | ID | 待确认项 | AI 建议 | 建议依据 | 备选方案 | 取舍影响 / 阻塞关系 |
 |---|---|---|---|---|---|
 | BS-C-001 | 数据降级三级（PG / SQLite / JSON）与交付物形态（Demo / MVP / 产品）的绑定 | Demo=JSON / 内存、MVP=SQLite、产品=PostgreSQL | project-rules §2.5 本机优先、§2 PG 为计划方向 | Demo 即用 PG（需 Docker） | 不阻塞 Phase1；Phase2 技术验证前需定形态 |
-| BS-C-002 | 真实业务查询 / 通知的 readiness gate 解锁条件 | Phase3 接入前补授权、限流、重试、脱敏、token 管理 | project-rules §1 Phase 禁令、05 Risk | Phase2 沙箱联调先行 | 不阻塞当前；阻塞 Phase3 |
+| BS-C-002 | 真实业务查询 / 通知的 readiness gate 解锁条件 | Phase3B 接入前补授权、限流、重试、脱敏、token 管理 | project-rules §1 Phase 禁令、05 Risk | Phase2 沙箱联调先行 | 不阻塞当前；阻塞 Phase3B |
 | BS-C-003 | Phase2 增量（运营配置、基础权限）对本服务分层的影响 | 保留分层，权限落 API / 服务层中间件 | 04 P1、project-rules §1 Phase2 范围 | 独立鉴权服务 | 不阻塞；Phase2 Sprint-7 前细化 |
+
+## Product Sandbox 后端服务增量（Phase2.5 / Phase3A，2026-07-15）
+
+| 服务职责 | 输入 | 输出 | 失败 / 降级 |
+|---|---|---|---|
+| Data Source Mode Gate | `scenario_pack_id`、目标 `mode` | 当前模式、门禁状态、`source_ref` | 未授权真实模式返回 No-Go，不调用真实系统。 |
+| Demo Dataset Service | 场景包 ID | 独立模拟数据、虚拟客户资料包 | 数据缺失时返回缺口或转人工，不编造。 |
+| Demo Runtime Service | reset 请求、运行态作用域 | reset 结果、审计记录 | reset 失败时保持原状态并提示人工处理。 |
+| Source Ref Aggregator | 回答、通知、摘要、业务记录 | `source_mode`、`scenario_pack`、`source_ref`、`mock/real` | 来源缺失时阻断 Product Sandbox 验收。 |
+
+关联 API：API-013~API-016；关联 TC：TC-066~TC-071。

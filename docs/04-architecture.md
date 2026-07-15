@@ -5,19 +5,20 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
-| 最后更新 | 2026-07-09 |
-| 当前阶段 | Phase1 本机 Demo |
+| 当前状态 | Phase2 MVP 已验收；Phase2.5 / Phase3A Product Sandbox 架构边界已同步（2026-07-15） |
+| 最后更新 | 2026-07-15 |
+| 当前阶段 | Phase2.5 / Phase3A Product Sandbox 可试用版 |
 
 ## 1. 架构目标
 
-Phase1 架构目标是用最少可控模块跑通数字客服 Demo 闭环，同时为后续真实集成和产品化保留边界。
+Phase1 架构目标是用最少可控模块跑通数字客服 Demo 闭环，同时为后续真实集成和产品化保留边界。Phase2.5 / Phase3A 在此基础上补齐 Product Sandbox 架构边界：按场景包隔离模拟数据、显式数据源模式、演示运行态可重置，并对真实只读数据接入保留门禁。
 
 - **前后端清晰分层**：H5 客户页、Web 控制台和后端服务通过 REST API 通信。
 - **业务能力可替换**：知识、规则、场景包、Mock 数据和外部系统适配层独立，避免硬编码客户叙事。
 - **安全默认保守**：外部 API、LLM、真实通知、真实业务系统接入默认关闭。
 - **追溯闭环**：会话、意图、回答、缺口、转人工、通知和摘要均可追踪。
 - **本机优先**：Demo 必须在本机可运行；Docker / PostgreSQL / pgvector 不可用时允许降级为 Mock / 临时数据。
+- **Sandbox 隔离**：`demo_sandbox`、真实只读预留和生产写回预留必须在架构上隔离，不能静默混用数据。
 
 ## 2. 系统上下文图
 
@@ -30,9 +31,11 @@ flowchart LR
   backend --> knowledge_store[Knowledge & Policy Store\nPhase1 可 Mock / 本地数据]
   backend --> scenario_store[Scenario Pack Store\n产品型 / 项目型]
   backend --> mock_adapter[Mock Business Adapter\n订单 / 项目 / 售后]
+  backend --> sandbox_store[Demo Sandbox Store\n独立模拟数据 / 虚拟客户资料 / 运行态]
+  backend --> source_mode[Data Source Mode Gate\ndemo_sandbox / readonly 预留]
   backend --> notification_adapter[Notification Adapter\n飞书 Mock / payload]
   backend --> audit_store[Audit & Summary Store]
-  future_systems[未来外部系统\nPhase2+ / Phase3\nCRM / ERP / OA / 工单 / 飞书项目 / 公众号 / 小程序 / API 嵌入] -.后续集成.-> backend
+  future_systems[未来外部系统\nPhase3B+\nCRM / ERP / OA / 工单 / 飞书项目 / 公众号 / 小程序 / API 嵌入] -.授权只读 / 后续集成.-> source_mode
 ```
 
 ## 3. 组件视图
@@ -51,6 +54,8 @@ flowchart LR
 | COMP-010 | Knowledge Gap Service | 缺口发现、确认、关闭 | 后端服务层 | 内部调用 | [P1] | P1-已实现 | REQ-011 |
 | COMP-011 | Notification Adapter | 生成通知 payload、Mock 日志 | 后端适配层 | 内部调用 | [P1] | P1-已实现（默认不真实发送） | REQ-009 |
 | COMP-012 | Summary & Audit Service | 日报摘要、审计日志、脱敏 | 后端服务层 | 内部调用 | [P1] | P1-已实现 | REQ-012、REQ-016 |
+| COMP-013 | Data Source Mode Gate | 场景包级数据源模式、真实只读门禁、来源标识 | 后端服务层 / API 层 | REST / 内部调用 | [P2.5] | 待设计 | REQ-017、REQ-021、REQ-022 |
+| COMP-014 | Demo Sandbox Data Service | 场景包独立模拟数据、虚拟客户资料、演示运行态初始化 / 重置 | 后端数据 / 服务层 | 内部调用 | [P2.5] | 待设计 | REQ-018、REQ-019、REQ-020 |
 
 ## 4. 模块划分
 
@@ -97,9 +102,9 @@ flowchart TB
 | MOD-002 | frontend/console | 员工 / 运营 Web 控制台 | 后端 API | 运营 UI | 不做客户侧对话 | COMP-002 | `docs/design/web-console.md`、`docs/design/frontend-interaction.md` |
 | MOD-003 | frontend/shared | API client、类型、通用 UI | — | 共享代码 | 不含业务逻辑 | COMP-001/002 | `docs/design/frontend-interaction.md` |
 | MOD-004 | backend/app/api | REST API 路由 | HTTP 请求 | 统一响应 | 不含业务逻辑 | COMP-003 | `docs/07-api-spec.md` |
-| MOD-005 | backend/app/services | 会话、意图、知识、转人工、缺口、摘要 | API 层调用 | 业务结果 | 不直接访问外部系统 | COMP-004~010/012 | `docs/design/backend-service.md` 等 |
-| MOD-006 | backend/app/adapters | Mock 业务系统、飞书通知、未来外部系统适配 | 服务层调用 | 外部数据 / 通知 payload | 不含业务决策 | COMP-008/011 | `docs/design/mock-integrations.md` |
-| MOD-007 | backend/app/data | 场景包、知识、Mock 数据加载 | 数据文件 | 内存数据 | 不含业务逻辑 | COMP-006/007/008 | `docs/design/scenario-packs.md` |
+| MOD-005 | backend/app/services | 会话、意图、知识、转人工、缺口、摘要、数据源模式门禁、Sandbox 重置 | API 层调用 | 业务结果 | 不直接访问外部系统 | COMP-004~014 | `docs/design/backend-service.md` 等 |
+| MOD-006 | backend/app/adapters | Mock 业务系统、飞书通知、未来外部系统适配 | 服务层调用 | 外部数据 / 通知 payload | 不含业务决策；真实系统需经门禁 | COMP-008/011/013 | `docs/design/mock-integrations.md`、`docs/design/integration-adapters.md` |
+| MOD-007 | backend/app/data | 场景包、知识、Mock 数据、Demo Dataset、虚拟客户资料加载 | 数据文件 | 内存 / DB 数据 | 不含业务逻辑 | COMP-006/007/008/014 | `docs/design/scenario-packs.md` |
 | MOD-008 | backend/app/schemas | 请求响应模型 | — | Pydantic 模型 | 不含业务逻辑 | COMP-003 | `docs/07-api-spec.md` |
 | MOD-009 | backend/app/core | 配置、错误、日志、隐私保护 | — | 基础设施 | 不含业务逻辑 | 全部 | `docs/05-tech-spec.md` |
 | MOD-010 | tests/api | API 契约验证 | 后端 API | 测试结果 | — | COMP-003 | `docs/09-verification.md` |
@@ -121,7 +126,7 @@ flowchart TB
 - 异常路径：API 错误返回统一错误码；消息持久化失败时记录并降级。
 - 降级 / Mock 路径：无依据或高风险 → 创建转人工 / 知识缺口并返回兜底说明（见 Flow-003 / 004）。
 - 权限拒绝路径：Phase1 无客户侧权限；高风险不自动承诺（见 Flow-004）。
-- 外部服务不可用路径：Mock 业务适配层兜底（真实系统 Phase3 才接）。
+- 外部服务不可用路径：Mock 业务适配层兜底（真实系统 Phase3B 才接）。
 - 关联 REQ / 功能：REQ-001~005、F-001/002/003。
 - 关联 API / 数据 / TC：API-001/002、TC-001/003/004/005。
 
@@ -134,7 +139,7 @@ flowchart TB
   3. Mock Business Adapter 查询本地 Mock 数据。
 - 成功结果：返回阶段、状态、更新时间、下一步和 `mock: true` 标识。
 - 异常路径：单号无匹配 → 提示无记录或转人工；不编造进度。
-- 降级 / Mock 路径：Phase1 全程 Mock；真实业务系统 Phase3 接入。
+- 降级 / Mock 路径：Phase1 全程 Mock；真实业务系统 Phase3B 接入。
 - 权限拒绝路径：Phase1 无客户侧权限。
 - 外部服务不可用路径：真实系统未接 → Mock 兜底，明确 `mock: true`。
 - 关联 REQ / 功能：REQ-008、F-005。
@@ -172,6 +177,19 @@ flowchart TB
 - 关联 REQ / 功能：REQ-006、F-006。
 - 关联 API / 数据 / TC：API-004、TC-006。
 
+### 5.5 Product Sandbox 数据源模式与重置流程（Flow-005）
+
+- 触发：运营人员在 Console 选择场景包、查看数据源模式或执行 Demo reset。
+- 主要步骤：
+  1. Console 调用数据源模式接口读取 `source_mode`、`scenario_pack`、`source_ref` 和门禁状态。
+  2. 若模式为 `demo_sandbox`，后端从该场景包绑定的 Demo Dataset、虚拟客户资料和运行态读取数据。
+  3. 若请求真实只读模式，Data Source Mode Gate 检查授权、字段映射、安全评审和只读配置；未满足则返回 `Not configured / No-Go`。
+  4. Demo reset 仅重置当前场景包的 `DemoRuntimeState`，不得删除真实配置或其他场景包数据。
+- 成功结果：H5 / Console / API 均显示当前数据来源；演示运行态可恢复到初始态。
+- 异常路径：模式切换失败时保持原模式；真实数据不可用时不得编造，可显式降级到 `demo_sandbox`。
+- 关联 REQ / 功能：REQ-017、REQ-018、REQ-019、REQ-020、REQ-021、REQ-022；F-012~F-016。
+- 关联 API / 数据 / TC：API-013~API-016（待 `07` 同步）、TC-017~TC-022。
+
 ## 6. 运行拓扑
 
 ### 6.1 Phase1 本机拓扑
@@ -190,7 +208,7 @@ flowchart TB
   fastapi --> local_data
 ```
 
-### 6.2 Phase2+ 候选拓扑
+### 6.2 Phase2.5 / Phase3A Product Sandbox 拓扑
 
 ```mermaid
 flowchart TB
@@ -199,15 +217,19 @@ flowchart TB
     app_service[FastAPI 应用服务]
     postgres[PostgreSQL + pgvector]
     embedding[向量 / Embedding 服务（可选）]
+    demo_dataset[Demo Dataset / Virtual Customer Profile]
+    source_gate[Data Source Mode Gate]
     channels[飞书机器人 / 公众号 / 小程序入口]
-    adapters[CRM / ERP / OA / 工单系统适配器]
+    adapters[CRM / ERP / OA / 工单系统适配器（Phase3B 预留）]
   end
 
   channels --> static_assets
   static_assets --> app_service
   app_service --> postgres
+  app_service --> demo_dataset
+  app_service --> source_gate
   app_service -.可选.-> embedding
-  app_service -.Phase3.-> adapters
+  source_gate -.Phase3B 授权只读.-> adapters
 ```
 
 ## 7. 架构决策
@@ -218,6 +240,7 @@ flowchart TB
 | ADR-0002 | Phase1 外部系统全部走 Mock 适配层。 | 已确认 | 避免真实凭据、生产数据和接口授权风险。 |
 | ADR-0003 | 场景包以配置 / 数据表达，不硬编码客户叙事。 | 已确认 | 支持产品型与项目型客户复用。 |
 | ADR-0004 | 不编造优先于演示顺滑。 | 已确认 | 保护售后、价格、交期、投诉等高风险边界。 |
+| ADR-0005 | Phase2.5 / Phase3A 默认使用 `demo_sandbox`，真实数据模式只做门禁预留。 | 已确认 | 承接无真实数据时完整产品试用目标，同时避免污染真实客户数据空间。 |
 
 ## 8. REQ 到模块矩阵
 
@@ -239,17 +262,23 @@ flowchart TB
 | REQ-014 | P1 | COMP-001/002/007 | MOD-005/007 | Flow-001/002 | `docs/design/scenario-packs.md` | 已覆盖 |
 | REQ-015 | P1 | 全部 | 全部 | — | `docs/05-tech-spec.md`、`docs/09-verification.md` | 已覆盖 |
 | REQ-016 | P1 | 全部 | MOD-009 | — | `docs/05-tech-spec.md` | 已覆盖 |
+| REQ-017 | P2.5 | COMP-002/003/013 | MOD-002/004/005/008 | Flow-005 | `docs/design/frontend-interaction.md`、`docs/design/web-console.md` | 待设计 |
+| REQ-018 | P2.5 | COMP-007/014 | MOD-005/007 | Flow-005 | `docs/design/scenario-packs.md`、`docs/design/mock-integrations.md` | 待设计 |
+| REQ-019 | P2.5 | COMP-002/014 | MOD-002/005/007 | Flow-005 | `docs/design/web-console.md`、`docs/design/backend-service.md` | 待设计 |
+| REQ-020 | P2.5 | COMP-001/002/014 | MOD-001/002/007 | Flow-001/005 | `docs/design/h5-dialog.md`、`docs/design/scenario-packs.md` | 待设计 |
+| REQ-021 | P2.5 / P3B | COMP-013 | MOD-005/006/009 | Flow-005 | `docs/design/integration-adapters.md` | P2.5 门禁待设计，P3B 待授权 |
+| REQ-022 | P2.5 | COMP-001/002/003/012/013 | MOD-001/002/004/005/009 | Flow-001/005 | `docs/design/frontend-interaction.md`、`docs/07-api-spec.md` | 待设计 |
 
 ## 9. 架构视图检查表
 
 | 视图 | 必查项 | 通过标准 | 状态 |
 |---|---|---|---|
 | 系统上下文 | 用户、外部系统、核心服务、边界 | 明确哪些外部系统是真实、Mock、候选或默认关闭 | 通过（§2 `future_systems` 标注状态） |
-| 组件 / 容器 | 前端、后端、数据、适配层、测试入口 | 每个组件有 COMP-ID、职责、部署、通信、阶段、状态、REQ | 通过（§3 COMP-001~012） |
-| 模块 | 模块职责、边界、关联组件 / 设计 | 每个模块有 MOD-ID + 边界 | 通过（§4 MOD-001~012） |
-| 关键流程 | 主流程、异常、降级、权限拒绝 | 流程有 Flow-ID + 关联 API / TC | 通过（§5 Flow-001~004） |
+| 组件 / 容器 | 前端、后端、数据、适配层、测试入口 | 每个组件有 COMP-ID、职责、部署、通信、阶段、状态、REQ | 通过（§3 COMP-001~014） |
+| 模块 | 模块职责、边界、关联组件 / 设计 | 每个模块有 MOD-ID + 边界 | 通过（§4 MOD-001~012，Phase2.5 复用服务 / 数据 / 适配层模块） |
+| 关键流程 | 主流程、异常、降级、权限拒绝 | 流程有 Flow-ID + 关联 API / TC | 通过（§5 Flow-001~005） |
 | 运行拓扑 | 本机、服务器、Docker、外部服务 | 明确端口、资源、持久化、降级 | 通过（§6） |
-| ADR / 决策 | 关键技术 / 交付 / 安全决策 | 有状态、理由 | 通过（§7 ADR-0001~0004；备选 / 取舍待 P2 补） |
+| ADR / 决策 | 关键技术 / 交付 / 安全决策 | 有状态、理由 | 通过（§7 ADR-0001~0005；真实集成取舍待 Phase3B 补） |
 | 追溯 | REQ → COMP / MOD / Flow | 矩阵完整 | 通过（§8） |
 
 ## 10. 待人工确认项
@@ -263,4 +292,4 @@ flowchart TB
 | IN-C-005 | Channel Adapter Layer 设计 | 暂缓（Phase2 readiness gate） |
 | ARCH-C-001 | 04/05 doc-standards 合规改进（本次 P1 执行） | 进行中（PR-2） |
 
-> Phase1 已确认项：Docker 不强制、React + Vite + TypeScript、飞书 Mock、不编造（详见 `ai/project-rules.md` §1、`docs/05-tech-spec.md`）。未来真实业务系统适配（权限 / 审计 / 重试 / 脱敏）Phase3 启动前补 `docs/design/`。
+> Phase1 已确认项：Docker 不强制、React + Vite + TypeScript、飞书 Mock、不编造（详见 `ai/project-rules.md` §1、`docs/05-tech-spec.md`）。未来真实业务系统适配（权限 / 审计 / 重试 / 脱敏）Phase3B 启动前补 `docs/design/`。

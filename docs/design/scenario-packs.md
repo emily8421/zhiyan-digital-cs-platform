@@ -9,11 +9,11 @@
 | 设计对象 | 产品型 / 项目型客户场景包配置模型 |
 | 文档路径 | docs/design/scenario-packs.md |
 | 输入来源 | docs/02-srs.md / 03-prd.md / 04-architecture.md / 05-tech-spec.md / 06-db-design.md / 07-api-spec.md / docs/inputs/ |
-| 覆盖 REQ / NFR | REQ-007、REQ-014 |
+| 覆盖 REQ / NFR | REQ-007、REQ-014、REQ-017、REQ-018、REQ-020、REQ-022 |
 | 所属 Phase | [P1] Demo（跨大类复制属候选 / 后续阶段） |
-| 交付物形态 | Demo |
-| 当前状态 | P1-已实现（产品型 + 项目型两包） |
-| 最后更新 | 2026-07-09 |
+| 交付物形态 | Demo / Product Sandbox |
+| 当前状态 | P1-已实现；Product Sandbox 场景包数据集增量待实现 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-2）、docs/09-verification.md（TC-007/014）、backend/app/data/、tests/ |
 
 ## 1. 目标与范围
@@ -113,3 +113,16 @@ Phase1 样例：
 | SP-C-001 | 跨大类场景包复制（古镇其他标准品制造 / 服务型 / 渠道代理型） | 登记为候选 / 后续阶段，当前不投入 | docs/inputs 场景包可复制性评估（推测未验证） | 立即扩展 | 不阻塞；Phase2 / 3 再评估 |
 | SP-C-002 | 场景包版本与迁移策略 | 引入 version 字段 + 向后兼容约定 | Phase2 知识库强化可能改结构 | 无版本管理 | 不阻塞；结构变更前确认 |
 | SP-C-003 | mock_business_records 编号与 mock-integrations 对齐 | 统一编号来源（HC-ORDER / XS-PROJ / XS-TICKET） | 当前两处独立定义 | 各自维护 | 不阻塞；存在漂移风险 |
+
+## Product Sandbox 场景包数据集增量（Phase2.5 / Phase3A，2026-07-15）
+
+每个启用场景包需绑定独立 Demo Dataset，至少覆盖：知识 / FAQ、订单或项目记录、售后工单、历史会话、知识缺口、转人工样例、通知样例、日报摘要和虚拟客户资料包。
+
+| 数据块 | 要求 | 关联 REQ / TC |
+|---|---|---|
+| `data_source_mode` | 默认 `demo_sandbox`，预留真实只读模式门禁字段。 | REQ-017、REQ-021；TC-066、TC-070 |
+| `demo_dataset` | 场景包独立维护，不与其他场景包共享运行态。 | REQ-018；TC-067 |
+| `virtual_customer_profile` | 公司背景、产品目录、FAQ、角色和历史会话摘要。 | REQ-020；TC-069 |
+| `source_refs` | 每条关键数据有可展示来源引用。 | REQ-022；TC-071 |
+
+禁止把真实客户资料、真实订单或真实合同复制进场景包数据。

@@ -1,6 +1,6 @@
 # 前端交互设计
 
-> **定位：详细设计。** 本文统一描述 Phase1 客户 H5 与员工 / 运营 Web 控制台的前端交互、页面状态、边界文案、接口依赖与验收路径；不替代 `docs/design/h5-dialog.md`、`docs/design/web-console.md`，而是作为前端编码前的跨入口交互索引。
+> **定位：详细设计。** 本文统一描述 Phase1 客户 H5、员工 / 运营 Web 控制台及 Phase2.5 / Phase3A Product Sandbox 增量的前端交互、页面状态、边界文案、接口依赖与验收路径；不替代 `docs/design/h5-dialog.md`、`docs/design/web-console.md`，而是作为前端编码前的跨入口交互索引。
 
 ## 0. 文档元信息
 
@@ -8,15 +8,15 @@
 |---|---|
 | 设计对象 | H5 客户对话页 + Web 控制台跨入口前端交互索引 |
 | 文档路径 | docs/design/frontend-interaction.md |
-| 当前状态 | P1-已实现（Phase1 本机 Demo 已验收）；Phase2 增量（权限 / 缺口流转 / 运营配置交互）待补 |
-| 覆盖阶段 | [P1] Demo（Phase2 MVP 增量待补） |
-| 交付物形态 | Demo |
+| 当前状态 | P1-已实现；Phase2.5 / Phase3A Product Sandbox 交互增量已同步（2026-07-15） |
+| 覆盖阶段 | [P1] Demo；[P2.5]/[P3A] Product Sandbox |
+| 交付物形态 | Demo / Product Sandbox |
 | 覆盖入口 | H5 客户对话页、员工 / 运营 Web 控制台 |
-| 覆盖 REQ / NFR | REQ-001、REQ-002、REQ-006、REQ-007、REQ-008、REQ-010、REQ-011、REQ-013、REQ-014、REQ-015、REQ-016 |
+| 覆盖 REQ / NFR | REQ-001、REQ-002、REQ-006、REQ-007、REQ-008、REQ-010、REQ-011、REQ-013、REQ-014、REQ-015、REQ-016、REQ-017、REQ-018、REQ-019、REQ-020、REQ-021、REQ-022 |
 | 上游依据 | docs/02-srs.md、03-prd.md、04-architecture.md、05-tech-spec.md、07-api-spec.md、09-verification.md |
 | 关联详细设计 | docs/design/h5-dialog.md、docs/design/web-console.md |
 | UI 原型策略 | 代码原型（engineering-driven），见 ai/project-rules.md §2.7；探索原型见 docs/research/2026-07-09-ui-prototype-exploration.md |
-| 最后更新 | 2026-07-09 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-3/4/7）、docs/09-verification.md（TC-001~016）、frontend/customer-h5/、frontend/console/、frontend/shared/、tests/ |
 
 ## 1. 目标与范围
@@ -333,3 +333,15 @@
 | FE-DEV-001 | H5 / Console 已按本文实现并通过 TC-001~016 | §0 状态原为「Phase1 关键口径已确认」 | 设计滞后 | 回写状态为 P1-已实现 | docs/09-verification.md §6 验收记录（2026-07-06） |
 | FE-DEV-002 | Console 导航补「概览默认着陆 + 待跟进 / 缺口 / 通知 Tab 角标」 | §11 已纳入 PX-R-002 | 实现对齐 | 已对齐，无偏差 | PR #27 |
 | FE-DEV-003 | Phase2 增量（权限 / 缺口流转 / 运营配置）尚未在前端实现 | 本文覆盖 Phase1 | 后续阶段 | 登记为 Phase2 Sprint-7 前置 | project-rules §1 Phase2 |
+
+## 15. Product Sandbox 交互增量（Phase2.5 / Phase3A，2026-07-15）
+
+| 交互点 | 页面 / 入口 | 用户可见要求 | 覆盖 REQ / TC |
+|---|---|---|---|
+| 数据源模式显示 | H5 顶部 / 回答卡片、Console 顶部 / 详情栏 | 显示 `source_mode`、`scenario_pack`、`source_ref`，模拟数据必须标记为 `demo_sandbox` / `mock=true`。 | REQ-017、REQ-022；TC-066、TC-071 |
+| 场景包独立模拟数据 | H5 场景包切换、Console 场景包过滤 | 切换场景包后知识、业务记录、历史会话、缺口和摘要不得串用。 | REQ-018；TC-067 |
+| Demo reset | Console 运营配置入口 | reset 前提示作用域；reset 后只恢复当前场景包演示运行态。 | REQ-019；TC-068 |
+| 虚拟客户资料包 | H5 引导文案、Console 概览 / 场景包详情 | 展示公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话摘要。 | REQ-020；TC-069 |
+| 真实数据门禁 | Console 数据源模式设置 | 未授权真实模式显示 `Not configured / No-Go`，不得提供“已接入”暗示。 | REQ-021；TC-070 |
+
+禁止事项：不得把 `demo_sandbox` 文案写成真实上线；不得静默降级；不得定义 `docs/07-api-spec.md` 未列出的稳定接口。

@@ -6,9 +6,9 @@
 |---|---|
 | 保留 / 省略决策 | 保留；项目有持久化存储计划 |
 | 上游输入 | `docs/02-srs.md`、`docs/05-tech-spec.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 待人工确认 |
-| 最后更新 | 2026-07-09 |
-| 当前阶段 | Phase1 可降级为 Mock / 本地临时数据 |
+| 当前状态 | Phase2 MVP 已验收；Phase2.5 / Phase3A Product Sandbox 数据模型占位已同步（2026-07-15） |
+| 最后更新 | 2026-07-15 |
+| 当前阶段 | Phase2.5 / Phase3A Product Sandbox 可试用版 |
 
 ## 1. 设计原则
 
@@ -16,6 +16,7 @@
 - 表名前缀使用已确认的 `zycs_`。
 - 不存真实客户隐私、真实联系方式、真实订单、真实合同或生产会话。
 - 所有 Mock 数据必须有 `is_mock` 或来源标识。
+- Product Sandbox 必须显式区分数据源模式、演示基础数据、演示运行态和真实数据引用，Demo reset 不得影响真实配置。
 - 未来真实业务系统数据只保存必要摘要和引用 ID，不复制敏感原始数据。
 
 ## 2. 概念模型
@@ -25,6 +26,10 @@ erDiagram
   ZYCS_SCENARIO_PACKS ||--o{ ZYCS_KNOWLEDGE_ITEMS : contains
   ZYCS_SCENARIO_PACKS ||--o{ ZYCS_RULE_ITEMS : contains
   ZYCS_SCENARIO_PACKS ||--o{ ZYCS_MOCK_BUSINESS_RECORDS : contains
+  ZYCS_SCENARIO_PACKS ||--o{ ZYCS_DATA_SOURCE_MODES : configures
+  ZYCS_SCENARIO_PACKS ||--o{ ZYCS_DEMO_DATASETS : owns
+  ZYCS_SCENARIO_PACKS ||--o{ ZYCS_VIRTUAL_CUSTOMER_PROFILES : profiles
+  ZYCS_DEMO_DATASETS ||--o{ ZYCS_DEMO_RUNTIME_STATES : initializes
 
   ZYCS_CONVERSATIONS ||--o{ ZYCS_MESSAGES : records
   ZYCS_CONVERSATIONS ||--o{ ZYCS_HUMAN_HANDOFFS : creates
@@ -54,6 +59,11 @@ erDiagram
 | `zycs_notifications` | 通知 payload 与发送状态 | P1 Mock / P2 | REQ-009 |
 | `zycs_daily_summaries` | 日报摘要 | P1 | REQ-012 |
 | `zycs_audit_logs` | 审计日志 | P1 | REQ-012、REQ-016 |
+| `zycs_data_source_modes` | 场景包数据源模式与真实数据门禁状态 | P2.5 / P3B | REQ-017、REQ-021、REQ-022 |
+| `zycs_demo_datasets` | 场景包独立模拟数据包元信息 | P2.5 | REQ-018、REQ-020 |
+| `zycs_virtual_customer_profiles` | 虚拟客户资料包 | P2.5 | REQ-020 |
+| `zycs_demo_runtime_states` | 演示会话、缺口、转人工、通知、摘要等运行态快照 / 重置状态 | P2.5 | REQ-018、REQ-019 |
+| `zycs_source_refs` | API / UI / 日志来源标识引用 | P2.5 | REQ-022 |
 
 ## 4. 表结构草案
 
@@ -211,6 +221,16 @@ erDiagram
 | `safe_detail` | jsonb / text | 脱敏详情 |
 | `created_at` | timestamp | 创建时间 |
 
+### 4.12 Product Sandbox 表占位（Phase2.5 / Phase3A）
+
+| 表 | 关键字段草案 | 说明 |
+|---|---|---|
+| `zycs_data_source_modes` | `id`、`scenario_pack_id`、`mode`、`status`、`gate_status`、`source_ref`、`is_default` | `mode` 至少支持 `demo_sandbox`、`customer_sandbox_readonly`、`production_readonly`、`production_writeback` 预留；未授权真实模式必须为 No-Go。 |
+| `zycs_demo_datasets` | `id`、`scenario_pack_id`、`dataset_code`、`version`、`seed_ref`、`status`、`is_mock` | 记录场景包独立模拟知识、业务记录、历史会话、缺口和摘要的数据包版本。 |
+| `zycs_virtual_customer_profiles` | `id`、`scenario_pack_id`、`dataset_id`、`company_profile`、`catalog_ref`、`faq_ref`、`role_profile_ref` | 支撑 H5 / Console 的虚拟客户语境展示。 |
+| `zycs_demo_runtime_states` | `id`、`scenario_pack_id`、`dataset_id`、`runtime_scope`、`snapshot_ref`、`reset_at`、`status` | 保存可重置演示运行态；不得指向真实生产数据。 |
+| `zycs_source_refs` | `id`、`source_mode_id`、`scenario_pack_id`、`source_type`、`source_ref`、`mock`、`created_at` | 为回答、通知、摘要、API 响应和审计日志提供统一来源引用。 |
+
 ## 5. 索引与约束
 
 - `zycs_conversations(status, updated_at)`：控制台列表。
@@ -221,6 +241,10 @@ erDiagram
 - `zycs_human_handoffs(status, risk_level, updated_at)`：待跟进列表。
 - `zycs_knowledge_gaps(status, updated_at)`：缺口处理列表。
 - `zycs_notifications(event_type, send_status, created_at)`：通知追踪。
+- `zycs_data_source_modes(scenario_pack_id, mode, status)`：数据源模式查询和门禁。
+- `zycs_demo_datasets(scenario_pack_id, version, status)`：场景包模拟数据版本。
+- `zycs_demo_runtime_states(scenario_pack_id, dataset_id, runtime_scope)`：Demo reset 作用域。
+- `zycs_source_refs(scenario_pack_id, source_type, source_ref)`：来源标识审计。
 
 ## 6. 迁移与种子数据
 
@@ -230,10 +254,12 @@ Phase1 种子数据至少包含：
 - 项目型场景包：方案开发流程、项目里程碑、技术资料、售后工单、项目进度 Mock。
 - 高风险规则：投诉、赔付、合同、价格、交期承诺、隐私数据。
 - Mock 通知模板：转人工、知识缺口、日报摘要。
+- Phase2.5 / Phase3A Product Sandbox 种子数据至少包含：每个启用场景包一套 `demo_sandbox` 数据源模式、一套 Demo Dataset、一套虚拟客户资料包和可重置运行态初始快照。
 
 ## 7. 安全与留存
 
 - Demo 数据仅用于本地演示，不得混入真实客户数据。
+- Demo Dataset 与 Demo Runtime State 必须按 `scenario_pack_id` 隔离；重置操作只能影响演示运行态，不得删除真实数据配置或真实来源引用。
 - 日志只保存脱敏后的动作和资源 ID。
 - 后续若接入真实系统，需补充数据留存期限、删除策略、权限模型和审计报告。
 
@@ -257,9 +283,16 @@ Phase1 种子数据至少包含：
 | REQ-014 | `zycs_scenario_packs`、`zycs_mock_business_records` |
 | REQ-015 | 不适用，运行与验证需求 |
 | REQ-016 | `zycs_audit_logs`、全部含 `is_mock` 的表 |
+| REQ-017 | `zycs_data_source_modes`、`zycs_source_refs` |
+| REQ-018 | `zycs_demo_datasets`、`zycs_demo_runtime_states`、`zycs_scenario_packs` |
+| REQ-019 | `zycs_demo_runtime_states`、`zycs_audit_logs` |
+| REQ-020 | `zycs_demo_datasets`、`zycs_virtual_customer_profiles` |
+| REQ-021 | `zycs_data_source_modes`、`zycs_source_refs`、`zycs_audit_logs` |
+| REQ-022 | `zycs_source_refs`、`zycs_audit_logs`、全部对外响应相关表 |
 
 ## 9. 人工确认记录
 
 1. 表前缀已确认为 `zycs_`。
 2. Phase1 已确认不强制使用 PostgreSQL，开发计划可先用 JSON / SQLite / 内存实现。
 3. Phase1 已确认不强制引入 pgvector，默认使用关键词 / 规则匹配降级。
+4. 2026-07-15 已确认 Product Sandbox 数据边界：默认 `demo_sandbox`，模拟数据按场景包隔离，真实数据模式仅预留并需授权 / 安全评审后启用。

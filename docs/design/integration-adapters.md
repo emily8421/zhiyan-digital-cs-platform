@@ -1,6 +1,6 @@
-# Phase3 外部系统适配层契约设计
+# Phase3B 外部系统适配层契约设计
 
-> **定位：详细设计 / Phase3 准备规划。** 本文只定义 CRM / ERP / OA / 工单 / 飞书项目等真实业务系统适配层契约与 Mock / sandbox 骨架边界，不接真实生产系统。
+> **定位：详细设计 / Phase3B 准备规划。** 本文只定义 CRM / ERP / OA / 工单 / 飞书项目等真实业务系统适配层契约与 Mock / sandbox 骨架边界，不接真实生产系统。
 
 ## 0. 文档元信息
 
@@ -9,16 +9,16 @@
 | 设计对象 | 外部业务系统适配层契约（CRM / ERP / OA / 工单 / 飞书项目） |
 | 文档路径 | docs/design/integration-adapters.md |
 | 输入来源 | docs/03-prd.md / 04-architecture.md / 05-tech-spec.md / 07-api-spec.md / docs/research/2026-07-11-phase3-upgrade-evaluation.md / docs/research/2026-07-11-phase3-integration-questionnaire.md / docs/research/2026-07-11-phase3-security-data-boundary-review.md |
-| 覆盖 REQ / NFR | REQ-008、REQ-009、REQ-016 |
-| 所属 Phase | [P3] 准备规划（真实实施 No-Go） |
-| 交付物形态 | 设计契约 / Mock / sandbox 骨架口径 |
-| 当前状态 | Draft：准备规划已补；真实接入等待 RG-004/RG-005/RG-006 |
-| 最后更新 | 2026-07-11 |
+| 覆盖 REQ / NFR | REQ-017、REQ-021、REQ-022 |
+| 所属 Phase | [P2.5]/[P3A] 门禁预留；[P3B] 准备规划（真实实施 No-Go） |
+| 交付物形态 | Design / Integration |
+| 当前状态 | Phase3B 准备设计；Product Sandbox 真实数据门禁增量已同步 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md、docs/09-verification.md、backend/app/adapters/、tests/ |
 
 ## 1. 目标与范围
 
-目标：为 Phase3 真实业务系统集成定义稳定的适配层边界，使后端主链路只依赖统一契约，不直接依赖 CRM / ERP / OA / 工单 / 飞书项目的私有接口。
+目标：为 Phase3B 真实业务系统集成定义稳定的适配层边界，使后端主链路只依赖统一契约，不直接依赖 CRM / ERP / OA / 工单 / 飞书项目的私有接口。
 
 覆盖能力：
 
@@ -45,10 +45,10 @@ flowchart TD
   registry --> mock[MockBusinessAdapter]
   registry --> sandbox[SandboxBusinessAdapter]
   registry --> disabled[DisabledAdapter]
-  registry -. Phase3 Go 后 .-> crm[CRM Adapter]
-  registry -. Phase3 Go 后 .-> erp[ERP Adapter]
-  registry -. Phase3 Go 后 .-> oa[OA / Project Adapter]
-  registry -. Phase3 Go 后 .-> ticket[Ticket Adapter]
+  registry -. Phase3B Go 后 .-> crm[CRM Adapter]
+  registry -. Phase3B Go 后 .-> erp[ERP Adapter]
+  registry -. Phase3B Go 后 .-> oa[OA / Project Adapter]
+  registry -. Phase3B Go 后 .-> ticket[Ticket Adapter]
 
   mock --> normalized[NormalizedBusinessRecord]
   sandbox --> normalized
@@ -75,7 +75,7 @@ flowchart TD
 | `mock` | 本机 Demo / 默认降级 | 是 | 否 | 读取 Mock / seed 数据，响应 `mock: true` |
 | `sandbox` | 客户沙箱 / 测试环境 PoC | 否，需确认 | 仅沙箱 | 需 RG-004/RG-005 部分满足，不含生产数据 |
 | `production_readonly` | 生产只读 PoC | 否，需单独授权 | 是，只读 | 需 RG-004/RG-005/RG-006 Go；本文不解锁 |
-| `production_write` | 写回生产系统 | 否 | 是，写入 | Phase3 首轮不建议；需独立评估和审计 |
+| `production_write` | 写回生产系统 | 否 | 是，写入 | Phase3B 首轮不建议；需独立评估和审计 |
 
 建议环境变量命名预留：
 
@@ -183,11 +183,11 @@ flowchart TD
 
 | 来源 | 章节 / ID | 本设计承接内容 | 下游影响 |
 |---|---|---|---|
-| `ai/project-rules.md` | §1、§5.2 | 真实系统、真实数据、LLM 接入禁区 | Phase3 Go / No-Go |
-| `docs/03-prd.md` | Phase3 路线图、REQ-008/009/016 | 真实业务系统集成目标 | Phase3 规划 |
+| `ai/project-rules.md` | §1、§5.2 | 真实系统、真实数据、LLM 接入禁区 | Phase3B Go / No-Go |
+| `docs/03-prd.md` | Phase3B 路线图、REQ-008/009/016 | 真实业务系统集成目标 | Phase3B 规划 |
 | `docs/05-tech-spec.md` | 外部业务系统 / 适配层 / 风险 | CRM / ERP / OA / 工单适配候选 | 后端设计 |
 | `docs/07-api-spec.md` | API-007/008/009 | Mock 查询与通知现有契约 | API 扩展 |
-| `docs/research/2026-07-11-phase3-upgrade-evaluation.md` | RG-004~RG-008 | Phase3 准备规划结论 | 08 / 09 |
+| `docs/research/2026-07-11-phase3-upgrade-evaluation.md` | RG-004~RG-008 | Phase3B 准备规划结论 | 08 / 09 |
 | `docs/research/2026-07-11-phase3-integration-questionnaire.md` | 系统清单 / 字段映射 | 真实适配器输入条件 | RG-004 |
 | `docs/research/2026-07-11-phase3-security-data-boundary-review.md` | 数据 / 凭据 / 日志边界 | 安全红线 | RG-005 |
 
@@ -200,3 +200,15 @@ flowchart TD
 3. 等 RG-004/RG-005 Go 后，再按客户接口实现单系统只读 PoC。
 4. 任何真实生产只读 / 写入 / 回调 / LLM 调用都必须单独任务、单独授权、单独验收。
 
+## Product Sandbox 数据源门禁增量（Phase2.5 / Phase3A，2026-07-15）
+
+Product Sandbox 只允许默认 `demo_sandbox` 运行。`customer_sandbox_readonly`、`production_readonly`、`production_writeback` 在 Phase2.5 / Phase3A 仅作为门禁状态展示，不执行真实调用。
+
+| 模式 | 当前行为 | 解锁条件 | 失败 / 降级 |
+|---|---|---|---|
+| `demo_sandbox` | 立即允许，读取场景包独立模拟数据。 | 无真实授权要求。 | 数据缺失时转人工 / 缺口，不编造。 |
+| `customer_sandbox_readonly` | 仅显示 Not configured / No-Go，除非后续授权。 | 客户授权、字段映射、安全评审、只读验证。 | 保持 `demo_sandbox`，UI 明示模拟数据。 |
+| `production_readonly` | Phase3B 后评估。 | 正式授权、安全评审、只读接口和验收场景。 | 转人工或显式降级，不静默。 |
+| `production_writeback` | 当前 No-Go。 | Phase4+ 另行审批。 | 禁止写回。 |
+
+关联验收：TC-066、TC-070、TC-071。

@@ -9,18 +9,18 @@
 | 设计对象 | 知识库、规则、不编造、高风险转人工与知识缺口机制 |
 | 文档路径 | docs/design/knowledge-and-policy.md |
 | 输入来源 | docs/02-srs.md / 03-prd.md / 04-architecture.md / 05-tech-spec.md / 06-db-design.md / 07-api-spec.md / docs/decisions/ADR-0004-no-fabrication-and-human-handoff.md |
-| 覆盖 REQ / NFR | REQ-003、REQ-004、REQ-005、REQ-011、REQ-012、REQ-016 |
-| 所属 Phase | [P1] Demo（Phase2 知识运营强化待补） |
-| 交付物形态 | Demo |
-| 当前状态 | P1-已实现（Phase1 不编造 / 高风险兜底基线）；知识缺口 accepted 入库强化属 Sprint-9 / Phase2 |
-| 最后更新 | 2026-07-09 |
-| 下游影响 | docs/08-dev-plan.md（Sprint-2/5/9）、docs/09-verification.md（TC-004/005/011/016）、backend/app/services/、tests/ |
+| 覆盖 REQ / NFR | REQ-003、REQ-004、REQ-005、REQ-011、REQ-012、REQ-016、REQ-018、REQ-020、REQ-022 |
+| 所属 Phase | [P1] Demo；[P2] 知识运营强化；[P2.5]/[P3A] Product Sandbox |
+| 交付物形态 | Demo / MVP / Product Sandbox |
+| 当前状态 | P1-已实现；Sprint-9 知识运营强化已完成；Product Sandbox 知识 / 缺口 / 来源标识增量已同步（2026-07-15） |
+| 最后更新 | 2026-07-15 |
+| 下游影响 | docs/08-dev-plan.md（Sprint-2/5/9/10）、docs/09-verification.md（TC-004/005/011/016/067/069/071）、backend/app/services/、tests/ |
 
 ## 1. 目标与范围
 
-Phase1 采用可追溯知识 / 规则匹配，不默认启用 LLM。系统必须能说明回答来自知识、规则、Mock 数据或转人工策略；无依据时不得编造。
+Phase1 采用可追溯知识 / 规则匹配，不默认启用 LLM。系统必须能说明回答来自知识、规则、Mock 数据或转人工策略；无依据时不得编造。Phase2.5 / Phase3A Product Sandbox 需要把知识、缺口、历史会话、虚拟客户资料和来源标识绑定到场景包独立 Demo Dataset，确保模拟数据可演示完整产品能力但不污染真实数据空间。
 
-覆盖需求：REQ-003、REQ-004、REQ-005、REQ-011、REQ-012、REQ-016。
+覆盖需求：REQ-003、REQ-004、REQ-005、REQ-011、REQ-012、REQ-016、REQ-018、REQ-020、REQ-022。
 
 ## 2. 知识类型
 
@@ -99,6 +99,8 @@ Phase1 可实现到 `new`、`reviewing`、`closed`；Phase2（Sprint-9 task-009b
 | docs/07-api-spec.md | API-002 发送消息、API-004 转人工、API-005 缺口、API-006 知识候选 | 回复 / 缺口 / 转人工契约 | 代码 / 测试 |
 | docs/08-dev-plan.md | Sprint-2（seed）、Sprint-5（不编造 / 高风险兜底）、Sprint-9（缺口流转 / 审核强化） | 实现范围 | tasks |
 | docs/09-verification.md | TC-004 知识 / 规则回答、TC-005 不编造与高风险保护、TC-011 知识缺口生命周期、TC-016 安全隐私（09 §3 显式反向引用本文 TC-005/011；TC-004 经 REQ-004 推断） | 验收入口 | 验收记录 |
+| docs/02-srs.md / 03-prd.md | REQ-018/020/022、F-013/F-016、AC-008/014 | Product Sandbox 独立模拟知识、虚拟客户资料包、来源标识 | Sprint-10 / task-011b / task-011d |
+| docs/09-verification.md | TC-067、TC-069、TC-071 | Product Sandbox 数据隔离、虚拟客户资料和来源标识验收 | M11 |
 
 错误码（07 §5，按 API-002/005/006 归属推断，非 07 显式声明）：`HIGH_RISK_REQUIRES_HANDOFF`、`VALIDATION_ERROR`。
 
@@ -120,11 +122,23 @@ Phase1 可实现到 `new`、`reviewing`、`closed`；Phase2（Sprint-9 task-009b
 | accepted 缺口入库 | 人工审核后入知识库（draft） | accepted → draft 入库（task-009b）→ 转正 active（task-009c）→ 检索命中 | 范围控制 | 否 | 已实现 Sprint-9 | 知识闭环完整 |
 | active 知识进检索 | 转正后参与问答匹配 | task-009c 已实现（与 seed 统一评分） | 范围控制 | 是 | 已实现 task-009c | 知识越用越全 |
 
+## Product Sandbox 知识与来源标识增量（Phase2.5 / Phase3A，2026-07-15）
+
+| 设计点 | 要求 | 覆盖 REQ / TC |
+|---|---|---|
+| 独立模拟知识集 | 每个启用场景包的 Demo Dataset 必须包含独立知识 / FAQ / 规则摘要，不与其他场景包串用。 | REQ-018；TC-067 |
+| 虚拟客户资料 | 知识策略可读取虚拟客户资料包中的公司背景、产品目录、项目 / 售后语境和历史会话摘要，但必须标识为模拟数据。 | REQ-020；TC-069 |
+| 缺口与历史会话 | 演示运行态中的知识缺口、历史会话和入库候选只属于当前场景包。 | REQ-018、REQ-019；TC-067、TC-068 |
+| 来源标识 | 自动回复、知识命中、缺口、通知和摘要必须输出 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real`。 | REQ-022；TC-071 |
+| 不编造边界 | Demo Dataset 缺失时仍按无依据处理：生成缺口或转人工，不补写虚构事实。 | REQ-005、REQ-022；TC-005、TC-071 |
+
+禁止事项：不得把虚拟客户资料写成真实客户事实；不得用 Product Sandbox 绕过真实数据授权门禁；不得让 LLM 或规则服务在无 `source_ref` 时输出业务事实。
+
 ## 待人工确认项
 
 | ID | 待确认项 | AI 建议 | 建议依据 | 备选方案 | 取舍影响 / 阻塞关系 |
 |---|---|---|---|---|---|
-| KP-C-001 | LLM 启用边界（证据 / 不编造 / 成本 / 兜底） | Phase2 评估完成（Conditional Go，2026-07-11），不默认启用；未来走外部 LLM API，不采用本地小模型 | project-rules §1、05 RG-003、ADR-0004、`docs/research/2026-07-11-tech-env-evaluation-llm.md` | Phase3 启用 | 不阻塞当前；阻塞 LLM 上线 |
+| KP-C-001 | LLM 启用边界（证据 / 不编造 / 成本 / 兜底） | Phase2 评估完成（Conditional Go，2026-07-11），不默认启用；未来走外部 LLM API，不采用本地小模型 | project-rules §1、05 RG-003、ADR-0004、`docs/research/2026-07-11-tech-env-evaluation-llm.md` | Phase3B+ 另行确认 | 不阻塞当前；阻塞 LLM 上线 |
 | KP-C-002 | 向量检索引入时点 | Phase2 技术验证后再定 | 05 TEI 候选默认关闭 | 保持关键词匹配 | 不阻塞当前 |
 | KP-C-003 | accepted 缺口入库归属 | Sprint-9（知识运营强化） | 08 Sprint-9 输入含本文 | Phase2 早期 | 不阻塞 Phase1；Sprint-9 前确认 |
 | KP-C-004 | 高风险规则是否配置化（zycs_rule_items rule_type=risk） | 规则入 06 表，不在代码硬编码 | project-rules §5.1 场景包 / 规则须可追溯配置 | 代码内置 | 不阻塞；硬编码违反 §5.1 |

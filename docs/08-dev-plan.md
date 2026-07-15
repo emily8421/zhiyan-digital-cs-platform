@@ -5,9 +5,9 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/03-prd.md`、`docs/04-architecture.md`、`docs/05-tech-spec.md`、`docs/06-db-design.md`、`docs/07-api-spec.md` |
-| 当前状态 | Phase1 Sprint-1~6 已完成并通过本机 Demo 验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001/RG-002 Go、RG-003 Conditional Go；Demo Sandbox 标准模拟数据、LLM Sandbox mock-first、对外演示彩排与 Console 演示标识增强已完成（TC-060~064），见 §2/§3/§6 |
-| 最后更新 | 2026-07-11 |
-| 当前 Phase | Phase2：MVP 试点 |
+| 当前状态 | Phase2 MVP 已验收；Phase2.5 / Phase3A Product Sandbox 开发计划已同步（2026-07-15），待按 Sprint-10 拆任务实现 |
+| 最后更新 | 2026-07-15 |
+| 当前 Phase | Phase2.5 / Phase3A：Product Sandbox 可试用版 |
 
 ## 1. Phase1 目标
 
@@ -28,6 +28,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已完成（PR #34，2026-07-10） |
 | Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`backend/app/services/`、`docker/`、`docs/research/`、`tasks/` | 已完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046） |
 | Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | LLM 评估已完成（Conditional Go，2026-07-11）；知识运营强化已完成（2026-07-11，缺口 accepted 入库 + API-006，TC-050~052 通过） |
+| Sprint-10 | Product Sandbox 可试用版（Phase2.5 / Phase3A） | 用场景包独立模拟数据、数据源模式标识、Demo reset 和虚拟客户资料包跑完整产品试用闭环。 | F-012~F-016 | `backend/app/data/`、`backend/app/services/`、`backend/app/api/`、`frontend/`、`docs/design/`、`tests/`、`tasks/` | 待启动 |
 
 ## 3. Sprint 详情
 
@@ -327,6 +328,46 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - 不默认启用 LLM 自动答复。
 - 不把 LLM 评估结论等同于已启用。
 
+### Sprint-10：Product Sandbox 可试用版（Phase2.5 / Phase3A）
+
+#### 目标
+
+用一个或多个虚拟客户资料包与场景包独立模拟数据，跑通接近真实产品使用的完整闭环：数据源模式选择、客户 H5 问答、进度查询、高风险转人工、知识缺口、Console 看板、通知记录、日报摘要、Demo reset 和来源标识。真实数据模式仅显示门禁状态，不调用真实系统。
+
+#### 输入文档
+
+- `docs/00-scenario.md`（SC-009）
+- `docs/01-user-requirements.md`（U-013~U-019）
+- `docs/02-srs.md`（REQ-017~REQ-022）
+- `docs/03-prd.md`（F-012~F-016、AC-008~AC-014）
+- `docs/04-architecture.md`（COMP-013/014、Flow-005）
+- `docs/05-tech-spec.md`（PS-TECH-001~005）
+- `docs/06-db-design.md`、`docs/07-api-spec.md`
+- `docs/design/*` 中的 Product Sandbox 增量设计
+
+#### 修改范围
+
+- `backend/app/data/`：Demo Dataset、虚拟客户资料包、source ref / source mode seed。
+- `backend/app/services/`：数据源模式门禁、Demo reset、来源标识聚合。
+- `backend/app/api/`：API-013~API-016 契约实现。
+- `frontend/customer-h5/`、`frontend/console/`：数据源模式、来源标识、No-Go 门禁与 reset 交互。
+- `tests/`：TC-066~TC-071 自动化或手工验证入口。
+- `tasks/`：拆分 `task-011a`~`task-011e`。
+
+#### 验收标准
+
+- 每个启用场景包至少有一套独立 Demo Dataset 和虚拟客户资料包。
+- H5、Console、API、日志均显示 `source_mode`、`scenario_pack`、`source_ref` 与 `mock` / `real` 标识。
+- Demo reset 只影响当前场景包演示运行态。
+- 真实数据模式未授权时显示 `Not configured / No-Go`，不调用真实系统。
+- 完整跑通 AC-013 的产品试用闭环。
+
+#### 禁止事项
+
+- 不接真实 CRM / ERP / OA / 工单 / 生产飞书 / 真实客户数据。
+- 不把 `demo_sandbox` 描述为真实上线或真实生产数据。
+- 不静默降级；从真实模式降级到模拟数据时必须显式提示。
+
 ## 4. 任务拆分规则
 
 - 一个 Sprint 如超过 1~3 个模块，应拆分 `tasks/task-00X-*.md`。
@@ -348,6 +389,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | M8 试点部署 | Sprint-7 完成 | 单个试点客户可部署 |
 | M9 技术验证 | Sprint-8 完成 | 飞书沙箱 + DB 技术验证结论 |
 | M10 Phase2 MVP 验收 | Sprint-9 完成 | 试点客户可用，运营流程跑通 |
+| M11 Product Sandbox 可试用版 | Sprint-10 完成 | 虚拟客户完整产品试用闭环、数据源模式、Demo reset 与来源标识通过验收 |
 
 ## 6. 当前进度记录
 
@@ -378,6 +420,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-13 | Demo Sandbox 对外演示彩排完成（task-010c） | 官方启动脚本在 sandbox 外启动 Backend `8021`、H5 `5195`、Console `5196` 后检查 `6 / 6 reachable`；聚焦 API 回归 `17 passed, 1 warning`；HTTP 抽样覆盖知识回答、标准 Demo 订单进度、高风险转人工、未知问题缺口；手机 H5 与 Console 联动复用同日人工验收记录。见 `tasks/task-010c-demo-sandbox-demo-rehearsal.md`、`docs/research/2026-07-13-demo-sandbox-demo-rehearsal.md` 与 `docs/09-verification.md` §10.25。 |
 | 2026-07-13 | Console 演示标识增强完成（task-010d） | Console 顶部新增 Demo Sandbox 边界横幅和“真实系统未接入 / LLM 默认关闭”标签；Mock 业务数据卡片展示 `environment`、`source_system`、`source_ref`；详情栏 JSON 前新增演示证据摘要。`npm run build` 通过。见 `tasks/task-010d-console-demo-badges.md` 与 `docs/09-verification.md` §10.26。 |
 | 2026-07-13 | 正式演示前全链路彩排通过 | Backend `8021`、H5 `5195`、Console `5196` 健康检查 `6 / 6 reachable`；通过 H5 代理抽样知识、标准 Demo 订单、高风险转人工、未知缺口四类主路径；Console Mock 数据 API 返回 `environment` / `source_system` / `source_ref`；用户人工确认手机 H5 可打开、可发送问题并收到回答，Console 可看到联动数据。见 `docs/research/2026-07-13-formal-demo-rehearsal.md` 与 `docs/09-verification.md` §10.27。 |
+| 2026-07-15 | Product Sandbox 需求链与下游计划同步中 | `docs/00-03` 已新增 Phase2.5 / Phase3A Product Sandbox；`04-09`、`docs/design/*` 与任务拆分按 `docs/research/2026-07-15-requirements-product-sandbox-audit.md` 传播。 |
 
 ## 7. 已确认口径与待执行
 
@@ -393,3 +436,4 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Demo Sandbox 对外演示彩排已完成；后续正式对外演示应按 `docs/env/external-demo-script.md` 执行人工讲解，并在 IP、端口或网络变化时重新复核手机扫码。
 - Console 演示标识增强已完成；后续演示时可直接用控制台说明 Mock / Sandbox / source_ref / 真实系统未接入边界。
 - 正式演示前全链路彩排已通过；正式演示当天如网络、IP、端口或防火墙状态变化，仍需重新确认局域网手机访问。
+- Product Sandbox 已作为 Phase2.5 / Phase3A 近期优先级进入计划；下一步先完成设计文档和 task-011a~011e，再进入功能编码。

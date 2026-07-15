@@ -1,6 +1,6 @@
 # H5 客户对话页详细设计
 
-> **定位：详细设计。** 本文细化 Phase1 客户侧 H5 对话页，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束；跨入口前端交互、状态、边界文案和验收路径见 `docs/design/frontend-interaction.md`。
+> **定位：详细设计。** 本文细化 Phase1 客户侧 H5 对话页及 Phase2.5 / Phase3A Product Sandbox 来源标识增量，受 `docs/04-architecture.md`、`docs/07-api-spec.md` 约束；跨入口前端交互、状态、边界文案和验收路径见 `docs/design/frontend-interaction.md`。
 
 ## 0. 文档元信息
 
@@ -9,11 +9,11 @@
 | 设计对象 | 客户侧 H5 对话页 |
 | 文档路径 | docs/design/h5-dialog.md |
 | 输入来源 | docs/02-srs.md / 03-prd.md / 04-architecture.md / 05-tech-spec.md / 07-api-spec.md / 09-verification.md / docs/design/frontend-interaction.md |
-| 覆盖 REQ / NFR | REQ-001、REQ-002、REQ-003、REQ-004、REQ-005、REQ-006、REQ-007、REQ-008、REQ-016 |
+| 覆盖 REQ / NFR | REQ-001、REQ-002、REQ-004、REQ-005、REQ-008、REQ-017、REQ-018、REQ-020、REQ-022 |
 | 所属 Phase | [P1] Demo（Phase2 鉴权增量待补） |
-| 交付物形态 | Demo |
-| 当前状态 | P1-已实现（F-001 已验证） |
-| 最后更新 | 2026-07-09 |
+| 交付物形态 | Demo / Product Sandbox |
+| 当前状态 | P1-已实现；Product Sandbox H5 来源标识增量待实现 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-3）、docs/09-verification.md（TC-001/003/004/005/008）、frontend/customer-h5/、tests/ |
 | UI 原型策略 | 代码原型（engineering-driven），见 ai/project-rules.md §2.7；跨入口交互见 docs/design/frontend-interaction.md |
 
@@ -159,3 +159,11 @@ sequenceDiagram
 | H5-C-001 | Phase2 后端鉴权口径 | H5 试点保留 Demo 无登录，或补轻量会话 token | project-rules §1 Phase2、07 §6 | 强制登录 | 不阻塞 Phase1；Sprint-7 前确认 |
 | H5-C-002 | 网络超时阈值与重试次数 | 默认 10s 超时、最多 2 次重试 | Demo 本机网络环境 | 不重试 | 不阻塞 |
 | H5-C-003 | API-011（场景包详情）使用时机 | 列表已够则从依赖删除，否则在流程说明使用 | 当前 §6 列依赖但 §4 未调用 | 保留依赖 | 不阻塞；依赖一致性 |
+
+## Product Sandbox H5 增量（Phase2.5 / Phase3A，2026-07-15）
+
+- H5 必须在页面顶部或回答卡片中展示当前 `source_mode`、`scenario_pack` 和关键 `source_ref`；默认 `demo_sandbox` 不得省略。
+- 场景包切换后，快捷问题、进度查询样例和虚拟客户资料说明必须来自当前场景包 Demo Dataset。
+- 虚拟客户资料包在 H5 上以轻量说明呈现：公司背景、常问问题、产品 / 项目语境，不要求暴露全部后台字段。
+- 真实数据模式未配置时，H5 只能显示“真实数据未配置 / 当前为模拟数据”，不得展示真实查询入口。
+- 关联验收：TC-066、TC-067、TC-069、TC-071。

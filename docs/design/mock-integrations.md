@@ -9,11 +9,11 @@
 | 设计对象 | 外部系统与飞书通知的 Mock 适配层 |
 | 文档路径 | docs/design/mock-integrations.md |
 | 输入来源 | docs/02-srs.md / 03-prd.md / 04-architecture.md / 05-tech-spec.md / 06-db-design.md / 07-api-spec.md / docs/env/local-env.md |
-| 覆盖 REQ / NFR | REQ-008、REQ-009、REQ-014、REQ-016 |
-| 所属 Phase | [P1] Demo（真实集成属 Phase3） |
-| 交付物形态 | Demo |
-| 当前状态 | P1-已实现（Mock 适配层；真实集成默认关闭） |
-| 最后更新 | 2026-07-09 |
+| 覆盖 REQ / NFR | REQ-008、REQ-014、REQ-017、REQ-018、REQ-019、REQ-022 |
+| 所属 Phase | [P1] Demo；[P2.5]/[P3A] Product Sandbox；真实集成属 Phase3B |
+| 交付物形态 | Demo / Product Sandbox |
+| 当前状态 | P1-已实现；Product Sandbox Mock 数据源模式增量待实现 |
+| 最后更新 | 2026-07-15 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-2/8）、docs/09-verification.md（TC-008/009/016）、backend/app/adapters/、tests/ |
 
 ## 1. 目标与范围
@@ -94,7 +94,7 @@ Demo Sandbox 标准模拟数据（task-010a）在保留上述旧编号兼容的�
 
 ## 5. 真实集成升级条件
 
-进入 Phase2 / Phase3 前需另行确认：
+进入 Phase2.5 / Phase3B 前需另行确认：
 
 - 外部系统授权方式和测试环境。
 - 数据最小化策略。
@@ -135,9 +135,9 @@ Demo Sandbox 标准模拟数据（task-010a）在保留上述旧编号兼容的�
 ## 幂等、重试、超时与限流基线
 
 - **幂等**：Mock 查询按 `record_type + external_ref` 幂等（同编号同结果）；通知按 `event_type + 关联对象 + 时间窗` 去重。
-- **重试**：Phase1 Mock 路径不重试（本地数据，无瞬态失败）；真实集成接入后按适配器定义重试（默认 3 次、指数退避，Phase3 前确认）。
-- **超时**：Mock 路径无外部 IO，不设超时；真实适配器默认超时 5s（Phase3 前确认）。
-- **限流**：Phase1 不限流（本机 Demo）；真实集成按 token 配额与 429 退避（Phase3 前确认）。
+- **重试**：Phase1 Mock 路径不重试（本地数据，无瞬态失败）；真实集成接入后按适配器定义重试（默认 3 次、指数退避，Phase3B 前确认）。
+- **超时**：Mock 路径无外部 IO，不设超时；真实适配器默认超时 5s（Phase3B 前确认）。
+- **限流**：Phase1 不限流（本机 Demo）；真实集成按 token 配额与 429 退避（Phase3B 前确认）。
 
 ## 失败、异常与降级路径
 
@@ -151,14 +151,22 @@ Mock 与真实能力差异：
 
 | 能力 | 目标设计 | 当前实现 / Demo | Mock / 降级原因 | 是否等价真实能力 | 补齐时点 | 对验收影响 |
 |---|---|---|---|---|---|---|
-| 业务查询 | 真实 ERP / OA / 工单 | Mock 适配层 | Phase 禁令 | 否 | Phase3 | Mock 已验收 |
+| 业务查询 | 真实 ERP / OA / 工单 | Mock / Product Sandbox 适配层 | Phase 禁令 | 否 | Phase3B | Mock 已验收，Product Sandbox 待实现 |
 | 飞书通知 | 真实飞书机器人 | payload + `mocked` | Phase 禁令 | 否 | Phase2 / 3 沙箱 | Mock 已验收 |
 
 ## 待人工确认项
 
 | ID | 待确认项 | AI 建议 | 建议依据 | 备选方案 | 取舍影响 / 阻塞关系 |
 |---|---|---|---|---|---|
-| MI-C-001 | 真实集成 readiness（授权 / 测试环境） | Phase3 前补外部系统授权与沙箱 | project-rules §1 | Phase2 沙箱先行 | 阻塞 Phase3 真实集成 |
+| MI-C-001 | 真实集成 readiness（授权 / 测试环境） | Phase3B 前补外部系统授权与沙箱 | project-rules §1 | Phase2 沙箱先行 | 阻塞 Phase3B 真实集成 |
 | MI-C-002 | 数据最小化策略 | 只取演示必要字段 | project-rules §5.1 / §1 | 全量返回 | 不阻塞；隐私合规相关 |
-| MI-C-003 | 错误重试 / 限流基线 | 真实接入时补（3 次 / 指数退避 / 5s 超时 / 429 退避） | 本设计「幂等重试超时限流基线」 | 按适配器自定义 | 不阻塞 Phase1；阻塞 Phase3 |
+| MI-C-003 | 错误重试 / 限流基线 | 真实接入时补（3 次 / 指数退避 / 5s 超时 / 429 退避） | 本设计「幂等重试超时限流基线」 | 按适配器自定义 | 不阻塞 Phase1；阻塞 Phase3B |
 | MI-C-004 | token / secret 管理 | 真实接入时用 secrets / 环境变量，不入库不入日志 | project-rules §5.2 | 配置文件明文 | 不阻塞；阻塞真实接入 |
+
+## Product Sandbox Mock 集成增量（Phase2.5 / Phase3A，2026-07-15）
+
+- Mock 适配器需从场景包绑定的 Demo Dataset 读取订单 / 项目 / 售后记录，并返回 `source_mode=demo_sandbox`、`scenario_pack`、`source_ref`、`mock=true`。
+- Demo reset 不重置基础 Demo Dataset，只重置运行态（会话、缺口、转人工、通知、摘要等）。
+- Mock 查询无记录时不编造；提示“当前演示数据未包含该记录”，可转人工。
+- 与真实适配器的边界：Product Sandbox 可模拟业务结果，但不等价于真实系统集成。
+- 关联验收：TC-067、TC-068、TC-071。

@@ -5,10 +5,10 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/04-architecture.md`、`docs/env/local-env.md`、`ai/project-rules.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 Conditional Go 已确认（2026-07-09）；RG-001（飞书出站通知沙箱）Go（2026-07-11）、RG-002（PostgreSQL/pgvector）技术验证 Go（2026-07-10，见 §14）、RG-003（LLM）评估完成 Conditional Go（2026-07-11，见 §14）；Demo Sandbox 口径已重评估（标准模拟数据 + 飞书测试群 + LLM Sandbox 可演示，真实系统仍 No-Go） |
-| 最后更新 | 2026-07-11 |
-| 当前阶段 | Phase2：MVP 试点 |
-| 覆盖架构组件 | COMP-001~012（见 `docs/04-architecture.md` §3） |
+| 当前状态 | Phase2 MVP 已验收；Phase2.5 / Phase3A Product Sandbox 技术约束已同步（2026-07-15）；真实系统与生产 LLM 仍 No-Go |
+| 最后更新 | 2026-07-15 |
+| 当前阶段 | Phase2.5 / Phase3A：Product Sandbox 可试用版 |
+| 覆盖架构组件 | COMP-001~014（见 `docs/04-architecture.md` §3） |
 
 ## 1. 技术栈
 
@@ -20,8 +20,9 @@
 | 数据库 | PostgreSQL + pgvector | 计划方向，Phase1 可降级 | Docker 不可用时先 Mock / 本地临时数据。 |
 | 向量检索 | pgvector / TEI | 预留，默认关闭 | Phase1 不强制向量服务。 |
 | 通知 | 飞书机器人适配 | Phase2 沙箱 Go | 默认 Mock；显式 sandbox 可发送到飞书测试群。 |
-| 外部业务系统 | CRM / ERP / OA / 工单适配 | 预留，Phase3 | Phase1 仅 Mock。 |
+| 外部业务系统 | CRM / ERP / OA / 工单适配 | 预留，Phase3B | Phase1 / Product Sandbox 均不接真实系统。 |
 | LLM | 外部 LLM API | 默认关闭；Demo Sandbox Conditional Go | 可在显式 sandbox 模式下只处理模拟数据；生产自动答复仍 No-Go。 |
+| Product Sandbox 数据源模式 | 配置 / 数据文件 + 后端门禁 | Phase2.5 / Phase3A 待设计 | 默认 `demo_sandbox`；真实只读模式仅预留，不满足门禁时显示 No-Go。 |
 
 ## 2. 本机环境约束
 
@@ -102,6 +103,9 @@ Phase1 必须能本机运行：
 | Mock 业务数据 | JSON / seed 数据 | `zycs_mock_business_records` |
 | 转人工 / 缺口 | 本地临时存储或 PostgreSQL | `zycs_human_handoffs`、`zycs_knowledge_gaps` |
 | 通知 / 摘要 / 审计 | 本地临时存储或 PostgreSQL | `zycs_notifications`、`zycs_daily_summaries`、`zycs_audit_logs` |
+| 数据源模式 / 来源标识 | 配置 / seed 数据 | `zycs_data_source_modes`、`zycs_source_refs` |
+| Demo Dataset / 虚拟客户资料 | JSON / seed 数据 | `zycs_demo_datasets`、`zycs_virtual_customer_profiles` |
+| Demo 运行态 | 本地临时存储或 PostgreSQL | `zycs_demo_runtime_states` |
 
 数据库表前缀已确认为 `zycs_`。
 
@@ -111,6 +115,7 @@ Phase1 必须能本机运行：
 - 响应统一包含 `request_id`，错误响应包含 `code`、`message`、`details`。
 - H5 和 Web 控制台均只调用后端 API，不直接读取本地数据文件。
 - 外部通知 API 默认不真实发送，只记录 payload。
+- Product Sandbox API 必须统一返回 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；真实数据未授权时返回门禁状态，不调用真实系统。
 - API 契约见 `docs/07-api-spec.md`。
 
 ## 8. 安全与合规
@@ -119,6 +124,8 @@ Phase1 必须能本机运行：
 - 不把 token、密钥、账号密码写入日志、文档或测试数据。
 - 不自动承诺价格、交期、赔付、合同、法律责任或售后结论。
 - 默认不访问外部网络和付费服务。
+- `demo_sandbox` 数据不得写入真实客户数据空间；Demo reset 只能作用于当前场景包演示运行态。
+- 真实数据模式启用前必须完成客户授权、字段映射、安全评审和只读验证；未满足时不得静默降级或伪装为真实数据。
 - 如后续启用 LLM，必须新增安全评审：提示词边界、检索证据、成本上限、失败兜底、人工复核。
 
 ## 9. 资源评估与降级策略
@@ -130,6 +137,8 @@ Phase1 必须能本机运行：
 | TEI / Embedding | 远程或容器服务 | 不启用 | Phase1 默认关闭；无 GPU / 无服务器 / 成本未纳入 Phase1 |
 | 飞书通知 | 真实机器人 webhook | Mock payload + 日志 | Phase1 不授权外部联网 / 不配置真实凭据 |
 | LLM | 受控 API 调用 | 不启用 | Phase1 默认关闭；后续需另行确认成本、安全、准确性 |
+| 真实数据只读模式 | 客户授权沙箱 / 生产只读接口 | `demo_sandbox`，且 UI / API 明确显示模拟数据 | 授权、字段映射、安全评审或只读验证未通过 |
+| Demo reset | 重置当前场景包 `DemoRuntimeState` | 保持原状态并提示人工处理 | 重置失败或存在数据隔离风险 |
 
 ## 10. 编码约定
 
@@ -165,7 +174,7 @@ Phase1 必须能本机运行：
 
 | Phase | 允许 | 禁止 | Mock / 降级 | 技术状态说明 | 权威源 |
 |---|---|---|---|---|---|
-| Phase2 | 强化知识库 / 缺口流转 / 权限 / 运营配置；飞书沙箱联调；PostgreSQL/pgvector 技术验证；单个试点客户部署；Demo Sandbox 演示准备 | 真实 CRM/ERP/OA/工单（Phase3）；多租户 / 计费（Phase4）；LLM 生产自动答复；真实客户隐私 / 生产会话 | 飞书测试群可演示；标准模拟数据可演示；LLM Sandbox 只处理模拟数据；DB 验证不作功能前置；Mock / 降级路径保留 | Conditional Go（2026-07-09）；Demo Sandbox Conditional Go（2026-07-11） | `ai/project-rules.md` §1、`docs/03-prd.md` §3、`docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` |
+| Phase2 | 强化知识库 / 缺口流转 / 权限 / 运营配置；飞书沙箱联调；PostgreSQL/pgvector 技术验证；单个试点客户部署；Demo Sandbox 演示准备 | 真实 CRM/ERP/OA/工单（Phase3B）；多租户 / 计费（Phase4）；LLM 生产自动答复；真实客户隐私 / 生产会话 | 飞书测试群可演示；标准模拟数据可演示；LLM Sandbox 只处理模拟数据；DB 验证不作功能前置；Mock / 降级路径保留 | Conditional Go（2026-07-09）；Demo Sandbox Conditional Go（2026-07-11） | `ai/project-rules.md` §1、`docs/03-prd.md` §3、`docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` |
 
 ## 13. 技术风险与验证计划（P0 补强，2026-07-09）
 
@@ -175,14 +184,14 @@ Phase1 必须能本机运行：
 |---|---|---|---|---|---|---|---|
 | RISK-P2-001 | Docker 不可用阻塞 PostgreSQL/pgvector | Sprint-8 需 DB 技术验证 | 影响 DB 验证节奏 | 已解除（2026-07-10） | Docker 修复 + 技术环境评估 | Sprint-8 / RG-002 | Docker 可用或确认降级可接受（已解除：Docker Desktop 4.76.0 可用） |
 | RISK-P2-005 | ivfflat 索引小数据低召回 | pgvector 向量检索 | 影响检索召回 | 已知，不阻塞 | 数据量足后评估 HNSW | Sprint-9 / 知识运营 | 数据量足或改 HNSW |
-| RISK-P2-006 | embedding 维度 / 方案未定 | 向量字段启用 | 向量检索暂不可用 | 待 embedding 方案（Phase2 默认关闭） | 关键词 / 规则匹配降级 | Sprint-9 / Phase3 | embedding 方案确定 |
+| RISK-P2-006 | embedding 维度 / 方案未定 | 向量字段启用 | 向量检索暂不可用 | 待 embedding 方案（Phase2 默认关闭） | 关键词 / 规则匹配降级 | Sprint-9 / Phase3B | embedding 方案确定 |
 | RISK-P2-002 | 飞书真实通知权限 / 回调边界未定 | Sprint-8 沙箱联调 | 影响员工侧触达 | 出站通知沙箱 Go；事件回调后置 | 沙箱联调 + 权限确认 | Sprint-8 / RG-001 | 真实生产群 / 生产组织数据仍需另行授权；回调另拆任务 |
 | RISK-P2-003 | LLM 不编造 / 成本 / 兜底边界未评估 | Sprint-9 LLM 评估 | 阻塞 LLM 启用决策 | 已评估（2026-07-11）→ Conditional Go；Demo Sandbox 可只处理模拟数据；生产自动答复仍阻塞 | LLM 专项评估 + Demo Sandbox 评估 | Sprint-9 / RG-003 / TC-059 | 模拟数据 Sandbox 可进入；真实客户数据 / 生产自动答复另需安全评审 + 成本授权 |
 | RISK-P2-004 | 沙箱内 Vite `spawn EPERM` | 前端 build / dev | 沙箱内构建失败 | 已接受 | 非沙箱本机运行 | TC-015 | 非沙箱环境 |
-| RISK-P2-007 | LLM 幻觉承诺（价格 / 合同 / 赔付 / 交期） | LLM 启用后绕过高风险规则 | 业务承诺风险 | 候选，未启用 | 高风险关键词强制转人工，LLM 不得覆盖；温度调低 + system prompt 约束 | Phase3 LLM 启用前 | ADR-0004 在 LLM 链路强制执行 + 测试覆盖 |
-| RISK-P2-008 | LLM 成本失控 | 无预算上限 / 缓存 | 费用超支 | 候选，未启用 | 预算上限 + 告警 + 缓存 + 限流 | Phase3 LLM 启用前 | 成本授权 + 预算配置 |
-| RISK-P2-009 | 客户隐私泄露给 LLM | 真实隐私 / 订单 / 合同入 prompt | 合规风险 | 候选，未启用 | PII 脱敏 + 不发送真实隐私 / 合同 / 订单 / 联系方式 | Phase3 LLM 启用前 | 隐私脱敏 + 安全评审 |
-| RISK-P2-010 | LLM 超时 / 限流致主链路阻塞 | API 延迟或限流 | 体验下降 | 候选，未启用 | 超时降级回规则匹配 / 转人工，不阻塞 | Phase3 LLM 启用前 | 超时配置 + 降级测试 |
+| RISK-P2-007 | LLM 幻觉承诺（价格 / 合同 / 赔付 / 交期） | LLM 启用后绕过高风险规则 | 业务承诺风险 | 候选，未启用 | 高风险关键词强制转人工，LLM 不得覆盖；温度调低 + system prompt 约束 | 后续 LLM 启用前 | ADR-0004 在 LLM 链路强制执行 + 测试覆盖 |
+| RISK-P2-008 | LLM 成本失控 | 无预算上限 / 缓存 | 费用超支 | 候选，未启用 | 预算上限 + 告警 + 缓存 + 限流 | 后续 LLM 启用前 | 成本授权 + 预算配置 |
+| RISK-P2-009 | 客户隐私泄露给 LLM | 真实隐私 / 订单 / 合同入 prompt | 合规风险 | 候选，未启用 | PII 脱敏 + 不发送真实隐私 / 合同 / 订单 / 联系方式 | 后续 LLM 启用前 | 隐私脱敏 + 安全评审 |
+| RISK-P2-010 | LLM 超时 / 限流致主链路阻塞 | API 延迟或限流 | 体验下降 | 候选，未启用 | 超时降级回规则匹配 / 转人工，不阻塞 | 后续 LLM 启用前 | 超时配置 + 降级测试 |
 | RISK-P2-011 | Demo Sandbox 被误解为真实生产接入 | 客户演示混淆 Mock / sandbox / prod | 商务与交付预期风险 | 新增（2026-07-11） | UI、回答、飞书文案和演示手册均标 Demo / Mock / Sandbox | Demo Sandbox | 展示标识 + 演示脚本校验 |
 
 ## 14. Readiness Gate（P0 补强，2026-07-09）
@@ -195,6 +204,7 @@ Phase1 必须能本机运行：
 | RG-002 | PostgreSQL/pgvector | 技术验证 Go / Conditional Go | `docs/research/2026-07-10-tech-env-evaluation-postgres-pgvector.md` | Go（2026-07-10） | 已通过，可进 Sprint-8 DB 实现 |
 | RG-003 | LLM | 证据约束 / 不编造 / 成本 / 兜底评估完成 | `docs/research/2026-07-11-tech-env-evaluation-llm.md`、`docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` | Conditional Go（2026-07-11，评估完成；Demo Sandbox 可演示） | LLM 默认仍关闭；sandbox 仅处理模拟数据；生产自动答复需安全评审 + 成本授权 |
 | RG-009 | Demo Sandbox | 标准模拟数据、飞书测试群和 LLM Sandbox 边界明确 | `docs/research/2026-07-11-demo-sandbox-readiness-evaluation.md` | Conditional Go（2026-07-11） | 下一步先做标准模拟数据包，再做 LLM Sandbox 适配器和演示脚本 |
+| RG-010 | Product Sandbox 数据源模式 | `demo_sandbox`、场景包独立模拟数据、来源标识、真实数据门禁边界明确 | `docs/research/2026-07-15-requirements-product-sandbox-audit.md`、`docs/03-prd.md` §3 | Conditional Go（需求已确认，2026-07-15） | 先补设计 / API / DB / 验证，再拆实现任务；真实数据只读仍需客户授权和安全评审 |
 
 Conditional Go 保留：上述 gate 在对应 Sprint 前必须由「待评估」推进到 Go / Conditional Go；No-Go 阻止相关 Sprint。详见 `docs/09-verification.md` §10.2。
 
@@ -214,3 +224,13 @@ Conditional Go 保留：上述 gate 在对应 Sprint 前必须由「待评估」
 | §9 Readiness Gate | §14 | RG-001~003（P0） |
 | §10 待确认项 | §11.2 | 引用 open items（§6.1 结构） |
 | §4 后端 / §6 数据 / §7 接口（DS 无对应） | §4 / §6 / §7 | 保留为技术实现口径（非 DB/API 字段细节） |
+
+## 16. Phase2.5 / Phase3A Product Sandbox 技术约束（2026-07-15）
+
+| 约束 ID | 内容 | 覆盖 REQ | 技术影响 |
+|---|---|---|---|
+| PS-TECH-001 | 数据源模式必须是显式配置，默认 `demo_sandbox`。 | REQ-017、REQ-022 | API、日志、UI 响应统一携带来源标识。 |
+| PS-TECH-002 | 每个场景包绑定独立 Demo Dataset 与虚拟客户资料包。 | REQ-018、REQ-020 | 数据加载、seed、测试夹具按场景包隔离。 |
+| PS-TECH-003 | Demo reset 只重置当前场景包运行态。 | REQ-019 | 需要区分配置数据、演示基础数据和运行态数据。 |
+| PS-TECH-004 | 真实只读模式必须经过门禁，不满足时 No-Go。 | REQ-021 | 适配层调用前检查授权、字段映射、安全评审和只读配置。 |
+| PS-TECH-005 | 不得静默降级或伪装数据来源。 | REQ-022 | 降级到模拟数据时 UI / API / 日志均需明示。 |

@@ -5,19 +5,20 @@
 | 项 | 内容 |
 |---|---|
 | 上游输入 | `docs/02-srs.md`、`docs/03-prd.md`、`docs/08-dev-plan.md` |
-| 当前状态 | Phase1 已通过验收；Phase2 MVP 验收通过（M10，2026-07-11）；Sprint-7/8/9 全部完成；RG-001 飞书出站通知沙箱 Go、RG-002 PostgreSQL/pgvector Go、RG-003 LLM Conditional Go；Demo Sandbox TC-060~065 已完成，正式演示前全链路彩排通过，见 §6 / §10.2 / §10.4~§10.27 |
-| 最后更新 | 2026-07-11 |
-| 当前 Phase | Phase2：MVP 试点 |
+| 当前状态 | Phase2 MVP 已验收；Phase2.5 / Phase3A Product Sandbox 验证计划已同步（2026-07-15），新增 TC-066~TC-071 待执行 |
+| 最后更新 | 2026-07-15 |
+| 当前 Phase | Phase2.5 / Phase3A：Product Sandbox 可试用版 |
 
 ## 1. 验证策略
 
-Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合方式。由于当前不接真实外部系统，所有订单、项目、售后、飞书通知和业务数据验证均以 Mock 数据为准，并必须明确标识 Mock。
+Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合方式。由于当前不接真实外部系统，所有订单、项目、售后、飞书通知和业务数据验证均以 Mock 数据为准，并必须明确标识 Mock。Phase2.5 / Phase3A 在此基础上增加 Product Sandbox 验证：必须验证场景包独立模拟数据、数据源模式透明、Demo reset、真实数据 No-Go 门禁和完整产品试用闭环。
 
 验证优先级：
 
 1. P0：H5 对话、意图路由、知识 / 规则回答、不编造、转人工。
 2. P1：场景包切换、Mock 进度查询、Web 控制台、知识缺口、日报摘要。
-3. P2：本机资源、日志脱敏、外部集成默认关闭。
+3. P1.5：Product Sandbox 数据源模式、独立模拟数据包、Demo reset、来源标识。
+4. P2：本机资源、日志脱敏、外部集成默认关闭。
 
 ## 2. REQ 到用例矩阵
 
@@ -39,6 +40,12 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | REQ-014 | TC-014 | 配置 / 数据 | Phase1 |
 | REQ-015 | TC-015 | 本机运行 | Phase1 |
 | REQ-016 | TC-016 | 安全检查 | Phase1 |
+| REQ-017 | TC-066 | API + Console | Phase2.5 / Phase3A |
+| REQ-018 | TC-067 | 数据 / 场景 | Phase2.5 / Phase3A |
+| REQ-019 | TC-068 | API + Console | Phase2.5 / Phase3A |
+| REQ-020 | TC-069 | H5 + Console | Phase2.5 / Phase3A |
+| REQ-021 | TC-070 | 门禁 / 安全 | Phase2.5 门禁 / Phase3B |
+| REQ-022 | TC-071 | API + UI + 日志 | Phase2.5 / Phase3A |
 
 ## 3. 用例详情
 
@@ -612,3 +619,22 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - Console 演示标识：task-010d 已完成并构建通过，包含 `Demo Sandbox`、`真实系统未接入`、`LLM 默认关闭` 和“演示证据摘要”。
 - 手机扫码：用户人工确认手机 H5 可打开、可发送问题并收到回答，Console 可看到联动数据；正式演示当天如网络 / IP / 端口变化仍建议重新确认。
 - 边界：当前仍为本机 Mock / Demo Sandbox；真实业务系统、生产飞书、真实客户数据和真实 LLM 自动答复仍未解锁。
+
+### 10.28 Product Sandbox 数据源模式与独立模拟数据验证（TC-066~TC-071）
+
+> 2026-07-15 规划。范围：Phase2.5 / Phase3A Product Sandbox 可试用版；验证完整产品试用闭环，不接真实 CRM / ERP / OA / 工单，不处理真实客户数据，不启用生产 LLM 自动答复。
+
+| TC-ID | 依据 | 关联 REQ | 步骤要点 | 通过标准 | 结果 |
+|---|---|---|---|---|---|
+| TC-066 | `docs/02-srs.md` REQ-017、`docs/07-api-spec.md` API-013 | REQ-017 | 查询 / 更新场景包数据源模式；检查 `demo_sandbox` 默认值和真实模式门禁状态 | Console / API 可显示 `source_mode`、`scenario_pack`、`Not configured / No-Go`；未授权不调用真实系统 | 待执行 |
+| TC-067 | `docs/02-srs.md` REQ-018、`docs/06-db-design.md` Product Sandbox 表占位 | REQ-018 | 切换产品型 / 项目型场景包，分别读取 Demo Dataset、业务记录、历史会话、缺口和摘要 | 不同场景包不串用模拟数据或运行态 | 待执行 |
+| TC-068 | `docs/02-srs.md` REQ-019、`docs/08-dev-plan.md` Sprint-10 | REQ-019 | 在一个场景包内产生会话、缺口、转人工、通知和摘要后执行 Demo reset | 当前场景包恢复初始演示态，其他场景包和真实配置不受影响 | 待执行 |
+| TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | 待执行 |
+| TC-070 | `docs/02-srs.md` REQ-021、`docs/design/integration-adapters.md` | REQ-021 | 尝试启用未授权真实只读数据模式 | 返回 No-Go / Not configured；不调用真实系统；记录门禁原因 | 待执行 |
+| TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | 待执行 |
+
+#### Product Sandbox 验收口径
+
+- TC-066~TC-071 全部通过后，才可声明 M11 Product Sandbox 可试用版通过验收。
+- 若真实数据模式门禁未通过，不阻塞 `demo_sandbox` 可试用版验收，但必须在 UI / API / 验收记录中标记真实数据 No-Go。
+- 任一用例发现模拟数据与真实数据空间混用、来源标识缺失或静默降级，M11 不通过。
