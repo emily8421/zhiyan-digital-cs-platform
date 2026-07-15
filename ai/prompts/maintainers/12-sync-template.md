@@ -62,6 +62,7 @@
 9. 检查 dry-run 输出，确认只涉及模板方法论同步文件；普通派生项目双版本模式允许出现 `TEMPLATE-BASE.md`，但不应出现 README.md、ai/project-rules.md、docs/00-09、frontend/、backend/、tests/、docker/ 或业务代码。
 10. 如果 dry-run 合理，执行同步：
    - 普通派生项目若已有或准备采用 `TEMPLATE-BASE.md` 双版本模式，优先追加 `--preserve-project-version`，使 `VERSION` / `CHANGELOG.md` 保持项目自身版本，继承模板版本写入 `TEMPLATE-BASE.md`；若仓库已存在 `TEMPLATE-BASE.md`，新版脚本会自动启用该模式。
+   - 领域模板（如 `agent-system-template`，仓库存在领域版 `TEMPLATE-BASE.md`：`Lineage type: domain template`）从母模板 sync 时改用 `--domain-template`（与 `--preserve-project-version` 互斥），保留领域模板自身 `VERSION` / `CHANGELOG.md`，并把继承母模板版本写入领域版 `TEMPLATE-BASE.md`（含 `Domain standards scope`）；仓库已存在领域版 `TEMPLATE-BASE.md` 时自动启用。普通派生项目不要用 `--domain-template`，反之领域模板不要用 `--preserve-project-version`，二者冲突时脚本会停止并提示。
    - 旧派生项目首次同步：运行 & "C:\Program Files\Git\bin\bash.exe" scripts/sync-template.sh --commit --preserve-project-version
    - v1.6.8+ 后续同步：运行 powershell -ExecutionPolicy Bypass -File scripts/sync-template.ps1 --commit --preserve-project-version
    - 若维护者明确要求继续沿用旧语义（`VERSION` = 继承模板版本），才不加 `--preserve-project-version`；需在同步报告说明。

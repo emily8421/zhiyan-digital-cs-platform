@@ -132,11 +132,32 @@ done
 echo
 echo "==> 根 README 模板版本号一致性（非阻断）"
 if [[ -f "TEMPLATE-BASE.md" ]]; then
-  echo "ℹ️  检测到 TEMPLATE-BASE.md：按普通派生项目双版本模式，VERSION 属于项目自身版本；继承模板版本以 TEMPLATE-BASE.md 为准，跳过 README ↔ VERSION 模板版本一致性检查。"
+  LINEAGE_ROLE=""
+  lineage_val="$(grep -E '^\- Lineage type:' TEMPLATE-BASE.md | head -1 | sed -E 's/^\- Lineage type:[[:space:]]*//' | sed -E 's/[[:space:]]*$//' || true)"
+  case "$lineage_val" in
+    "ordinary derived project") LINEAGE_ROLE="ordinary" ;;
+    "domain template") LINEAGE_ROLE="domain" ;;
+    "")
+      if grep -qi 'ordinary derived project' TEMPLATE-BASE.md; then LINEAGE_ROLE="ordinary"
+      elif grep -qi 'domain template' TEMPLATE-BASE.md; then LINEAGE_ROLE="domain"; fi
+      ;;
+  esac
+  if [[ "$LINEAGE_ROLE" == "domain" ]]; then
+    echo "ℹ️  检测到领域版 TEMPLATE-BASE.md（Lineage type: domain template）：VERSION / CHANGELOG 属于领域模板自身；继承母模板版本以 TEMPLATE-BASE.md 为准，跳过 README ↔ VERSION 模板版本一致性检查。"
+  else
+    echo "ℹ️  检测到 TEMPLATE-BASE.md：按普通派生项目双版本模式，VERSION 属于项目自身版本；继承模板版本以 TEMPLATE-BASE.md 为准，跳过 README ↔ VERSION 模板版本一致性检查。"
+  fi
   if grep -qE '^\- Current synced template version:[[:space:]]*v[0-9]+\.[0-9]+\.[0-9]+' TEMPLATE-BASE.md; then
     pass "TEMPLATE-BASE.md 记录当前同步模板版本"
   else
     fail "TEMPLATE-BASE.md 缺少 Current synced template version"
+  fi
+  if [[ "$LINEAGE_ROLE" == "domain" ]]; then
+    if grep -qE '^\- Domain standards scope:' TEMPLATE-BASE.md; then
+      pass "TEMPLATE-BASE.md 记录领域标准件范围（领域版）"
+    else
+      fail "领域版 TEMPLATE-BASE.md 缺少 Domain standards scope"
+    fi
   fi
 elif [[ -f "VERSION" && -f "README.md" ]]; then
   cur_ver="$(tr -d '[:space:]' < VERSION)"
