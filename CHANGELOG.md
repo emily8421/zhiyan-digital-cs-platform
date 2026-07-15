@@ -6,6 +6,14 @@
 - 模板继承版本入口：`TEMPLATE-BASE.md`
 - 模板同步运行记录：`sync-records/template-sync/`
 
+## v0.2.0（2026-07-15）
+
+首次按 `ai/project-rules.md` §7 版本规则递增项目版本（MINOR）。
+
+- **递增依据**：§7.2，Phase2 里程碑 M10 验收（2026-07-11）属 MINOR。
+- **本版交付**：Phase2 MVP（M10）已验收；Sprint-1~9 已完成并合并；Demo Sandbox 标准模拟业务数据包通过 TC-060，本机演示可用性 smoke 通过 TC-061；RG-001 飞书出站通知沙箱、RG-002 PostgreSQL/pgvector 为 Go，RG-003 LLM 为 Conditional Go。
+- **仍 No-Go**：真实业务系统集成、生产飞书、真实客户数据、生产 LLM 自动答复（见 `ai/project-rules.md` §1）。
+
 ## v0.1.0（2026-07-11）
 
 项目版本基线重定义：从模板继承版本语义切换为项目自有版本语义，不沿用旧 `VERSION=v1.43.0`。
