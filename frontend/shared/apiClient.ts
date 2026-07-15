@@ -11,7 +11,8 @@ import type {
   MockBusinessRecord,
   MockNotificationRecord,
   ScenarioPackDetail,
-  ScenarioPackSummary
+  ScenarioPackSummary,
+  SourceModeData
 } from './types';
 
 const API_BASE = '/api/v1';
@@ -179,4 +180,21 @@ export function getDailySummary(): Promise<ApiResponse<DailySummaryData>> {
 
 export function listMockBusinessRecords(): Promise<ApiResponse<MockBusinessRecord[]>> {
   return requestJson<MockBusinessRecord[]>('/mock-business');
+}
+
+export function getScenarioPackSourceMode(
+  scenarioPackCode: string
+): Promise<ApiResponse<SourceModeData>> {
+  return requestJson<SourceModeData>(`/scenario-packs/${scenarioPackCode}/source-mode`);
+}
+
+export function updateScenarioPackSourceMode(
+  scenarioPackCode: string,
+  sourceMode: string
+): Promise<ApiResponse<SourceModeData>> {
+  return requestJson<SourceModeData>(`/scenario-packs/${scenarioPackCode}/source-mode`, {
+    method: 'PATCH',
+    headers: consoleRoleHeader(),
+    body: JSON.stringify({ source_mode: sourceMode })
+  });
 }
