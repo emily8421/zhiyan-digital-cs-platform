@@ -2,7 +2,8 @@
 
 > 来源：zhiyan-digital-cs-platform（emily8421/zhiyan-digital-cs-platform）派生项目回流
 > 类型：模板优化提案草稿
-> 状态：待提交模板仓 issue
+> 状态：已提交模板仓 issue，待模板维护者处理
+> 模板仓 issue：https://github.com/emily8421/ai-project-template/issues/217
 > 关联：`scripts/sync-template.ps1`、派生项目同步 `--commit --preserve-project-version`、PowerShell fallback、A13 同步闭环
 
 ## 1. 背景
