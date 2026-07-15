@@ -32,7 +32,7 @@
 2. 检查 Git 状态、当前 `VERSION`、`TEMPLATE-BASE.md`（若存在）、同步脚本与 `template-sync.json` 是否存在。
 3. 按 `git-guide.md` §5 和 `12-sync-template` 判断是旧项目首次同步、v1.6.8+ 后续同步，还是“已同步但只补后续”的同步后续接模式。
 4. 先输出标准闭环计划；若为同步后续接模式，明确跳过 dry-run / commit，从 `check-derived-sync` 开始。
-5. 用户确认后执行同步命令；普通派生项目优先使用 `--preserve-project-version` 保留项目自身 `VERSION` 并更新 `TEMPLATE-BASE.md`；同步后续接模式不重新执行同步命令。
+5. 用户确认后执行同步命令；普通派生项目优先使用 `--preserve-project-version` 保留项目自身 `VERSION` 并更新 `TEMPLATE-BASE.md`，领域模板改用 `--domain-template` 保留领域模板自身 `VERSION` / `CHANGELOG.md` 并更新领域版 `TEMPLATE-BASE.md`；同步后续接模式不重新执行同步命令。
 6. 同步后运行 `check-derived-sync`，不要用 `check-template` 验收派生项目。
 7. 检查派生项目 workflow：普通 PR 不应运行模板仓 `scripts/check-template.sh`；如仍保留 `.github/workflows/template-check.yml`，提示迁移为派生项目版 `.github/workflows/project-check.yml`。
 8. 触发或引导执行 `post-sync-cleanup`，先输出整理审计与迁移计划；实际移动 / 修改项目事实文档前再次确认。

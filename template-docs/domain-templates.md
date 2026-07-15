@@ -9,7 +9,7 @@
 
 - **主线治理仍为两层**：母模板（`ai-project-template`）↔ 派生项目。绝大多数项目**直连母模板**，不经过领域模板。
 - **三层是可选增强**：只有当**多类同类项目需要共享一组领域标准件**时，才在母模板与具体项目之间插入一层领域模板。
-- **领域模板层尚在候选 / 演进中**：三层继承机制的设计源头 `_proposals/TEMPLATE-UPGRADE-domain-template-inheritance.md` 状态为候选 / 待评估，其 Batch 2-4（建仓、同步链路、自动化）**未落地**。本文件先固化方法论定位，机制产物随后续 Batch 补齐。
+- **领域模板层尚在候选 / 演进中**：三层继承机制的设计源头 `_proposals/TEMPLATE-UPGRADE-domain-template-inheritance.md` 状态为部分落地，其 Batch 2（建仓 + scaffold MVP）、Batch 3 多级同步自动化与 Batch 4 仍**未落地**；Batch 3 的版本保留机制（C-004）已于 v1.47.0 落地（见 §5 / §7）。本文件先固化方法论定位，其余机制产物随后续 Batch 补齐。
 - **现有派生项目无需迁移**：本文件不要求任何已存在的两层派生项目改变形态。
 - **非强制**：没有任何项目必须经过领域模板。
 
@@ -53,6 +53,8 @@
 
 反例：单个 web 应用、单个 CLI 工具、单个数据脚本——**直连母模板**即可，不必为此建领域模板。
 
+Web App scaffold 也不自动等于领域模板。复杂 Web / 全栈交互项目先使用 `template-docs/web-fullstack-profile.md` 与 `template-docs/web-app-scaffold-experiment.md` 做普通项目或独立实验仓验证；只有当多个同类 Web 项目共享领域标准件、独立版本和自检需求时，才进入领域模板评估。
+
 ## 3. 三层职责边界
 
 完整定义见 `_proposals/TEMPLATE-UPGRADE-domain-template-inheritance.md` §4.1 / §4.2 / §4.3，本节为结论摘要，不复制正文：
@@ -74,7 +76,7 @@
 
 回流因此是**两级**：领域派生项目的可通用经验 → 先回流领域模板（领域部分）；领域模板沉淀的、可跨领域的通用经验 → 再回流母模板。回流仍走 `ai/commands/submit-proposal.md` / `submit-feedback.md`（跨仓库开 issue，免 fork）。
 
-> **当前脚本能力边界（重要）**：现有 `scripts/sync-template.sh` 与 `scripts/check-derived-sync.sh` 按「模板侧 ↔ 派生侧」**两端**校验，不区分母模板 / 领域模板。**多级同步自动化（领域模板作为中间同步节点的链路）属 inheritance 提案 Batch 3，尚未落地**。在它落地前，领域模板的同步沿用普通派生项目的两端流程，不引入新的自动化。
+> **当前脚本能力边界（重要）**：`scripts/sync-template.sh` 与 `scripts/check-derived-sync.sh` 按「模板侧 ↔ 派生侧」**两端**校验。自 v1.47.0 起，领域模板作为母模板下游 sync 时可用 `sync-template.* --domain-template`（或仓库存在领域版 `TEMPLATE-BASE.md` 时自动启用）保留领域模板自身 `VERSION`/`CHANGELOG`，并维护领域版 `TEMPLATE-BASE.md`（见 §5）。**多级同步自动化（领域模板作为领域派生项目上游的中间同步节点链路）仍属 inheritance 提案 Batch 3，尚未落地**；在它落地前，领域模板的上下游同步沿用两端流程，不引入多级自动化。
 
 ## 5. `TEMPLATE-BASE.md` 约定
 
@@ -84,7 +86,7 @@
 - 继承时的母模板 base version（对应母模板 `VERSION`）。
 - 本领域模板叠加的标准件范围。
 
-> **状态：预留 / 未启用（领域模板线）**。普通派生项目可由 `scripts/new-project.sh` / `scripts/sync-template.* --preserve-project-version` 生成精简版 `TEMPLATE-BASE.md`，只记录母模板继承版本；领域模板的 `TEMPLATE-BASE.md` 仍是另一条线的约定，需额外记录领域标准件 / 领域继承范围，生成与字段自检属 inheritance 提案 Batch 2 / Batch 3，待领域模板首个实例（如 `agent-system-template`）创建时落地。不得把普通派生项目的精简版语义套用到领域模板。
+> **状态：机制已落地（v1.47.0，C-004）**。普通派生项目由 `scripts/new-project.sh` / `scripts/sync-template.* --preserve-project-version` 生成**精简版** `TEMPLATE-BASE.md`（`Lineage type: ordinary derived project`，只记母模板继承版本）；领域模板由 `scripts/sync-template.* --domain-template` 生成 / 维护**领域版** `TEMPLATE-BASE.md`（`Lineage type: domain template`，额外记 `Domain standards scope` 领域标准件范围；首次生成留 TODO 占位由维护者填，后续 sync 保留）。`check-derived-sync.*` 按 `Lineage type` 识别角色，领域版额外校验 `Domain standards scope`。两条线互不混用：不得把普通派生精简版套用到领域模板，反之亦然；`--preserve-project-version` 与 `--domain-template` 互斥。
 
 ## 6. 操作入口（怎么创建领域模板）
 
@@ -102,7 +104,7 @@ AI 可执行实验入口为 `/run domain-template-lab`（见 `ai/commands/domain
 |---|---|---|
 | Batch 1 | 三层继承机制设计 + **方法论文档化（本文件）** | ✅ 本文件落地；机制产物待后续 |
 | Batch 2 | 创建独立 `agent-system-template` 仓库 + 领域 scaffold MVP + `TEMPLATE-BASE.md` | 待办 |
-| Batch 3 | 领域模板自检、同步链路、多级同步自动化评估 | 部分启动：母模板已提供 `domain-template-lab` AI 实验入口；具体领域资产仍待独立仓库试验 |
+| Batch 3 | 领域模板自检、同步链路、多级同步自动化评估 | 部分落地：版本保留机制（C-004）已于 v1.47.0 落地——`sync-template.* --domain-template` 保留领域模板 `VERSION`/`CHANGELOG` 并维护领域版 `TEMPLATE-BASE.md`，`check-derived-sync.*` 识别领域角色；母模板已提供 `domain-template-lab` AI 实验入口；多级同步自动化与具体领域资产仍待独立仓库试验 |
 | Batch 4 | `new-project --profile <domain>` / 领域模板发布回流 SOP | 待办（需至少一个真实项目试用后再评估） |
 
 领域模板层在至少一个真实项目试用、Batch 2-3 落地成熟后，再评估是否提升主线地位（如写进 `template-methodology.md` §5）。当前以本可选增强文档为准。

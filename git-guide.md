@@ -42,6 +42,16 @@ powershell -ExecutionPolicy Bypass -File scripts/check-github-context.ps1 -Expec
 
 > 该预检不能替代 GitHub 授权：`gh auth login`、OAuth scope、SSO 授权、Git Credential Manager 和仓库权限仍需在本机按 GitHub 官方流程处理；模板只提供操作前门禁，避免多仓 / 多会话误操作。
 
+### 1.2 远端 / CI / sandbox 防卡死策略
+
+涉及 `git push`、`gh pr create`、`gh pr merge`、`gh issue close`、删除远端分支、查询 GitHub Actions / CI 或其他远端状态时，默认使用 Checkpoint Mode（见 `ai/session-rules.md` §3.3）：
+
+- **远端状态变更单步确认**：push、创建 / 合并 PR、关闭 issue、删除分支、发 release 或打 tag 前，先说明目标仓库、分支、命令、风险和回滚方式，等待用户确认。
+- **CI 短轮询**：只查询一次或短轮询；若 checks / Actions 仍为 pending，汇报 pending 和复查命令，不长时间挂起等待。
+- **失败日志最小化**：CI failed 只摘失败 job / step、关键错误和链接；不要把完整长日志刷入上下文。
+- **sandbox / network / auth 错误即停**：遇到权限不足、network restricted、DNS / registry 失败、`gh auth` / askpass / credential 错误或命令超时，先停止并说明错误类别；不得连续重试或改用绕过权限边界的方式继续。
+- **不扩大修复范围**：CI 失败或远端报错若无法确认与本次改动相关，先标记不确定并请用户确认，不得直接进入大范围修复。
+
 ## 2. 场景速查（你要做哪件事？）
 
 | 你想做 | 你是 | 去哪节 | 对应 scenario 码 |
@@ -68,6 +78,8 @@ powershell -ExecutionPolicy Bypass -File scripts/check-github-context.ps1 -Expec
 ```powershell
 git status
 git diff
+git diff --check
+powershell -ExecutionPolicy Bypass -File scripts/check-markdown-clean.ps1 _proposals ai-records  # 模板仓 Markdown 提案 / 记录预检
 # 运行项目对应验证命令，例如：bash scripts/check-template.sh / npm test / pytest
 powershell -ExecutionPolicy Bypass -File scripts/check-github-context.ps1  # push / PR 前只读预检
 git add <文件路径>
@@ -243,7 +255,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-template.ps1       # 仅�
 - 同步前先 bootstrap 模板远端最新版 `scripts/sync-template.sh`；不要无条件信任派生项目本地旧脚本。
 - 新版 `sync-template.sh` 会在 fetch 后对比远端自身版本；若本地脚本不是最新版，会停止并提示先更新脚本。
 - `--dry-run` 只预览差异，不修改工作区、不 stage。
-- `--commit` 会覆盖同步清单中的文件并自动提交；普通派生项目建议追加 `--preserve-project-version`，保留项目自身 `VERSION` / `CHANGELOG.md`，并用 `TEMPLATE-BASE.md` 记录继承模板版本；若仓库已存在 `TEMPLATE-BASE.md`，新版脚本会自动启用该模式；提交信息仍由脚本生成。
+- `--commit` 会覆盖同步清单中的文件并自动提交；普通派生项目建议追加 `--preserve-project-version`，保留项目自身 `VERSION` / `CHANGELOG.md`，并用 `TEMPLATE-BASE.md` 记录继承模板版本；领域模板（如 `agent-system-template`）改用 `--domain-template`（与 `--preserve-project-version` 互斥），保留领域模板自身 `VERSION` / `CHANGELOG.md`，并用领域版 `TEMPLATE-BASE.md` 记录继承母模板版本；若仓库已存在对应角色的 `TEMPLATE-BASE.md`，新版脚本会自动启用相应模式；提交信息仍由脚本生成。
 - 根 `README.md` 是项目件，`ai/project-rules.md` 是项目专属规则，均不在 `template-sync.json` 中，不参与模板下行同步。
 - 被 `template-sync.json` 列入的 Markdown 方法论文档会在同步时被覆盖；派生项目不要直接修改这些文件，如需改进请在 `_proposals/` 起草提案并回流模板。
 - 同步文件清单以 `template-sync.json` 为准；`scripts/sync-template.sh` 会优先读取模板远端清单。
