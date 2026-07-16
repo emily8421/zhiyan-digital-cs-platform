@@ -313,6 +313,11 @@ require_new_project_local_smoke() {
   fi
 
   require_file "$project_dir/README.md"
+  require_contains "$project_dir/VERSION" '^v0\.1\.0$' "new-project 烟测 VERSION 使用项目自有初始版本 v0.1.0"
+  require_contains "$project_dir/CHANGELOG.md" '^## v0\.1\.0（' "new-project 烟测 CHANGELOG 顶部项目版本匹配 v0.1.0"
+  require_contains "$project_dir/TEMPLATE-BASE.md" 'Project version at sync time: v0\.1\.0' "new-project 烟测 TEMPLATE-BASE 记录项目版本起点"
+  require_contains "$project_dir/.github/workflows/project-check.yml" 'Check project version consistency' "new-project 烟测 workflow 校验项目版本一致性"
+  require_contains "$project_dir/ai/project-rules.md" '## 2\.8 项目版本管理' "new-project 烟测 project-rules 含项目版本管理"
   require_contains "$project_dir/README.md" 'docs/inputs/' "new-project 烟测 README 从 inputs 起步"
   require_contains "$project_dir/README.md" 'docs/env/local-env\.md' "new-project 烟测 README 提醒环境采集"
   require_contains "$project_dir/README.md" 'input-review-report\.md' "new-project 烟测 README 说明输入评审报告"
@@ -947,6 +952,12 @@ require_contains "scripts/sync-template.ps1" 'Get-LegacyDomainStandardsScope' "s
 require_contains "scripts/sync-template.ps1" '叠加的标准件范围' "sync-template PowerShell fallback 兼容旧领域版 TEMPLATE-BASE.md 中文范围标题"
 require_contains "scripts/check-derived-sync.sh" 'ai/doc-standards/\*' "check-derived-sync 放行 doc-standards 规范镜像"
 require_contains "scripts/check-derived-sync.sh" 'docs/_scaffold/\*' "check-derived-sync 迁移期兼容旧 _scaffold 规范镜像"
+# 阶段 B：派生项目版本机制启用状态检测（check-derived-sync 双脚本）+ post-sync-cleanup 引导，防回归。
+require_contains "scripts/check-derived-sync.sh" '版本机制启用状态' "check-derived-sync Bash 含版本机制启用状态检测（非阻断）"
+require_contains "scripts/check-derived-sync.ps1" 'version mechanism enablement' "check-derived-sync PowerShell fallback 含版本机制启用状态检测（非阻断）"
+require_contains "scripts/check-derived-sync.sh" 'Check project version consistency' "check-derived-sync 主信号检测派生 workflow 版本校验"
+require_contains "scripts/check-derived-sync.ps1" 'Check project version consistency' "check-derived-sync PowerShell fallback 主信号检测派生 workflow 版本校验"
+require_contains "ai/prompts/maintainers/15-post-sync-cleanup.md" '版本机制启用状态' "同步后整理 Prompt 引导审计版本机制启用状态"
 require_contains "ai/doc-standards/README.md" 'Document Standards' "doc-standards README 说明规范镜像定位"
 
 # AI CLI 使用体验入口：快捷命令与会话续接必须贯穿规则、Prompt、同步清单和人读文档。
@@ -1162,6 +1173,9 @@ require_contains "template-docs/derived-sync-report-template.md" '同步后整�
 require_contains "template-docs/derived-sync-report-template.md" '文档体系审计摘要' "同步报告模板包含文档审计摘要"
 require_contains "template-docs/derived-sync-report-template.md" '项目验证建议' "同步报告模板包含项目验证建议"
 require_contains "scripts/new-project.sh" 'project-check\.yml' "new-project 生成派生项目 workflow"
+require_contains "scripts/new-project.sh" 'Check project version consistency' "new-project 生成派生项目版本一致性检查"
+require_contains "scripts/new-project.sh" 'DERIVED_PROJECT_VERSION="v0\.1\.0"' "new-project 默认项目自有版本从 v0.1.0 起步"
+require_contains "ai/project-rules.md" '## 2\.8 项目版本管理' "project-rules 种子包含项目版本管理"
 require_contains "scripts/new-project.sh" 'Not a template sync commit; skip derived sync boundary check' "派生 workflow 普通 PR 跳过同步边界检查"
 require_contains "scripts/new-project.sh" 'bash scripts/check-derived-sync\.sh HEAD' "派生 workflow 同步提交运行边界检查"
 require_contains "scripts/new-project.sh" 'rm -f "\$TARGET/\.github/workflows/template-check\.yml"' "new-project 移除模板仓 workflow"
