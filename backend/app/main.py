@@ -10,6 +10,7 @@ from app.api.health import router as health_router
 from app.api.mock_business import router as mock_business_router
 from app.api.scenario_packs import router as scenario_packs_router
 from app.api.source_mode import router as source_mode_router
+from app.api.source_refs import router as source_refs_router
 from app.schemas.common import ApiError, ApiException, ErrorResponse, new_request_id
 
 
@@ -47,6 +48,7 @@ def create_app() -> FastAPI:
     app.include_router(mock_business_router, prefix="/api/v1")
     app.include_router(scenario_packs_router, prefix="/api/v1")
     app.include_router(source_mode_router, prefix="/api/v1")
+    app.include_router(source_refs_router, prefix="/api/v1")
     app.include_router(demo_dataset_router, prefix="/api/v1")
     app.include_router(demo_reset_router, prefix="/api/v1")
     return app

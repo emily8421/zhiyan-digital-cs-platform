@@ -20,7 +20,8 @@ import {
   updateKnowledgeItemStatus,
   updateKnowledgeGapStatus,
   updateScenarioPackSourceMode,
-  resetScenarioPackDemo
+  resetScenarioPackDemo,
+  listSourceRefs
 } from '../../shared/apiClient';
 import type { ConsoleRole } from '../../shared/apiClient';
 import type {
@@ -33,7 +34,8 @@ import type {
   MockNotificationRecord,
   ScenarioPackDetail,
   ScenarioPackSummary,
-  SourceModeData
+  SourceModeData,
+  SourceRefItem
 } from '../../shared/types';
 
 type TabKey = 'overview' | 'conversations' | 'handoffs' | 'gaps' | 'knowledgeItems' | 'notifications' | 'scenarios' | 'mockData';
@@ -130,6 +132,8 @@ function buildEvidenceItems(record: Exclude<DetailRecord, null>): EvidenceItem[]
   if (environment) {
     items.push({ label: 'environment', value: formatEnvironment(environment), tone: 'neutral' });
   }
+  const sourceModeValue = getTextValue(record, 'source_mode') ?? 'demo_sandbox';
+  items.push({ label: 'source_mode', value: formatEnvironment(sourceModeValue), tone: 'neutral' });
   if (sourceSystem) {
     items.push({ label: 'source_system', value: sourceSystem, tone: 'neutral' });
   }
@@ -161,6 +165,8 @@ function App() {
   const [scenarioFilter, setScenarioFilter] = useState<string>('all');
   const [sourceMode, setSourceMode] = useState<SourceModeData | null>(null);
   const [sourceModeLoading, setSourceModeLoading] = useState(false);
+  const [sourceRefs, setSourceRefs] = useState<SourceRefItem[]>([]);
+  const [sourceRefsLoading, setSourceRefsLoading] = useState(false);
 
   const canWrite = role === 'admin';
 
@@ -182,6 +188,10 @@ function App() {
     if (!sourceModePack) return;
     void refreshSourceMode(sourceModePack);
   }, [sourceModePack]);
+
+  useEffect(() => {
+    void refreshSourceRefs(scenarioFilter === 'all' ? undefined : scenarioFilter);
+  }, [scenarioFilter]);
 
   const visibleConversations = useMemo(
     () => filterByPack(data.conversations, scenarioFilter),
@@ -266,6 +276,18 @@ function App() {
       setError(formatError(caughtError));
     } finally {
       setSourceModeLoading(false);
+    }
+  }
+
+  async function refreshSourceRefs(scenarioPackId?: string) {
+    try {
+      setSourceRefsLoading(true);
+      const response = await listSourceRefs(scenarioPackId, 'demo_sandbox');
+      setSourceRefs(response.data.items);
+    } catch (caughtError) {
+      setError(formatError(caughtError));
+    } finally {
+      setSourceRefsLoading(false);
     }
   }
 
@@ -535,6 +557,46 @@ function App() {
             <span className="hint-badge">仅清运行态，保留初始演示数据与其他场景包</span>
           </div>
         ) : null}
+      </section>
+
+      <section className="source-refs-panel" aria-label="来源标识抽样">
+        <div className="panel-head">
+          <strong>来源标识抽样（API-016）</strong>
+          <span className="hint-badge">
+            {scenarioFilter === 'all' ? '全部场景包' : `场景包 ${scenarioFilter}`} · demo_sandbox · mock
+          </span>
+        </div>
+        <p className="panel-hint">
+          聚合当前演示场景包的可追溯 source_ref（知识 / 规则 / Mock 业务记录 / Demo Dataset），用于抽样确认回答、通知、摘要和业务记录的来源标识。
+        </p>
+        {sourceRefsLoading ? (
+          <p>加载来源标识中…</p>
+        ) : sourceRefs.length === 0 ? (
+          <p>暂无来源标识。</p>
+        ) : (
+          <table className="source-refs-table">
+            <thead>
+              <tr>
+                <th>source_type</th>
+                <th>source_ref</th>
+                <th>场景包</th>
+                <th>source_mode</th>
+                <th>mock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sourceRefs.map((item) => (
+                <tr key={`${item.source_type}-${item.source_ref}-${item.scenario_pack_id}`}>
+                  <td>{item.source_type}</td>
+                  <td>{item.source_ref}</td>
+                  <td>{item.scenario_pack_id}</td>
+                  <td>{formatEnvironment(item.source_mode)}</td>
+                  <td>{item.mock ? '是' : '否'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <section className="content-grid">

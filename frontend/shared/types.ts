@@ -200,3 +200,16 @@ export type DemoResetData = {
   source_mode: string;
   mock: boolean;
 };
+
+export type SourceRefItem = {
+  source_ref: string;
+  source_type: string;
+  scenario_pack_id: string;
+  source_mode: string;
+  mock: boolean;
+  created_at: string;
+};
+
+export type SourceRefListData = {
+  items: SourceRefItem[];
+};
