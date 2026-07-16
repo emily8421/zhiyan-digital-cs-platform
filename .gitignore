@@ -29,6 +29,7 @@ NEXT-STEPS.md
 .ai/session-handoff.md
 .ai/local-demo-h5-qr.svg
 .ai/local-demo-runtime.json
+.ai/*.py
 
 # 构建产物
 dist/
