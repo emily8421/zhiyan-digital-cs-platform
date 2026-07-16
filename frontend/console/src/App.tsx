@@ -19,7 +19,8 @@ import {
   updateHandoffStatus,
   updateKnowledgeItemStatus,
   updateKnowledgeGapStatus,
-  updateScenarioPackSourceMode
+  updateScenarioPackSourceMode,
+  resetScenarioPackDemo
 } from '../../shared/apiClient';
 import type { ConsoleRole } from '../../shared/apiClient';
 import type {
@@ -282,6 +283,24 @@ function App() {
     }
   }
 
+  async function handleDemoReset() {
+    if (!sourceModePack) return;
+    const confirmed = window.confirm(
+      `确认重置场景包 ${sourceModePack} 的演示运行态？仅清除该场景包运行时会话 / 缺口 / 转人工 / 通知，保留初始演示数据与其他场景包，不影响真实配置。`
+    );
+    if (!confirmed) return;
+    try {
+      setIsUpdating(true);
+      setError(null);
+      await resetScenarioPackDemo(sourceModePack);
+      await refreshConsoleData();
+    } catch (caughtError) {
+      setError(formatError(caughtError));
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   async function handleHandoffUpdate(record: HandoffRecord, status: string) {
     try {
       setIsUpdating(true);
@@ -501,6 +520,19 @@ function App() {
                 门禁未通过：{sourceMode.gate_reasons.join('、') || '未配置'}
               </span>
             ) : null}
+          </div>
+        ) : null}
+        {canWrite && sourceModePack ? (
+          <div className="source-mode-switch">
+            <button
+              type="button"
+              className="secondary"
+              disabled={isUpdating}
+              onClick={() => void handleDemoReset()}
+            >
+              重置「{sourceModePack}」演示运行态
+            </button>
+            <span className="hint-badge">仅清运行态，保留初始演示数据与其他场景包</span>
           </div>
         ) : null}
       </section>

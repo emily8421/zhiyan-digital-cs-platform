@@ -190,3 +190,13 @@ export type SourceModeData = {
   source_ref: string;
   mock: boolean;
 };
+
+export type DemoResetData = {
+  scenario_pack_id: string;
+  reset_id: string;
+  reset_at: string;
+  reset_scope: string;
+  affected_counts: Record<string, number>;
+  source_mode: string;
+  mock: boolean;
+};

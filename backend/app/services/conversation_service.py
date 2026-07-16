@@ -204,6 +204,20 @@ def _apply_decision_to_conversation(
         conversation.status = "handoff"
 
 
+def reset_conversations_for_pack(scenario_pack_code: str) -> int:
+    """清除当前场景包运行时会话。
+
+    seed 会话由 _seed_conversations 动态合并、不驻留在 _conversations 内存 dict，
+    因此天然保留；本函数只清除 demo 期间创建的运行时会话。
+    """
+    removed = 0
+    for conversation_id in list(_conversations.keys()):
+        if _conversations[conversation_id].scenario_pack_code == scenario_pack_code:
+            del _conversations[conversation_id]
+            removed += 1
+    return removed
+
+
 def _seed_conversations() -> list[ConversationData]:
     return [
         ConversationData(

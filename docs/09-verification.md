@@ -628,7 +628,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 |---|---|---|---|---|---|
 | TC-066 | `docs/02-srs.md` REQ-017、`docs/07-api-spec.md` API-013 | REQ-017 | 查询 / 更新场景包数据源模式；检查 `demo_sandbox` 默认值和真实模式门禁状态 | Console / API 可显示 `source_mode`、`scenario_pack`、`Not configured / No-Go`；未授权不调用真实系统 | ✅ 通过（2026-07-15，task-011a） |
 | TC-067 | `docs/02-srs.md` REQ-018、`docs/06-db-design.md` Product Sandbox 表占位 | REQ-018 | 切换产品型 / 项目型场景包，分别读取 Demo Dataset、业务记录、历史会话、缺口和摘要 | 不同场景包不串用模拟数据或运行态 | ✅ 通过（2026-07-16，task-011b） |
-| TC-068 | `docs/02-srs.md` REQ-019、`docs/08-dev-plan.md` Sprint-10 | REQ-019 | 在一个场景包内产生会话、缺口、转人工、通知和摘要后执行 Demo reset | 当前场景包恢复初始演示态，其他场景包和真实配置不受影响 | 待执行 |
+| TC-068 | `docs/02-srs.md` REQ-019、`docs/08-dev-plan.md` Sprint-10 | REQ-019 | 在一个场景包内产生会话、缺口、转人工、通知和摘要后执行 Demo reset | 当前场景包恢复初始演示态，其他场景包和真实配置不受影响 | ✅ 通过（2026-07-16，task-011c） |
 | TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | ⚠️ 部分通过（后端数据 + API-014 + mock 标识就绪，2026-07-16 task-011b；H5 / Console 展示待 task-011d / 011e） |
 | TC-070 | `docs/02-srs.md` REQ-021、`docs/design/integration-adapters.md` | REQ-021 | 尝试启用未授权真实只读数据模式 | 返回 No-Go / Not configured；不调用真实系统；记录门禁原因 | ✅ 通过（2026-07-15，task-011a） |
 | TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | ⚠️ 部分通过（API-014 响应来源标识已验证，2026-07-16 task-011b；H5 / Console / 通知 / 摘要全链路徽章待 task-011d） |
@@ -645,7 +645,7 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 自动化：`tests/api/test_source_mode.py` 5 用例通过；全量 `PYTHONPATH=backend python -m pytest tests/` → 72 passed / 6 skipped / 0 failed；`frontend/console` `npm run build`（tsc + vite）通过。
 - API 端到端（真实运行后端 127.0.0.1:8000）：GET 默认 `demo_sandbox` / `go` / `source_ref=demo_dataset:product_business:v1`；PATCH `customer_sandbox_readonly`（admin）→ 200 `no_go` + 4 条原因（`missing_customer_authorization` 等）、`source_ref=""`；GET 再查仍 `demo_sandbox` / `go`（真实模式未切换、未调用真实系统）；PATCH（viewer）→ 403 `FORBIDDEN_CONSOLE_WRITE`。
 - Console UI（人工确认）：banner 显示「数据源模式：Demo Sandbox」+「真实系统 No-Go」；admin 下拉选真实模式回显「真实数据 Not configured / No-Go」+ 门禁原因；切回 demo 恢复；viewer 无切换入口。
-- 已覆盖：TC-067（task-011b 通过）；部分覆盖：TC-069 / TC-071（后端数据 + API-014 + 来源标识就绪，H5 / Console 展示与全链路徽章待 task-011d / 011e）；未覆盖：TC-068（依赖 task-011c）。M11 Product Sandbox 可试用版尚未完成。
+- 已覆盖：TC-066 / TC-067 / TC-068 / TC-070；部分覆盖：TC-069 / TC-071（后端数据 + API + 来源标识就绪，H5 / Console 展示与全链路徽章待 task-011d / 011e）。M11 Product Sandbox 可试用版尚未完成（剩 task-011d / 011e）。
 
 #### task-011b 验收证据（2026-07-16，TC-067 / TC-069 后端 / TC-071 API）
 
@@ -655,3 +655,11 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - TC-069（后端）：API-014 返回虚拟客户资料摘要（company_name / business_type / summary）+ `mock:true`；完整资料（公司背景 / 产品目录 / FAQ / 角色）存于 Demo Dataset 文件，H5 / Console 展示待 task-011d / 011e。
 - TC-071（API）：API-014 响应含 `source_mode=demo_sandbox`、`source_ref=demo_dataset:{pack}:v1`、`mock=true` + `meta.mock`；H5 / Console / 通知 / 摘要全链路徽章待 task-011d。
 - 合规：演示数据已清除真实公司名（古晶 → 明烁灯饰、乐式 → 云栖智能）；原始一手调研记录（`docs/inputs/`、`docs/research/`）按人工决策保留，`template-docs/` 的 LeMesh（公司内网 AI 中转站产品名，非乐式公司）保留。
+
+#### task-011c 验收证据（2026-07-16，TC-068）
+
+- 实现：API-015 `POST /api/v1/scenario-packs/{scenario_pack_id}/demo-reset`（`backend/app/api/demo_reset.py` + `services/demo_reset_service.py` + `schemas/demo_reset.py`）；运行态重置由 `conversation_service.reset_conversations_for_pack` + `console_service.reset_console_runtime_for_pack` 完成，保留 seed 初始演示态，按 scenario_pack 隔离，通知通过 related_id 关联重置。
+- 前端：Console sandbox 区加「重置演示运行态」按钮（admin 可见，confirm 提示，调 API 后刷新）；`frontend/console` `npm run build`（tsc + vite）通过。
+- 自动化：`tests/api/test_demo_reset.py` 5 用例通过；全量 `PYTHONPATH=backend python -m pytest tests/` → 82 passed / 6 skipped / 0 failed。
+- TC-068：注入运行时会话 / 缺口 / 转人工 / 知识条目 / 通知 → reset → 运行时记录清除、seed（handoff_001/002、gap_001/002、notif_demo_001/002、conv_demo_*）保留、其他场景包不受影响；`confirm=false` / 非 `current_scenario_pack` → 400；viewer → 403；未知场景包 → 404。
+- 边界：不删除场景包配置、Demo Dataset、真实数据门禁配置或其他场景包数据。
