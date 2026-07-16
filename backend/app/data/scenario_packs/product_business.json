@@ -75,9 +75,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_id": "DEMO-CUST-MINGSHUO-001",
           "customer_type": "demo_customer",
-          "display_name": "古晶照明样例客户",
+          "display_name": "明烁灯饰样例客户",
           "mock": true
         },
         "business_object": {
@@ -136,9 +136,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_id": "DEMO-CUST-MINGSHUO-001",
           "customer_type": "demo_customer",
-          "display_name": "古晶照明样例客户",
+          "display_name": "明烁灯饰样例客户",
           "mock": true
         },
         "business_object": {
@@ -197,9 +197,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_id": "DEMO-CUST-MINGSHUO-001",
           "customer_type": "demo_customer",
-          "display_name": "古晶照明样例客户",
+          "display_name": "明烁灯饰样例客户",
           "mock": true
         },
         "business_object": {
@@ -271,9 +271,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-GUJING-001",
+          "customer_id": "DEMO-CUST-MINGSHUO-001",
           "customer_type": "demo_customer",
-          "display_name": "古晶照明样例客户",
+          "display_name": "明烁灯饰样例客户",
           "mock": true
         },
         "business_object": {

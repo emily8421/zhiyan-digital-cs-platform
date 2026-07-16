@@ -1,0 +1,157 @@
+{
+  "scenario_pack_id": "product_business",
+  "dataset_code": "product_business_demo_v1",
+  "version": "v1",
+  "source_mode": "demo_sandbox",
+  "virtual_customer_profile": {
+    "company_name": "明烁灯饰样例客户",
+    "business_type": "product_business",
+    "summary": "用于销售演示、试用和培训的虚拟灯饰制造客户，覆盖产品咨询、订单进度查询与售后规则场景。",
+    "company_background": {
+      "industry": "灯饰 / 标准品制造",
+      "scale": "中小型制造企业（虚拟样例）",
+      "pain_points": ["询盘响应慢", "产品选型知识靠口传", "售后规则不统一"],
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    },
+    "product_catalog": [
+      {
+        "sku": "DEMO-SKU-LAMP-001",
+        "name": "示例灯带 A 型",
+        "specs": "12V / 暖白 / 可定制长度",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      },
+      {
+        "sku": "DEMO-SKU-LAMP-002",
+        "name": "示例筒灯 B 型",
+        "specs": "220V / 9W / 色温可调",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      },
+      {
+        "sku": "DEMO-SKU-LAMP-003",
+        "name": "示例吸顶灯 C 型",
+        "specs": "24W / 三档调光 / 异形可定制",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      }
+    ],
+    "faq": [
+      {
+        "question": "灯带可以定制颜色和长度吗？",
+        "answer": "Demo 中可说明定制方向，具体起订量与交期需转人工确认。",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      },
+      {
+        "question": "坏了一根灯带怎么售后？",
+        "answer": "可先收集故障现象和订单编号，赔付、退换货结论需人工确认。",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      },
+      {
+        "question": "能保证交期吗？",
+        "answer": "交期承诺属于风险问题，按规则转人工处理。",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      }
+    ],
+    "roles": [
+      {
+        "role": "销售总监",
+        "responsibility": "客户询盘跟进与报价确认",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      },
+      {
+        "role": "生产主管",
+        "responsibility": "订单排产与进度同步",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      },
+      {
+        "role": "售后专员",
+        "responsibility": "故障登记与退换货初判",
+        "mock": true,
+        "source_ref": "demo_dataset:product_business:v1"
+      }
+    ]
+  },
+  "historical_conversations": [
+    {
+      "conversation_id": "DEMO-CONV-P-001",
+      "scenario_pack_id": "product_business",
+      "summary": "客户咨询灯带规格并查询订单 HC-ORDER-001 生产进度。",
+      "answer_type": "answer",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    },
+    {
+      "conversation_id": "DEMO-CONV-P-002",
+      "scenario_pack_id": "product_business",
+      "summary": "客户询问 DEMO-ORDER-202607-002 质检进度，系统返回 Mock 进度节点。",
+      "answer_type": "answer",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    }
+  ],
+  "knowledge_gaps": [
+    {
+      "gap_id": "DEMO-GAP-P-001",
+      "scenario_pack_id": "product_business",
+      "question": "异形定制灯带的最低起订量是多少？",
+      "status": "open",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    },
+    {
+      "gap_id": "DEMO-GAP-P-002",
+      "scenario_pack_id": "product_business",
+      "question": "灯带出口是否提供海外认证资料？",
+      "status": "open",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    }
+  ],
+  "summaries": [
+    {
+      "summary_id": "DEMO-SUM-P-001",
+      "scenario_pack_id": "product_business",
+      "summary_date": "2026-07-15",
+      "conversation_count": 12,
+      "handoff_count": 2,
+      "gap_count": 1,
+      "content": "Demo 日报：明烁灯饰当日询盘 12 条，2 条转人工，1 个知识缺口待补。",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    }
+  ],
+  "handoff_samples": [
+    {
+      "handoff_id": "DEMO-HANDOFF-P-001",
+      "scenario_pack_id": "product_business",
+      "reason": "客户提出赔偿诉求，命中风险规则转人工。",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    }
+  ],
+  "notification_samples": [
+    {
+      "notification_id": "DEMO-NOTIF-P-001",
+      "target_type": "feishu",
+      "event_type": "handoff",
+      "title": "转人工提醒样例",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    },
+    {
+      "notification_id": "DEMO-NOTIF-P-002",
+      "target_type": "feishu",
+      "event_type": "knowledge_gap",
+      "title": "知识缺口提醒样例",
+      "mock": true,
+      "source_ref": "demo_dataset:product_business:v1"
+    }
+  ]
+}

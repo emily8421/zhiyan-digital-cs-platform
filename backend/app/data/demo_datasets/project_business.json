@@ -1,0 +1,157 @@
+{
+  "scenario_pack_id": "project_business",
+  "dataset_code": "project_business_demo_v1",
+  "version": "v1",
+  "source_mode": "demo_sandbox",
+  "virtual_customer_profile": {
+    "company_name": "云栖智能样例客户",
+    "business_type": "project_business",
+    "summary": "用于销售演示、试用和培训的虚拟智能家居方案客户，覆盖方案咨询、项目进度与售后工单场景。",
+    "company_background": {
+      "industry": "智能家居方案 / 项目交付",
+      "scale": "方案商型企业（虚拟样例）",
+      "pain_points": ["项目进度靠人工跟", "开发流程与售后规则不沉淀", "技术资料获取口径不一"],
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    },
+    "product_catalog": [
+      {
+        "sku": "DEMO-SOL-SMART-001",
+        "name": "示例智能照明方案",
+        "specs": "含场景联动 / 分区控制 / 可对接中控",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      },
+      {
+        "sku": "DEMO-SOL-SMART-002",
+        "name": "示例安防监控方案",
+        "specs": "含门禁 / 报警 / 远程查看",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      },
+      {
+        "sku": "DEMO-SOL-SMART-003",
+        "name": "示例中控集成方案",
+        "specs": "支持多协议设备接入与统一管理",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      }
+    ],
+    "faq": [
+      {
+        "question": "智能家居方案开发有哪些阶段？",
+        "answer": "Demo 中可说明需求澄清、方案开发、联调测试和交付验收等阶段。",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      },
+      {
+        "question": "技术资料怎么获取？",
+        "answer": "可先说明项目阶段和资料类型，涉及合同或报价需转人工。",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      },
+      {
+        "question": "能保证上线时间吗？",
+        "answer": "上线承诺属于风险问题，按规则转人工处理。",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      }
+    ],
+    "roles": [
+      {
+        "role": "项目经理",
+        "responsibility": "项目阶段推进与里程碑同步",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      },
+      {
+        "role": "方案工程师",
+        "responsibility": "方案设计与技术资料输出",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      },
+      {
+        "role": "售后工程师",
+        "responsibility": "现场调试与售后工单跟进",
+        "mock": true,
+        "source_ref": "demo_dataset:project_business:v1"
+      }
+    ]
+  },
+  "historical_conversations": [
+    {
+      "conversation_id": "DEMO-CONV-J-001",
+      "scenario_pack_id": "project_business",
+      "summary": "客户咨询智能家居方案阶段并查询项目 XS-PROJ-001 进度。",
+      "answer_type": "answer",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    },
+    {
+      "conversation_id": "DEMO-CONV-J-002",
+      "scenario_pack_id": "project_business",
+      "summary": "客户查询售后工单 DEMO-TICKET-202607-001 处理进度，系统返回 Mock 节点。",
+      "answer_type": "answer",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    }
+  ],
+  "knowledge_gaps": [
+    {
+      "gap_id": "DEMO-GAP-J-001",
+      "scenario_pack_id": "project_business",
+      "question": "第三方设备接入中控方案的兼容清单在哪？",
+      "status": "open",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    },
+    {
+      "gap_id": "DEMO-GAP-J-002",
+      "scenario_pack_id": "project_business",
+      "question": "售后维保的标准响应时长是多久？",
+      "status": "open",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    }
+  ],
+  "summaries": [
+    {
+      "summary_id": "DEMO-SUM-J-001",
+      "scenario_pack_id": "project_business",
+      "summary_date": "2026-07-15",
+      "conversation_count": 9,
+      "handoff_count": 1,
+      "gap_count": 2,
+      "content": "Demo 日报：云栖智能当日咨询 9 条，1 条转人工，2 个知识缺口待补。",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    }
+  ],
+  "handoff_samples": [
+    {
+      "handoff_id": "DEMO-HANDOFF-J-001",
+      "scenario_pack_id": "project_business",
+      "reason": "客户提出合同违约与法律责任问题，命中风险规则转人工。",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    }
+  ],
+  "notification_samples": [
+    {
+      "notification_id": "DEMO-NOTIF-J-001",
+      "target_type": "feishu",
+      "event_type": "handoff",
+      "title": "转人工提醒样例",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    },
+    {
+      "notification_id": "DEMO-NOTIF-J-002",
+      "target_type": "console",
+      "event_type": "summary",
+      "title": "日报摘要样例",
+      "mock": true,
+      "source_ref": "demo_dataset:project_business:v1"
+    }
+  ]
+}

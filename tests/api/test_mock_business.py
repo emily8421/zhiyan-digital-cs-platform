@@ -33,7 +33,7 @@ def test_get_standard_demo_order_record() -> None:
     assert data["environment"] == "demo_sandbox"
     assert data["stage"] == "in_production"
     assert data["source_ref"] == "demo_erp:order:DEMO-ORDER-202607-001"
-    assert data["payload"]["customer"]["customer_id"] == "DEMO-CUST-GUJING-001"
+    assert data["payload"]["customer"]["customer_id"] == "DEMO-CUST-MINGSHUO-001"
     assert data["payload"]["business_object"]["order_id"] == "DEMO-ORDER-202607-001"
     assert data["payload"]["progress_nodes"]
     assert data["payload"]["redaction_applied"] is True
