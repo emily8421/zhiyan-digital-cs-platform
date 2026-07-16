@@ -75,9 +75,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_id": "DEMO-CUST-YUNQI-001",
           "customer_type": "demo_customer",
-          "display_name": "乐式智能家居样例客户",
+          "display_name": "云栖智能样例客户",
           "mock": true
         },
         "business_object": {
@@ -136,9 +136,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_id": "DEMO-CUST-YUNQI-001",
           "customer_type": "demo_customer",
-          "display_name": "乐式智能家居样例客户",
+          "display_name": "云栖智能样例客户",
           "mock": true
         },
         "business_object": {
@@ -197,9 +197,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_id": "DEMO-CUST-YUNQI-001",
           "customer_type": "demo_customer",
-          "display_name": "乐式智能家居样例客户",
+          "display_name": "云栖智能样例客户",
           "mock": true
         },
         "business_object": {
@@ -258,9 +258,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_id": "DEMO-CUST-YUNQI-001",
           "customer_type": "demo_customer",
-          "display_name": "乐式智能家居样例客户",
+          "display_name": "云栖智能样例客户",
           "mock": true
         },
         "business_object": {
@@ -327,9 +327,9 @@
         "environment": "demo_sandbox",
         "mock": true,
         "customer": {
-          "customer_id": "DEMO-CUST-LESHI-001",
+          "customer_id": "DEMO-CUST-YUNQI-001",
           "customer_type": "demo_customer",
-          "display_name": "乐式智能家居样例客户",
+          "display_name": "云栖智能样例客户",
           "mock": true
         },
         "business_object": {

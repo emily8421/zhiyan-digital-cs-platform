@@ -358,7 +358,7 @@ Demo Sandbox 标准模拟数据要求：`environment=demo_sandbox`、`mock=true`
   "source_mode": "demo_sandbox",
   "source_ref": "demo_dataset:product_business:v1",
   "virtual_customer_profile": {
-    "company_name": "古晶灯饰样例客户",
+    "company_name": "明烁灯饰样例客户",
     "business_type": "product_business",
     "summary": "用于销售演示、试用和培训的虚拟客户资料"
   },

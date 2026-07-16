@@ -217,11 +217,11 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 
 ### Sprint-7：试点部署与运营配置（Phase2）
 
-> 状态：已细化（2026-07-10）。业务输入已确认：单实例双场景包（古晶产品型 + 乐式项目型，不做多租户）、本机演示优先部署、权限最小集（管理员可写 / 其余只读）。
+> 状态：已细化（2026-07-10）。业务输入已确认：单实例双场景包（明烁产品型 + 云栖项目型，不做多租户）、本机演示优先部署、权限最小集（管理员可写 / 其余只读）。
 
 #### 目标
 
-在 Phase1 本机 Demo 基础上，完成 Phase2 单个试点客户的 MVP 部署、运营流程与基础权限 / 角色可见性。试点形态为**单实例 + 双场景包**：同一本机实例同时承载古晶（产品型，签约目标）与乐式（项目型，数据 / 验证来源）两个场景包做演示，验证「统一架构 + 场景包可复制」核心假设；**不做多租户、不做客户级数据隔离**（Phase4）。
+在 Phase1 本机 Demo 基础上，完成 Phase2 单个试点客户的 MVP 部署、运营流程与基础权限 / 角色可见性。试点形态为**单实例 + 双场景包**：同一本机实例同时承载明烁（产品型，签约目标）与云栖（项目型，数据 / 验证来源）两个场景包做演示，验证「统一架构 + 场景包可复制」核心假设；**不做多租户、不做客户级数据隔离**（Phase4）。
 
 #### 输入文档
 
@@ -399,7 +399,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-06 | Phase1 Sprint-1~Sprint-6 已完成 | 后端 API 测试 `19 passed`；H5 / Console build 通过；HTTP 场景验证 TC-001~TC-016 全部通过；三端本机运行端口 `8000` / `5173` / `5174` 可访问，详见 `docs/09-verification.md` §6。 |
 | 2026-07-06 | Phase2 规划待人工确认 | `docs/research/2026-07-06-phase-upgrade-evaluation.md` 结论为 Conditional Go，是否进入 Phase2 / MVP 试点规划仍待人工确认。 |
 | 2026-07-09 | Phase2 Conditional Go 已确认 | DOC-C-001~C-005 全按 AI 推荐；新增 Phase2 Sprint-7/8/9 草案与 M8~M10 里程碑。 |
-| 2026-07-10 | Sprint-7 已完成并通过验收 | 单实例双场景包（古晶产品型 + 乐式项目型）部署、控制台角色权限最小集（WC-C-001，Demo 级 `X-Console-Role`）、运营配置入口（角色切换 + 场景包过滤）、试点部署预案；后端 `30 passed`、两端 build 通过、TC-017~020 手工验收通过。PR #34 已合并。 |
+| 2026-07-10 | Sprint-7 已完成并通过验收 | 单实例双场景包（明烁产品型 + 云栖项目型）部署、控制台角色权限最小集（WC-C-001，Demo 级 `X-Console-Role`）、运营配置入口（角色切换 + 场景包过滤）、试点部署预案；后端 `30 passed`、两端 build 通过、TC-017~020 手工验收通过。PR #34 已合并。 |
 | 2026-07-10 | Sprint-8A DB 地基已完成 | 新增 PostgreSQL + pgvector Compose、本机 schema / seed 初始化和运行手册；验证通过：Compose config、容器 healthy、pgvector `0.8.0`、11 张 `zycs_` 表、2 个场景包 seed、5 条 Mock 业务记录。后端业务尚未切 PG，Mock / 本地临时数据链路保留。 |
 | 2026-07-10 | Sprint-8B 静态数据读库已完成 | 新增 `psycopg[binary]`、静态数据源开关和 PostgreSQL 静态读取仓库；默认 JSON，`ZYCS_STATIC_DATA_SOURCE=postgres` 时优先读 PG，失败回退 JSON；PG 模式 `tests/api/test_static_data_source.py` 3 passed，默认全量后端 33 passed、1 skipped。后续会话 / 消息 / 转人工 / 缺口 / 通知已由 Sprint-8C-A/B/F 分步闭环，日报仍后置。 |
 | 2026-07-10 | Sprint-8C-A 会话与消息持久化已完成 | 新增会话存储开关和 PostgreSQL 会话 / 消息仓库；默认内存，`ZYCS_CONVERSATION_STORE=postgres` 时写入 PG，失败回退内存；PG 模式 `tests/api/test_conversation_store.py` 4 passed，默认全量后端 35 passed、3 skipped。后续转人工 / 知识缺口 / 通知已由 Sprint-8C-B/F 分步闭环，日报仍后置。 |
