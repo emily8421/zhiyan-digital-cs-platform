@@ -629,9 +629,9 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | TC-066 | `docs/02-srs.md` REQ-017、`docs/07-api-spec.md` API-013 | REQ-017 | 查询 / 更新场景包数据源模式；检查 `demo_sandbox` 默认值和真实模式门禁状态 | Console / API 可显示 `source_mode`、`scenario_pack`、`Not configured / No-Go`；未授权不调用真实系统 | ✅ 通过（2026-07-15，task-011a） |
 | TC-067 | `docs/02-srs.md` REQ-018、`docs/06-db-design.md` Product Sandbox 表占位 | REQ-018 | 切换产品型 / 项目型场景包，分别读取 Demo Dataset、业务记录、历史会话、缺口和摘要 | 不同场景包不串用模拟数据或运行态 | ✅ 通过（2026-07-16，task-011b） |
 | TC-068 | `docs/02-srs.md` REQ-019、`docs/08-dev-plan.md` Sprint-10 | REQ-019 | 在一个场景包内产生会话、缺口、转人工、通知和摘要后执行 Demo reset | 当前场景包恢复初始演示态，其他场景包和真实配置不受影响 | ✅ 通过（2026-07-16，task-011c） |
-| TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | ⚠️ 部分通过（后端数据 + API-014 + mock 标识就绪，2026-07-16 task-011b；H5 / Console 展示待 task-011d / 011e） |
+| TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | ⚠️ 部分通过（后端数据 + API-014 + 来源徽章就绪，task-011b / 011d；完整虚拟客户资料展示与全链路彩排待 task-011e） |
 | TC-070 | `docs/02-srs.md` REQ-021、`docs/design/integration-adapters.md` | REQ-021 | 尝试启用未授权真实只读数据模式 | 返回 No-Go / Not configured；不调用真实系统；记录门禁原因 | ✅ 通过（2026-07-15，task-011a） |
-| TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | ⚠️ 部分通过（API-014 响应来源标识已验证，2026-07-16 task-011b；H5 / Console / 通知 / 摘要全链路徽章待 task-011d） |
+| TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | ⚠️ 部分通过（API-016 + H5 回复 / Console 详情与抽样区 / 通知 / 摘要来源标识实现就绪，task-011b / 011d；全链路人工彩排确认待 task-011e） |
 
 #### Product Sandbox 验收口径
 
@@ -663,3 +663,13 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - 自动化：`tests/api/test_demo_reset.py` 5 用例通过；全量 `PYTHONPATH=backend python -m pytest tests/` → 82 passed / 6 skipped / 0 failed。
 - TC-068：注入运行时会话 / 缺口 / 转人工 / 知识条目 / 通知 → reset → 运行时记录清除、seed（handoff_001/002、gap_001/002、notif_demo_001/002、conv_demo_*）保留、其他场景包不受影响；`confirm=false` / 非 `current_scenario_pack` → 400；viewer → 403；未知场景包 → 404。
 - 边界：不删除场景包配置、Demo Dataset、真实数据门禁配置或其他场景包数据。
+
+#### task-011d 验收证据（2026-07-16，TC-069 / TC-071 前端 + API-016）
+
+- 实现：API-016 `GET /api/v1/source-refs?scenario_pack_id=&source_mode=`（`backend/app/api/source_refs.py` + `services/source_ref_service.py` + `schemas/source_ref.py`）；聚合场景包 knowledge / rule / mock_business 与 `demo_dataset:{pack}:v1` 来源标识，统一 `source_mode=demo_sandbox / mock=true`，支持 `scenario_pack_id` / `source_mode` 过滤，真实模式未授权时返回空 items（TC-070 门禁口径）。
+- 前端来源徽章：H5 `MessageBubble` 补 `scenario_pack` / `source_mode`（Demo Sandbox）徽章（`frontend/customer-h5/src/App.tsx`）；Console `buildEvidenceItems` 补 `source_mode` 条目（默认 demo_sandbox，覆盖会话 / 待跟进 / 缺口 / 知识 / 通知 / 摘要 / Mock 数据 / 场景包详情），并新增「来源标识抽样」区消费 API-016（`frontend/console/src/App.tsx` + `styles.css`）。
+- shared：`frontend/shared/types.ts` 加 `SourceRefItem` / `SourceRefListData`；`apiClient.ts` 加 `listSourceRefs(scenarioPackId?, sourceMode?)`。
+- 自动化：`tests/api/test_source_refs.py` 5 用例通过（聚合覆盖 knowledge / rule / mock_business / demo_dataset + 两参数过滤 + 未授权模式空 + demo_dataset ref）；全量 `PYTHONPATH=backend python -m pytest tests/` → 87 passed / 6 skipped / 0 failed；`frontend/console` & `frontend/customer-h5` `npm run build`（tsc + vite）均通过。
+- TC-071（实现就绪）：H5 回复（source_mode / scenario_pack / source_ref / mock）、Console 列表 / 详情（buildEvidenceItems source_mode + 抽样区 API-016）、通知 / 摘要（详情走 buildEvidenceItems）均含来源标识；API 响应 API-016 聚合可追溯。全链路人工彩排确认待 task-011e。
+- TC-069（部分推进）：来源标识与 mock 标识在 H5 / Console 已展示（task-011b / 011d）；完整虚拟客户资料（公司背景 / 产品目录 / FAQ / 角色）展示与全链路彩排待 task-011e。
+- 边界：H5 source_mode 取 demo_sandbox 前端固定值（真实模式 No-Go 不到 H5，不改 API-002 message 契约）；不静默降级，demo_sandbox 明确标注；未接真实系统、未启用 LLM、未引入新依赖。

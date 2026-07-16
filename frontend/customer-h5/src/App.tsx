@@ -14,6 +14,8 @@ type ChatMessage = {
   content: string;
   answerType?: string;
   sourceRef?: string;
+  sourceMode?: string;
+  scenarioPack?: string;
   mock?: boolean;
   handoff?: Record<string, unknown> | null;
   knowledgeGap?: Record<string, unknown> | null;
@@ -83,6 +85,8 @@ function App() {
           content: `已进入「${selectedPack?.name ?? selectedPackCode}」Demo 会话。你可以选择快捷问题或直接输入。`,
           answerType: 'demo_status',
           sourceRef: 'frontend:h5-demo',
+          sourceMode: 'demo_sandbox',
+          scenarioPack: selectedPackCode,
           mock: response.meta.mock
         }
       ]);
@@ -119,7 +123,10 @@ function App() {
       setInput('');
 
       const response = await sendMessage(activeConversation.conversation_id, content);
-      setMessages((current) => [...current, toAssistantMessage(response.data, response.meta.mock)]);
+      setMessages((current) => [
+        ...current,
+        toAssistantMessage(response.data, response.meta.mock, activeConversation.scenario_pack_code)
+      ]);
     } catch (sendError) {
       setError(formatError(sendError));
     } finally {
@@ -233,6 +240,10 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       {message.role === 'assistant' ? (
         <div className="message-meta">
           {message.answerType ? <span>{message.answerType}</span> : null}
+          {message.scenarioPack ? <span>场景包：{message.scenarioPack}</span> : null}
+          {message.sourceMode ? (
+            <span>来源模式：{message.sourceMode === 'demo_sandbox' ? 'Demo Sandbox' : message.sourceMode}</span>
+          ) : null}
           {message.sourceRef ? <span>来源：{message.sourceRef}</span> : null}
           {message.mock ? <span>Mock</span> : null}
           {message.handoff ? <span>已转人工</span> : null}
@@ -243,13 +254,19 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function toAssistantMessage(data: MessageResponseData, mock: boolean): ChatMessage {
+function toAssistantMessage(
+  data: MessageResponseData,
+  mock: boolean,
+  scenarioPack: string
+): ChatMessage {
   return {
     id: data.message_id,
     role: 'assistant',
     content: data.answer,
     answerType: data.answer_type,
     sourceRef: data.source_ref,
+    sourceMode: 'demo_sandbox',
+    scenarioPack,
     handoff: data.handoff,
     knowledgeGap: data.knowledge_gap,
     mock

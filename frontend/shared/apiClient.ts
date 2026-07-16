@@ -13,7 +13,8 @@ import type {
   ScenarioPackDetail,
   ScenarioPackSummary,
   SourceModeData,
-  DemoResetData
+  DemoResetData,
+  SourceRefListData
 } from './types';
 
 const API_BASE = '/api/v1';
@@ -208,4 +209,19 @@ export function resetScenarioPackDemo(
     headers: consoleRoleHeader(),
     body: JSON.stringify({ runtime_scope: 'current_scenario_pack', confirm: true })
   });
+}
+
+export function listSourceRefs(
+  scenarioPackId?: string,
+  sourceMode?: string
+): Promise<ApiResponse<SourceRefListData>> {
+  const params = new URLSearchParams();
+  if (scenarioPackId) {
+    params.set('scenario_pack_id', scenarioPackId);
+  }
+  if (sourceMode) {
+    params.set('source_mode', sourceMode);
+  }
+  const query = params.toString();
+  return requestJson<SourceRefListData>(`/source-refs${query ? `?${query}` : ''}`);
 }
