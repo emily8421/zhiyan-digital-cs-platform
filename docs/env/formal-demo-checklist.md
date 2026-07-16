@@ -88,6 +88,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-local-demo.ps1 -BackendPo
 - 右侧详情栏应显示“演示证据摘要”，再展示原始 JSON。
 - 待跟进、知识缺口、通知、日报摘要都属于 Demo / Mock 运营数据。
 - 角色切换是 Demo 级权限演示，不是生产账号体系。
+- **（M11 新增）虚拟客户资料**：切到产品型 / 项目型场景包，应能看到该虚拟客户的完整画像（公司背景、产品目录 / FAQ、订单 / 项目 / 售后、历史会话），全程标识为模拟数据。
+- **（M11 新增）来源标识全链路**：Console「来源标识抽样（API-016）」专区应列出知识 / 规则 / Mock 业务 / Demo Dataset 来源，全部 `demo_sandbox` / `mock=true`；H5 回复气泡底部应有「来源模式：Demo Sandbox」+「来源：{source_ref}」徽章。
+- **（M11 新增）数据源模式门禁**：顶部 banner 显示 `Demo Sandbox`；admin 试切真实模式应回显 `Not configured / No-Go` + 门禁原因（不偷偷接真实数据）。
+- **（M11 新增）一键重置**：Console sandbox 区「重置演示运行态」按钮（admin）可重置当前场景包运行态，演示前 / 后使用，只影响当前场景包。
 
 ## 9. 收尾检查
 
@@ -108,3 +112,5 @@ powershell -Command "foreach($port in 8021,5195,5196){ $count=@(Get-NetTCPConnec
 - 正式演示前彩排记录：`docs/research/2026-07-13-formal-demo-rehearsal.md`
 - Console 演示标识任务：`tasks/task-010d-console-demo-badges.md`
 - Phase2 / Demo Sandbox 验收记录：`docs/09-verification.md` §10.21~10.27
+- Product Sandbox（M11）验收记录：`docs/09-verification.md` §10.28
+- task-011e 端到端彩排记录：`docs/research/2026-07-16-task-011e-product-sandbox-rehearsal.md`
