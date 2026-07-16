@@ -12,8 +12,8 @@
 | 覆盖 REQ / NFR | REQ-007、REQ-014、REQ-017、REQ-018、REQ-020、REQ-022 |
 | 所属 Phase | [P1] Demo（跨大类复制属候选 / 后续阶段） |
 | 交付物形态 | Demo / Product Sandbox |
-| 当前状态 | P1-已实现；Product Sandbox 场景包数据集增量待实现 |
-| 最后更新 | 2026-07-15 |
+| 当前状态 | P1-已实现；Product Sandbox 场景包数据集增量已实现（task-011b，2026-07-16） |
+| 最后更新 | 2026-07-16 |
 | 下游影响 | docs/08-dev-plan.md（Sprint-2）、docs/09-verification.md（TC-007/014）、backend/app/data/、tests/ |
 
 ## 1. 目标与范围
