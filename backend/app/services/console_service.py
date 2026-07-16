@@ -1,3 +1,5 @@
+from typing import Any
+
 from copy import deepcopy
 from datetime import UTC, date, datetime
 from uuid import uuid4
@@ -29,6 +31,11 @@ from app.services.conversation_store import should_use_postgres_conversation_sto
 _HANDOFF_STATUSES = {"open", "processing", "closed"}
 _GAP_STATUSES = {"new", "reviewing", "accepted", "rejected", "closed"}
 _KNOWLEDGE_ITEM_STATUSES = {"draft", "active", "archived"}
+
+# Demo 初始演示态 seed 记录 ID；demo-reset 保留这些，只清除运行时新增记录。
+_SEED_HANDOFF_IDS = frozenset({"handoff_001", "handoff_002"})
+_SEED_GAP_IDS = frozenset({"gap_001", "gap_002"})
+_SEED_NOTIFICATION_IDS = frozenset({"notif_demo_001", "notif_demo_002"})
 
 _handoffs: dict[str, HandoffRecord] = {
     "handoff_001": HandoffRecord(
@@ -403,6 +410,60 @@ def build_daily_summary(summary_date: date | None = None) -> DailySummaryData:
         content="Demo 日报：今日已生成会话、转人工、知识缺口和 Mock 通知摘要，未接入真实飞书或业务系统。",
         mock=True,
     )
+
+
+def reset_console_runtime_for_pack(scenario_pack_code: str) -> dict[str, int]:
+    """清除当前场景包运行时转人工 / 缺口 / 知识条目 / 通知，保留 seed 初始演示态。
+
+    通知无 scenario_pack 字段，通过 related_id 关联被清除的运行时 handoff / gap。
+    知识条目无 seed，按场景包全部清除。seed 记录（handoff_001/002、gap_001/002、
+    notif_demo_001/002）原样保留。
+    """
+    runtime_handoff_ids = {
+        handoff_id
+        for handoff_id, record in _handoffs.items()
+        if record.scenario_pack_code == scenario_pack_code and handoff_id not in _SEED_HANDOFF_IDS
+    }
+    runtime_gap_ids = {
+        gap_id
+        for gap_id, record in _knowledge_gaps.items()
+        if record.scenario_pack_code == scenario_pack_code and gap_id not in _SEED_GAP_IDS
+    }
+    runtime_related_ids = runtime_handoff_ids | runtime_gap_ids
+
+    handoffs_removed = _remove_runtime(
+        _handoffs,
+        lambda key, record: record.scenario_pack_code == scenario_pack_code
+        and key not in _SEED_HANDOFF_IDS,
+    )
+    knowledge_gaps_removed = _remove_runtime(
+        _knowledge_gaps,
+        lambda key, record: record.scenario_pack_code == scenario_pack_code and key not in _SEED_GAP_IDS,
+    )
+    knowledge_items_removed = _remove_runtime(
+        _knowledge_items,
+        lambda key, record: record.scenario_pack_code == scenario_pack_code,
+    )
+    notifications_removed = _remove_runtime(
+        _notifications,
+        lambda key, record: key not in _SEED_NOTIFICATION_IDS
+        and record.related_id in runtime_related_ids,
+    )
+    return {
+        "handoffs": handoffs_removed,
+        "knowledge_gaps": knowledge_gaps_removed,
+        "knowledge_items": knowledge_items_removed,
+        "notifications": notifications_removed,
+    }
+
+
+def _remove_runtime(store: dict[str, Any], predicate) -> int:
+    removed = 0
+    for key in list(store.keys()):
+        if predicate(key, store[key]):
+            del store[key]
+            removed += 1
+    return removed
 
 
 def _seed_notifications() -> dict[str, MockNotificationRecord]:

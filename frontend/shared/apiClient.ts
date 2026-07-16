@@ -12,7 +12,8 @@ import type {
   MockNotificationRecord,
   ScenarioPackDetail,
   ScenarioPackSummary,
-  SourceModeData
+  SourceModeData,
+  DemoResetData
 } from './types';
 
 const API_BASE = '/api/v1';
@@ -196,5 +197,15 @@ export function updateScenarioPackSourceMode(
     method: 'PATCH',
     headers: consoleRoleHeader(),
     body: JSON.stringify({ source_mode: sourceMode })
+  });
+}
+
+export function resetScenarioPackDemo(
+  scenarioPackCode: string
+): Promise<ApiResponse<DemoResetData>> {
+  return requestJson<DemoResetData>(`/scenario-packs/${scenarioPackCode}/demo-reset`, {
+    method: 'POST',
+    headers: consoleRoleHeader(),
+    body: JSON.stringify({ runtime_scope: 'current_scenario_pack', confirm: true })
   });
 }
