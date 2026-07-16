@@ -6,6 +6,15 @@
 - 模板继承版本入口：`TEMPLATE-BASE.md`
 - 模板同步运行记录：`sync-records/template-sync/`
 
+## v0.3.0（2026-07-16）
+
+Product Sandbox 可试用版（Phase2.5 / Phase3A，M11）验收通过，按 `ai/project-rules.md` §7.2 递增项目版本（MINOR）。
+
+- **递增依据**：§7.2，里程碑 M11 Product Sandbox 可试用版验收通过（2026-07-16，TC-066~TC-071 全过）属 MINOR。
+- **本版交付**：Sprint-10（Product Sandbox 可试用版）完成。数据源模式门禁（API-013 / TC-066、TC-070）、场景包独立 Demo Dataset（API-014 / TC-067）、Demo reset（API-015 / TC-068）、虚拟客户资料完整展示（TC-069）、来源标识全链路（API-016 / TC-071）全部通过；前端 H5 来源徽章 + Console 来源抽样区 / Mock 卡片来源字段上线。
+- **关联**：Sprint-10 task-011a~e（PR #46~#49 + task-011e 端到端彩排）；REQ-017~REQ-022、F-012~F-016、AC-008~AC-014。见 `docs/09-verification.md` §10.28 与 `docs/research/2026-07-16-task-011e-product-sandbox-rehearsal.md`。
+- **仍 No-Go**：真实业务系统集成、生产飞书、真实客户数据、生产 LLM 自动答复（见 `ai/project-rules.md` §1，Phase3 范围）。
+
 ## v0.2.0（2026-07-15）
 
 首次按 `ai/project-rules.md` §7 版本规则递增项目版本（MINOR）。

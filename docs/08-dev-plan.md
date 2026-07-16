@@ -28,7 +28,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | Sprint-7 | 试点部署与运营配置（Phase2） | 单个试点客户部署、运营流程、基础权限 / 角色可见性。 | F-007、F-008 | `backend/`、`frontend/console/`、`docs/env/` | 已完成（PR #34，2026-07-10） |
 | Sprint-8 | 飞书沙箱联调 + DB 技术验证（Phase2） | 飞书通知沙箱 / 试点评估（不接真实组织数据）；PostgreSQL/pgvector 技术验证。 | F-006、F-010 | `backend/app/adapters/`、`backend/app/services/`、`docker/`、`docs/research/`、`tasks/` | 已完成（2026-07-11，RG-001 / RG-002 Go，TC-021~046） |
 | Sprint-9 | 知识运营强化 + LLM 评估（Phase2） | 知识缺口流转 / 审核强化、运营配置；LLM 专项评估（不默认启用）。 | F-008、F-011 | `backend/app/services/`、`docs/research/` | LLM 评估已完成（Conditional Go，2026-07-11）；知识运营强化已完成（2026-07-11，缺口 accepted 入库 + API-006，TC-050~052 通过） |
-| Sprint-10 | Product Sandbox 可试用版（Phase2.5 / Phase3A） | 用场景包独立模拟数据、数据源模式标识、Demo reset 和虚拟客户资料包跑完整产品试用闭环。 | F-012~F-016 | `backend/app/data/`、`backend/app/services/`、`backend/app/api/`、`frontend/`、`docs/design/`、`tests/`、`tasks/` | 进行中（task-011a~d 已合并 PR #46~#49，待 task-011e 端到端彩排 → M11） |
+| Sprint-10 | Product Sandbox 可试用版（Phase2.5 / Phase3A） | 用场景包独立模拟数据、数据源模式标识、Demo reset 和虚拟客户资料包跑完整产品试用闭环。 | F-012~F-016 | `backend/app/data/`、`backend/app/services/`、`backend/app/api/`、`frontend/`、`docs/design/`、`tests/`、`tasks/` | 已完成（M11 验收通过 2026-07-16，TC-066~071；task-011a~e PR #46~#49 + 端到端彩排） |
 
 ## 3. Sprint 详情
 
@@ -422,6 +422,7 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 | 2026-07-13 | 正式演示前全链路彩排通过 | Backend `8021`、H5 `5195`、Console `5196` 健康检查 `6 / 6 reachable`；通过 H5 代理抽样知识、标准 Demo 订单、高风险转人工、未知缺口四类主路径；Console Mock 数据 API 返回 `environment` / `source_system` / `source_ref`；用户人工确认手机 H5 可打开、可发送问题并收到回答，Console 可看到联动数据。见 `docs/research/2026-07-13-formal-demo-rehearsal.md` 与 `docs/09-verification.md` §10.27。 |
 | 2026-07-15 | Product Sandbox 需求链与下游计划同步中 | `docs/00-03` 已新增 Phase2.5 / Phase3A Product Sandbox；`04-09`、`docs/design/*` 与任务拆分按 `docs/research/2026-07-15-requirements-product-sandbox-audit.md` 传播。 |
 | 2026-07-16 | task-011d 前端来源徽章 + API-016 已合并 | H5 `MessageBubble` 与 Console 来源标识抽样区（API-016）实现并合并；PR #49（merge commit `5f3227e`）已 merge 进 main，task-011a~d 全部完成。TC-069 / TC-071 仍部分通过，全链路彩排待 task-011e → M11。见 `docs/09-verification.md` §10.28。 |
+| 2026-07-16 | task-011e 端到端彩排 + M11 验收通过 | 本机三端彩排 6 / 6 reachable、全量回归 87 passed / 6 skipped；API 全链路 + 前端人工验收 ABCD 全正常，TC-066~071 全部通过 → M11 Product Sandbox 可试用版验收通过。见 `docs/research/2026-07-16-task-011e-product-sandbox-rehearsal.md` 与 `docs/09-verification.md` §10.28。 |
 
 ## 7. 已确认口径与待执行
 
@@ -437,4 +438,4 @@ Phase1 只实现本机可运行 Demo，用最小闭环演示知衍数字客服�
 - Demo Sandbox 对外演示彩排已完成；后续正式对外演示应按 `docs/env/external-demo-script.md` 执行人工讲解，并在 IP、端口或网络变化时重新复核手机扫码。
 - Console 演示标识增强已完成；后续演示时可直接用控制台说明 Mock / Sandbox / source_ref / 真实系统未接入边界。
 - 正式演示前全链路彩排已通过；正式演示当天如网络、IP、端口或防火墙状态变化，仍需重新确认局域网手机访问。
-- Product Sandbox 已作为 Phase2.5 / Phase3A 近期优先级进入计划；下一步先完成设计文档和 task-011a~011e，再进入功能编码。
+- Product Sandbox（Phase2.5 / Phase3A）Sprint-10 已完成：task-011a~011e 全部合并 / 彩排通过，M11 Product Sandbox 可试用版验收通过（2026-07-16，TC-066~071）；真实业务系统集成、生产飞书、真实客户数据、生产 LLM 自动答复仍 No-Go（Phase3 范围）。

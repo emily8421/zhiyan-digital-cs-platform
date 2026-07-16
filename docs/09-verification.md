@@ -629,9 +629,9 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 | TC-066 | `docs/02-srs.md` REQ-017、`docs/07-api-spec.md` API-013 | REQ-017 | 查询 / 更新场景包数据源模式；检查 `demo_sandbox` 默认值和真实模式门禁状态 | Console / API 可显示 `source_mode`、`scenario_pack`、`Not configured / No-Go`；未授权不调用真实系统 | ✅ 通过（2026-07-15，task-011a） |
 | TC-067 | `docs/02-srs.md` REQ-018、`docs/06-db-design.md` Product Sandbox 表占位 | REQ-018 | 切换产品型 / 项目型场景包，分别读取 Demo Dataset、业务记录、历史会话、缺口和摘要 | 不同场景包不串用模拟数据或运行态 | ✅ 通过（2026-07-16，task-011b） |
 | TC-068 | `docs/02-srs.md` REQ-019、`docs/08-dev-plan.md` Sprint-10 | REQ-019 | 在一个场景包内产生会话、缺口、转人工、通知和摘要后执行 Demo reset | 当前场景包恢复初始演示态，其他场景包和真实配置不受影响 | ✅ 通过（2026-07-16，task-011c） |
-| TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | ⚠️ 部分通过（后端数据 + API-014 + 来源徽章就绪，task-011b / 011d；完整虚拟客户资料展示与全链路彩排待 task-011e） |
+| TC-069 | `docs/02-srs.md` REQ-020、`docs/03-prd.md` AC-014 | REQ-020 | 加载虚拟客户资料包，在 H5 / Console 查看公司背景、产品目录、FAQ、订单、项目、售后、人员角色和历史会话 | H5 / Console 可呈现完整演示语境，且标识为模拟数据 | ✅ 通过（2026-07-16，task-011e 端到端彩排：Console 各数据区组装呈现完整虚拟客户资料 + 全程模拟标识，前端人工确认） |
 | TC-070 | `docs/02-srs.md` REQ-021、`docs/design/integration-adapters.md` | REQ-021 | 尝试启用未授权真实只读数据模式 | 返回 No-Go / Not configured；不调用真实系统；记录门禁原因 | ✅ 通过（2026-07-15，task-011a） |
-| TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | ⚠️ 部分通过（API-016 + H5 回复 / Console 详情与抽样区 / 通知 / 摘要来源标识实现就绪，task-011b / 011d；全链路人工彩排确认待 task-011e） |
+| TC-071 | `docs/02-srs.md` REQ-022、`docs/07-api-spec.md` 来源标识约定 | REQ-022 | 抽样 H5 回复、Console 列表、通知、摘要和 API 响应 | 均包含 `source_mode`、`scenario_pack`、`source_ref`、`mock` / `real` 等来源标识；降级时明确显示模拟数据 | ✅ 通过（2026-07-16，task-011e 端到端彩排：API-016 聚合 + H5 回复徽章 + Console 抽样区 / 详情 + Mock 卡片字段全链路人工确认） |
 
 #### Product Sandbox 验收口径
 
@@ -673,3 +673,12 @@ Phase1 采用“接口验证 + 场景样例 + 手工端到端演示”的组合�
 - TC-071（实现就绪）：H5 回复（source_mode / scenario_pack / source_ref / mock）、Console 列表 / 详情（buildEvidenceItems source_mode + 抽样区 API-016）、通知 / 摘要（详情走 buildEvidenceItems）均含来源标识；API 响应 API-016 聚合可追溯。全链路人工彩排确认待 task-011e。
 - TC-069（部分推进）：来源标识与 mock 标识在 H5 / Console 已展示（task-011b / 011d）；完整虚拟客户资料（公司背景 / 产品目录 / FAQ / 角色）展示与全链路彩排待 task-011e。
 - 边界：H5 source_mode 取 demo_sandbox 前端固定值（真实模式 No-Go 不到 H5，不改 API-002 message 契约）；不静默降级，demo_sandbox 明确标注；未接真实系统、未启用 LLM、未引入新依赖。
+
+#### task-011e 验收证据（2026-07-16，TC-066~TC-071 端到端彩排 / M11 验收）
+
+- 彩排环境：本机三端 `scripts/start-local-demo.ps1`（Backend 8000 / H5 5173 / Console 5174），`scripts/check-local-demo.ps1` 6 / 6 reachable；全量回归 `PYTHONPATH=backend python -m pytest tests/` → 87 passed / 6 skipped / 0 failed（task-011a~d 合并进 main 后无回归）。完整彩排记录见 `docs/research/2026-07-16-task-011e-product-sandbox-rehearsal.md`。
+- API 全链路（python urllib 发请求，规避 Windows Git Bash 下 curl 中文 body 编码问题）：9 步闭环全 http=200。message 来源标识四类正确可追溯——知识 `answer_type=knowledge / source_ref=SRC-SP-PRODUCT-001`、进度 `mock_business / demo_erp:order:DEMO-ORDER-202607-001`、高风险 `handoff / rule:high_risk_handoff`、缺口 `gap / policy:knowledge_gap`；API-016 `/source-refs` 聚合 17 条（knowledge×4 / rule×2 / mock_business×9 / demo_dataset×2），全 `source_mode=demo_sandbox / mock=true`；API-014 `virtual_customer_profile` 摘要（company_name / business_type / summary）+ stats（知识2 / 业务记录4 / 历史会话2 / 缺口2 / 摘要1）；缺口 `PATCH accepted` → 生成 1 条 draft 知识条目；API-015 demo-reset `scope=current_scenario_pack`。
+- 前端人工验收（ABCD 全正常）：H5 回复气泡显示「来源模式：Demo Sandbox」+「来源：{source_ref}」徽章（A1 / A2）；Console「来源标识抽样（API-016）」专区有数据 + Mock 业务卡片详情带 `source_ref` / `source_system` / `environment`（B1 / B2）；Console 各数据区（Demo Sandbox banner / 知识条目 / Mock 业务记录 / 会话 / 待跟进 / 缺口）组装呈现完整虚拟客户资料且全程标识模拟（C）；演示主线 5 步（产品知识 → 进度 → 高风险转人工 → 未知缺口 → Console 运营闭环）无报错、Console 数据联动（D）。
+- TC-069：⚠️ 部分通过 → ✅ 通过。完整虚拟客户资料经 Console 各数据区组装展示 + 全程模拟标识，前端人工确认（API-014 仅返摘要为设计如此，完整资料存于 Demo Dataset 文件由前端组装）。
+- TC-071：⚠️ 部分通过 → ✅ 通过。来源标识全链路：API-016 聚合 + H5 回复徽章 + Console 抽样区 / 详情 + Mock 卡片字段，全链路人工确认。通知 / 日报 record 本身不带 `source_ref` 字段为设计如此（来源在触发消息 / payload，`mock` 标识在），不计为缺陷。
+- **M11 验收结论**：TC-066~TC-071 全部通过，M11 Product Sandbox 可试用版验收通过（2026-07-16）。真实业务系统集成、生产飞书、真实客户数据、生产 LLM 自动答复仍 No-Go（未解锁，Phase3 范围）。
