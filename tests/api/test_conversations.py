@@ -75,7 +75,7 @@ def test_send_message_returns_standard_demo_sandbox_answer() -> None:
     assert data["intent"] == "order_progress"
     assert data["answer_type"] == "mock_business"
     assert data["source_ref"] == "demo_erp:order:DEMO-ORDER-202607-001"
-    assert "Demo 订单" in data["answer"]
+    assert "DEMO-ORDER-202607-001" in data["answer"]
     assert data["handoff"] is None
     assert data["knowledge_gap"] is None
 

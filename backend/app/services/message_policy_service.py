@@ -126,7 +126,7 @@ def _match_mock_business(content: str) -> MessageDecision | None:
         return MessageDecision(
             intent="missing_mock_business",
             answer_type="gap",
-            answer="这个编号当前没有可用的 Mock 记录，我已记录为知识缺口，避免编造进度。",
+            answer="这个编号当前没有可查询的业务记录，我已记录为知识缺口，避免编造进度。",
             source_ref=f"mock_business:{external_ref}:missing",
             risk_level="medium",
             gap_question=f"缺少 Mock 业务记录：{external_ref}",
@@ -134,7 +134,7 @@ def _match_mock_business(content: str) -> MessageDecision | None:
     return MessageDecision(
         intent=f"{record.record_type}_progress",
         answer_type="mock_business",
-        answer=f"这是 Mock 进度：{record.summary} 下一步：{record.next_step}",
+        answer=f"{record.summary} 下一步：{record.next_step}",
         source_ref=record.source_ref,
         risk_level="low",
         mock_record=record,

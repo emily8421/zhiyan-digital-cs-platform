@@ -36,13 +36,13 @@
     {
       "id": "kb_product_001",
       "title": "灯带规格咨询",
-      "content": "Phase1 Demo 中可说明常见灯带规格、颜色和定制方向，具体价格与交期需转人工确认。",
+      "content": "我们的灯带常规规格：供电 12V/24V，灯珠型号 2835/5050，长度可按 1 米倍数裁剪；光色支持暖白、自然白、冷白及 RGB 全彩，并可按场景定制色温与防水等级。具体价格、起订量和交期需要销售同事为您确认，我帮您转接人工。",
       "source_ref": "SRC-SP-PRODUCT-001"
     },
     {
       "id": "kb_product_002",
       "title": "售后处理边界",
-      "content": "售后问题可先收集故障现象和订单编号，赔付、退换货结论需人工确认。",
+      "content": "售后问题您可以先告诉我故障现象和订单编号，我会帮您登记并转给售后同事跟进。涉及赔付、退换货的结论需要人工核实后才能确认，我不会直接给您承诺。",
       "source_ref": "SRC-PRD-001"
     }
   ],
@@ -60,7 +60,7 @@
       "record_type": "order",
       "external_ref": "HC-ORDER-001",
       "status": "生产排期中",
-      "summary": "Mock 订单 HC-ORDER-001 已进入生产排期，等待物料齐套。",
+      "summary": "订单HC-ORDER-001 已进入生产排期，等待物料齐套。",
       "next_step": "物料齐套后进入生产。",
       "eta": "2026-07-10",
       "is_mock": true,
@@ -86,7 +86,7 @@
           "record_type": "order",
           "status": "生产排期中",
           "stage": "pending_material",
-          "summary": "Mock 订单 HC-ORDER-001 已进入生产排期，等待物料齐套。",
+          "summary": "订单HC-ORDER-001 已进入生产排期，等待物料齐套。",
           "eta": "2026-07-10"
         },
         "progress_nodes": [
@@ -121,7 +121,7 @@
       "record_type": "order",
       "external_ref": "HC-ORDER-002",
       "status": "质检中",
-      "summary": "Mock 订单 HC-ORDER-002 已完成生产，正在质检。",
+      "summary": "订单HC-ORDER-002 已完成生产，正在质检。",
       "next_step": "质检通过后安排包装。",
       "eta": "2026-07-08",
       "is_mock": true,
@@ -147,7 +147,7 @@
           "record_type": "order",
           "status": "质检中",
           "stage": "quality_check",
-          "summary": "Mock 订单 HC-ORDER-002 已完成生产，正在质检。",
+          "summary": "订单HC-ORDER-002 已完成生产，正在质检。",
           "eta": "2026-07-08"
         },
         "progress_nodes": [
@@ -182,7 +182,7 @@
       "record_type": "order",
       "external_ref": "DEMO-ORDER-202607-001",
       "status": "生产中",
-      "summary": "Demo 订单 DEMO-ORDER-202607-001 已完成物料齐套，当前处于生产中，预计完成后进入质检。",
+      "summary": "订单DEMO-ORDER-202607-001 已完成物料齐套，当前处于生产中，预计完成后进入质检。",
       "next_step": "生产完成后进入质检；如需确认具体交付承诺请转人工。",
       "eta": "2026-07-20",
       "is_mock": true,
@@ -208,7 +208,7 @@
           "record_type": "order",
           "status": "生产中",
           "stage": "in_production",
-          "summary": "Demo 订单 DEMO-ORDER-202607-001 已完成物料齐套，当前处于生产中，预计完成后进入质检。",
+          "summary": "订单DEMO-ORDER-202607-001 已完成物料齐套，当前处于生产中，预计完成后进入质检。",
           "eta": "2026-07-20"
         },
         "progress_nodes": [
@@ -256,7 +256,7 @@
       "record_type": "order",
       "external_ref": "DEMO-ORDER-202607-002",
       "status": "质检中",
-      "summary": "Demo 订单 DEMO-ORDER-202607-002 已完成生产，正在进行出厂质检。",
+      "summary": "订单DEMO-ORDER-202607-002 已完成生产，正在进行出厂质检。",
       "next_step": "质检通过后进入包装与发货准备。",
       "eta": "2026-07-18",
       "is_mock": true,
@@ -282,7 +282,7 @@
           "record_type": "order",
           "status": "质检中",
           "stage": "quality_check",
-          "summary": "Demo 订单 DEMO-ORDER-202607-002 已完成生产，正在进行出厂质检。",
+          "summary": "订单DEMO-ORDER-202607-002 已完成生产，正在进行出厂质检。",
           "eta": "2026-07-18"
         },
         "progress_nodes": [

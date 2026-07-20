@@ -79,7 +79,7 @@ def test_known_mock_record_returns_traceable_mock_answer() -> None:
     data = response.json()["data"]
     assert data["answer_type"] == "mock_business"
     assert data["source_ref"] == "demo_erp:order:HC-ORDER-001"
-    assert "Mock 进度" in data["answer"]
+    assert "HC-ORDER-001" in data["answer"]
     assert data["handoff"] is None
     assert data["knowledge_gap"] is None
 
