@@ -19,3 +19,8 @@
 - `TEMPLATE-UPGRADE-demo-port-identity-check.md`：模板 issue #184 已关闭；Demo 页面身份与端口漂移检查已在模板 v1.47.3 落地，并随本次 v1.52.4 同步下行。
 - `TEMPLATE-UPGRADE-web-app-structure-profile.md`：模板 issue #186 已关闭；Web App Structure Profile 与 Walking Skeleton Gate 已在模板 v1.51.0 落地，并随本次 v1.52.4 同步下行。
 - `TEMPLATE-UPGRADE-codex-sandbox-remote-ops.md`：模板 issue #195 已关闭；Codex Checkpoint Mode 与远端操作 SOP 已在模板 v1.52.1 落地，并随本次 v1.52.4 同步下行。
+
+## 2026-07-24 同步 v1.56.13 归档
+
+- `TEMPLATE-UPGRADE-sync-powershell-fallback-commit-pathspec.md`：模板 issue #217 已关闭；PowerShell fallback commit 避免超长 pathspec 的修复已在模板 v1.52.5 落地，并随本次 v1.56.13 同步下行。
+- `TEMPLATE-UPGRADE-derived-version-governance.md`：模板 issue #221 已关闭；派生项目版本机制默认启用、存量检测与整理引导已在模板 v1.56.13 相关脚本和 Prompt 中落地，并随本次同步下行。
