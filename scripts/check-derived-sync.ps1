@@ -17,6 +17,50 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Repair-ProcessPathEnvironment {
+  $vars = [Environment]::GetEnvironmentVariables("Process")
+  $pathKeys = @()
+  foreach ($key in $vars.Keys) {
+    if ([string]::Equals([string]$key, "Path", [StringComparison]::OrdinalIgnoreCase)) {
+      $pathKeys += [string]$key
+    }
+  }
+  if ($pathKeys.Count -le 1) { return }
+
+  $orderedKeys = @()
+  foreach ($key in $pathKeys) {
+    if ($key -ceq "Path") { $orderedKeys += $key }
+  }
+  foreach ($key in $pathKeys) {
+    if ($key -cne "Path") { $orderedKeys += $key }
+  }
+
+  $separator = [string][System.IO.Path]::PathSeparator
+  $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+  $parts = New-Object 'System.Collections.Generic.List[string]'
+  foreach ($key in $orderedKeys) {
+    $value = [Environment]::GetEnvironmentVariable($key, "Process")
+    if ([string]::IsNullOrWhiteSpace($value)) { continue }
+    foreach ($part in ([string]$value -split [regex]::Escape($separator))) {
+      if ([string]::IsNullOrWhiteSpace($part)) { continue }
+      if ($seen.Add($part)) {
+        $parts.Add($part) | Out-Null
+      }
+    }
+  }
+
+  foreach ($key in $pathKeys) {
+    if ($key -cne "Path") {
+      [Environment]::SetEnvironmentVariable($key, $null, "Process")
+    }
+  }
+  if ($parts.Count -gt 0) {
+    [Environment]::SetEnvironmentVariable("Path", [string]::Join($separator, $parts), "Process")
+  }
+}
+
+Repair-ProcessPathEnvironment
+
 function Find-TemplateBash {
   $programFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
   $candidates = @($env:GIT_BASH)
@@ -103,6 +147,26 @@ function Require-File {
   }
 }
 
+function Require-Contains {
+  param(
+    [string]$Path,
+    [string]$Pattern,
+    [string]$Message
+  )
+
+  if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+    Fail "$Message (missing file: $Path)"
+    return
+  }
+
+  $content = Get-Content -Raw -Encoding UTF8 $Path
+  if ($content -match $Pattern) {
+    Pass $Message
+  } else {
+    Fail $Message
+  }
+}
+
 function Get-GitText {
   param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArgs)
 
@@ -165,6 +229,8 @@ function Test-SyncFile {
   if ($ChangedFile -like "ai/doc-standards/*") { return $true }
   if ($ChangedFile -like "docs/_scaffold/*") { return $true }
   if ($ChangedFile -eq "TEMPLATE-BASE.md") { return $true }
+  if ($ChangedFile -eq "upstream/CHANGELOG.md") { return $true }
+  if ($ChangedFile -eq "upstream/CHANGELOG-PLAIN.md") { return $true }
   return ($SyncFiles -contains $ChangedFile)
 }
 
@@ -336,6 +402,19 @@ function Invoke-NativeDerivedSyncCheck {
     }
   } else {
     Write-Host "INFO  VERSION or README.md is missing; skipped version consistency check"
+  }
+
+  Write-Host ""
+  Write-Host "==> Upstream template changelog references (upstream/)"
+  if (Test-Path -LiteralPath "TEMPLATE-BASE.md" -PathType Leaf) {
+    Require-File "upstream/CHANGELOG.md"
+    Require-File "upstream/CHANGELOG-PLAIN.md"
+    Require-Contains "upstream/CHANGELOG.md" 'Upstream template changelog reference' "upstream/CHANGELOG.md is marked as upstream template changelog reference"
+    Require-Contains "upstream/CHANGELOG-PLAIN.md" 'Upstream template changelog reference' "upstream/CHANGELOG-PLAIN.md is marked as upstream template plain changelog reference"
+    Require-Contains "upstream/CHANGELOG.md" '(?m)^# CHANGELOG' "upstream/CHANGELOG.md keeps formal changelog title"
+    Require-Contains "upstream/CHANGELOG-PLAIN.md" '(?m)^# CHANGELOG-PLAIN' "upstream/CHANGELOG-PLAIN.md keeps plain changelog title"
+  } else {
+    Write-Host "INFO  TEMPLATE-BASE.md not detected; skipped upstream/ reference check (legacy same-path sync mode)."
   }
 
   Write-Host ""
