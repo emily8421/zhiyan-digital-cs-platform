@@ -1,4 +1,4 @@
-﻿# 派生项目模板同步运行记录
+# 派生项目模板同步运行记录
 
 ## 基本信息
 
@@ -116,3 +116,15 @@
 - 是否需要补项目验证入口：否（已有 project-check.yml）
 - 是否需要人工清理旧目录：无需（无 docs/_scaffold 残留）
 - 是否需要同步回模板仓库：是（registry 更新 zhiyan 行 point-in-time 字段）
+
+## 同步后收尾执行记录（2026-08-03）
+
+### 同步后整理审计（post-sync-cleanup，15 号提示词第一段）
+- 结构审计：docs/ 根目录仅 README + 00-09，标准子目录齐全；docs/env/local-env.md 存在；无 docs/_scaffold 残留；workflow 已用 project-check.yml（无 template-check.yml 迁移项）
+- 动作项：根 CHANGELOG-PLAIN.md ownership 已处理（2026-08-03，提交 43a4083）——项目自有大白话 changelog 置顶（v0.3.0/v0.2.0/v0.1.0），母模板历史保留在「模板继承历史」区
+- 无文件迁移项；README / ai/project-rules.md 无需补齐
+
+### 文档体系审计（docs-system-audit 同步后审计，轻量执行）
+- 00-09 全部存在且含 §0 文档元信息 + 追溯模式（REQ/U-ID/API-ID/TC）；08/09 当前状态元信息与项目事实一致（Phase2.5 / Phase3A）
+- 未发现规范基线缺口；矩阵级逐 ID 闭合核对（REQ↔TC 悬空、图纸四维度）未做，如需可分批完整审计
+- 回梳建议：无必须回梳项
