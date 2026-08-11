@@ -19,12 +19,12 @@
 NEXT-STEPS.md
 ```
 
-- `.ai/session-handoff.md` / `NEXT-STEPS.md` 只用于本地会话断点恢复，不是项目事实文档，不进入正式提交（均已 gitignore），不得替代 `docs/08-dev-plan.md` 的进度摘要或 `docs/09-verification.md` 的验证证据 / 验收记录。
+- `.ai/session-handoff.md` / `NEXT-STEPS.md` 只用于本地会话断点恢复，不是项目事实文档，不进入正式提交（均已 gitignore），不得替代 `docs/08-dev-plan.md` 的进度摘要或 `docs/09-verification.md` 的验证证据 / 验收记录。handoff 虽为本地 gitignored 文件，但体积仍受 §6.1 rollup 约束，不得无限膨胀。
 - 续接文件不得记录 token、密钥、账号密码、客户敏感数据或无法提交到仓库的隐私事实；只记录任务状态、文件路径、命令和待确认项。待确认项应尽量包含 AI 建议、建议依据、备选方案、取舍影响和阻塞关系，避免只留下无法续接的问题清单。
 
 **裁决优先级**（恢复上下文时按此链判定，高优先级覆盖低优先级）：
 
-1. **Git 客观事实**（`git status --short --branch` / `git log` / `git stash list` / 当前分支 / 未提交 diff）——永远最新、永远可信。
+1. **Git 客观事实**（`git status --short --branch` / `git log` / `git stash list` / `git worktree list` / 当前分支 / 未提交 diff）——永远最新、永远可信。
 2. **`.ai/session-handoff.md`**——主观记录，提供任务意图 / 计划 / 待确认项，但可能过时。
 3. **`NEXT-STEPS.md`**——仅当 handoff 不存在时的兼容兜底。
 4. **冲突仲裁**：任何续接文件与 Git 事实冲突时，**以 Git 为准 + 停下问用户**，不得直接覆盖项目文件。
@@ -37,6 +37,8 @@ NEXT-STEPS.md
 | 被动中断 | AI CLI 撞 token / 时间上限被强制断、来不及写 handoff；或切换到另一个 AI CLI 接手 | 缺失或停留在上一个任务 | **Git 为唯一可信锚点**，handoff 仅作参考，重建后向用户确认 |
 
 > 关键：被动中断（含跨 CLI 接手）是高频场景，此时不能信任 handoff 的新鲜度，必须以 Git 客观事实重建上下文。跨 Claude / Codex / Cursor 等 CLI 时，续接文件 + Git 是公共状态，换 CLI 不丢上下文。
+
+> worktree 内被动中断（会话在独立 worktree 里工作到一半被断，改动未提交）适用同一裁决：以该 worktree 的 Git 事实（分支 / HEAD / 未提交 diff）为锚点重建上下文；handoff「活跃 worktree」段的登记仅作意图参考（见 §3 / §6 / §8），不替代 Git 事实。
 
 ## 2. 工具运行时元数据边界
 
@@ -61,7 +63,7 @@ AI 每次在项目中开始分析、设计或编码前，应按以下顺序恢�
 
 1. 读取 `ai/index.md` 与 `ai/rules-core.md`，并按任务类型读取对应规则包；无法判断时读取 `ai/index.md` 的完整规则回退包。
 2. 不得先扫描 CLI 私有会话、Memory、SubAgent 或 Cache 目录来推断项目续接点；如用户明确要求检查此类目录，只能按 §2 作为调试信息处理。
-3. 运行只读状态检查：`git status --short --branch`、`git log --oneline -8`、`git stash list`，确认当前分支、工作区是否干净、最近提交。
+3. 运行只读状态检查：`git status --short --branch`、`git log --oneline -8`、`git stash list`、`git worktree list`，确认当前分支、工作区是否干净、最近提交；若除主工作区外存在活跃 worktree，报告其路径 / 分支 / HEAD 是否落后主仓 / 是否含未提交改动，作为恢复上下文的一部分。
 4. 读取 `.ai/session-handoff.md`；若不存在，再读 `NEXT-STEPS.md`。
 5. **交叉核对，判主动 / 被动中断**：
    - handoff 记录的任务 / 分支 / 进度与 Git 一致 → 主动中断，handoff 可信，进入第 6 步。
@@ -89,8 +91,9 @@ Get-Content -Path ai/session-rules.md -Encoding UTF8 -Raw
 1. `git status --short --branch`
 2. `git log --oneline -3`
 3. `git stash list`
-4. 读取 `VERSION`（若存在）
-5. 读取 `.ai/session-handoff.md` 的元数据、当前状态、下次优先做和阻塞 / 待确认；若不存在，再读 `NEXT-STEPS.md`
+4. `git worktree list`（除主工作区外存在活跃 worktree 时，作为恢复摘要的上下文一并报告）
+5. 读取 `VERSION`（若存在）
+6. 读取 `.ai/session-handoff.md` 的元数据、当前状态、下次优先做和阻塞 / 待确认；若不存在，再读 `NEXT-STEPS.md`
 
 快速续接模式默认**不做**：
 
@@ -144,7 +147,10 @@ Checkpoint Mode 是非快速续接任务的执行中防跑飞协议；触发条�
 - 准备修改文件前：记录预期变更文件、修改原因和风险点。
 - 完成文件修改后：记录实际新增 / 修改 / 删除文件、验证结果和下一步。
 - 遇到阻塞或待确认项时：记录阻塞原因、待确认问题、AI 建议、建议依据、备选方案、取舍影响和是否阻塞当前 Sprint / Phase。
+- 完成 Sprint / Phase 收口、或连续多轮文档修改后：可运行 `docs-health-review` 对文档体系做一次收尾梳理（识别臃肿 / 重复 / 结构退化 / 状态滞后），整理须遵守 `ai/global-rules.md` §8.4 整理例外。
 - 结束回复前：若仍有未完成任务，刷新“下次优先做”。
+- 结束回复前（hotspot 收尾自检）：若本轮命中 §4.1 任一触发条件，**默认写入本地 `.ai/token-hotspots/` 单条记录（不询问、不上传）**；若本地未汇总记录累计 ≥3 份，按 §4.2 提示 rollup。
+- 结束回复前（handoff rollup 自检）：若续接文件 Latest checkpoint 达 §6.1 触发阈值（累计 ≥N 个或 ≥M 行），提示按 rollup 流程压缩旧 checkpoint + 归档原文到 `.ai/session-handoff-archive/`，避免续接文件无限膨胀。
 
 纯只读问答、一次性解释或没有形成后续任务的对话，可以不更新续接文件。
 
@@ -161,7 +167,7 @@ token hotspot 是可选的 AI 协作观察记录，用于记录上下文读取�
 
 单条记录是过程性材料，默认只本地保留；只有被提炼进汇总、值得跨会话 / 跨项目参考的结论才入库。派生项目启用此机制时，需自行在 `.gitignore` 补 `.ai/token-hotspots/`（`.gitignore` 不纳入下行同步，各项目自行维护）。
 
-当一次连续任务命中以下任一情况时，AI 应在收尾前主动提示“本轮可能触发 token hotspot 记录”，并默认写入本地 `.ai/token-hotspots/YYYY-MM-DD-<task-slug>.md`（不询问、不上传）：
+当一次连续任务命中以下任一情况时，AI **必须在每次任务收尾（§4 触发点）做 hotspot 自检**：命中触发条件则默认本地写入 `.ai/token-hotspots/YYYY-MM-DD-<task-slug>.md`（不询问、不上传），不命中则跳过。默认写入是硬行为——不是“问用户是否记录”的可询问项：
 
 - 从快速续接进入分析 / 设计 / 写入任务后，又完整读取 `ai/index.md` 及其规则清单。
 - 执行模板维护、提案评估、文档审计、同步整理、编码实现、PR / CI 闭环等较长任务，并多次读取大文件、长日志或重复运行大输出命令。
@@ -183,7 +189,7 @@ token hotspot 是可选的 AI 协作观察记录，用于记录上下文读取�
 
 ### 4.2 累计 summary 触发（rollup）
 
-单条 hotspot 记录在本地累计后，应主动提示阶段性汇总，提炼出入库的 `SUMMARY.md`，避免重复热点分散、不回流。**汇总循环**：本地攒若干条单条 → 提炼成 SUMMARY 入库 → 本地单条可清理 / 归档。
+单条 hotspot 记录在本地累计后，应主动提示阶段性汇总，提炼出入库的 `SUMMARY.md`，避免重复热点分散、不回流。**汇总循环**：本地攒若干条单条 → 提炼成 SUMMARY 入库 → 本地单条可清理 / 归档。AI 收尾自检（§4 触发点）时顺带核对本地未汇总计数；累计 ≥3 份即按 rollup 流程提示，不靠事后想起。
 
 - 当本地 `.ai/token-hotspots/` 有 **3 份及以上未被 summary 覆盖**的记录时，AI 在相关任务收尾前应提示“已有多份 token hotspot 记录，建议生成 / 更新阶段性 summary”，并询问是否把提炼结论写入入库路径 `ai-records/token-hotspots/SUMMARY.md`（单条仍留本地）。
 - 若已有 `SUMMARY.md`，且上次 summary 后本地又新增 **3 份及以上**记录，AI 应提示更新。
@@ -242,6 +248,14 @@ summary 最小结构（写入 `SUMMARY.md` 时参考）：
 - VERSION:
 - Remote snapshot:
 
+## 活跃 worktree
+
+> 记录除主工作区外的活跃 worktree。创建 worktree 后立即登记；合并进 main 或明确废弃后移除 worktree 并从本段清除登记。无则写「无」。
+
+- 路径 / 分支 / 主题：
+- 未提交改动摘要：
+- 处置：待救回 / 待丢弃 / 已合并待清理
+
 ## 当前任务
 
 ## 当前进度
@@ -266,6 +280,16 @@ summary 最小结构（写入 `SUMMARY.md` 时参考）：
 
 样例见 `template-docs/session-handoff.example.md`。
 
+### 6.1 Latest checkpoint rollup
+
+handoff 的「Latest checkpoint」累加结构（配合 `global-rules §8` 只增不删、原位追加）保证续接记录可追溯，但**只规定了「如何追加」，未规定「何时压缩 / 归档旧 checkpoint」**——只增不减会让续接文件随历史累积线性膨胀，挤占快速续接（§3.1）的上下文读取上限。本小节补 rollup 机制（类比 §4.2 token-hotspot rollup），**用归档而非删除**，不违背「只增不删」，也不引入 CI 门禁（handoff 是 gitignored 本地文件，CI 无法检查）。
+
+- **触发**：当续接文件 Latest checkpoint 累计 **≥ N 个**（建议 8-10）或文件 **≥ M 行**（建议 800-1000；具体阈值由维护者按项目定）时，AI 在任务收尾（§4 触发点）提示 rollup。
+- **压缩**：保留**近 3-5 个** Latest checkpoint 原文；更早的 checkpoint 压缩为一段「**历史阶段摘要**」（每个 Phase / Sprint 收口或固定时间窗口一段，提炼：任务结论 / 已完成关键项 / 未完成与待确认 / Git 锚点 commit）。
+- **归档**：被压缩的原文 checkpoint 移入 `.ai/session-handoff-archive/YYYY-MM-DD-<range>.md`（**本地 gitignored，保留可追溯，不删除**；该目录由派生项目按需创建并自行 `.gitignore`，类比 `.ai/token-hotspots/`）。
+- **原位指针**：续接文件顶部「历史阶段摘要」段附归档文件路径指针，确保被动中断重建（§1）仍可回溯。
+- **不替代 docs/ 回写**：有长期价值的结论（Phase 收口、验收通过、缺陷回归）仍必须回写 `docs/08` / `docs/09`（§5 既有规则）；handoff 摘要只保留「续接线索」，不是项目事实。
+
 ## 7. 与快捷命令联动
 
 若用户通过 `ai/commands/` 快捷命令启动任务，续接文件应记录命令名、任务目标、执行计划和下一步。新会话恢复时，若续接文件记录了正在执行的命令，AI 应先读取对应 `ai/commands/*.md` 再继续。
@@ -275,3 +299,9 @@ summary 最小结构（写入 `SUMMARY.md` 时参考）：
 多个 AI 会话（或终端）同时操作同一仓库时，共用一个工作目录 = 共用一个 HEAD，`先确认分支再 commit` 是非原子操作，**必然偶发 commit 落错分支**。
 
 **并发前先确认是否需要开独立 worktree**：`git worktree add <目录> <分支>` 让每会话有独立工作区 + HEAD（共享同一 `.git`），互不踩踏。这是 git 没有自动机制、必须靠约定的并发解法。完整操作步骤见 `git-guide.md` §4「多会话并发操作」。
+
+**worktree 建 / 删登记责任**：
+
+- 创建 worktree 的会话，应立即在续接文件「活跃 worktree」段登记（路径 / 分支 / 主题 / 未提交改动摘要 / 处置状态）。不登记等同不可见——其他会话 / CLI 无法知道该 worktree 存在及其改动。
+- worktree 工作完成（合并进 main / 明确废弃）后，移除 worktree（`git worktree remove`）并从续接文件清除登记。
+- worktree 内被动中断（改动未提交）时，续接文件的登记让接手会话能按 §1 裁决以该 worktree 的 Git 事实重建上下文；不要假设「创建者会记得提交」，模板应假设 worktree 可能被任意会话创建并中途搁置。

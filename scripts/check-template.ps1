@@ -1,4 +1,5 @@
 <#
+Sync notice: 本文件由 ai-project-template 模板同步维护，派生项目同步时会被覆盖；不应直接修改，通用改进请经 _proposals/ 回流模板仓库。
 check-template.ps1 - Windows PowerShell entrypoint for template self-check.
 
 Usage:
@@ -205,7 +206,18 @@ function Invoke-NativeTemplateCheck {
   function Get-SyncFiles {
     $syncPath = Join-Path $Root "template-sync.json"
     $json = Get-Content $syncPath -Raw -Encoding UTF8 | ConvertFrom-Json
-    return @($json.files)
+    # 三组并集（files_all 为主；files_ordinary / files_domain 补充），向后兼容仅有旧 "files" 键的 json。
+    # PS 5.1 ConvertFrom-Json 无 -AsHashtable，用 PSObject.Properties.Name 判键。
+    $keys = $json.PSObject.Properties.Name
+    $all = @()
+    if ($keys -contains "files_all") { $all += @($json.files_all) }
+    elseif ($keys -contains "files") { $all += @($json.files) }  # legacy fallback
+    if ($keys -contains "files_ordinary") { $all += @($json.files_ordinary) }
+    if ($keys -contains "files_domain") { $all += @($json.files_domain) }
+    $seen = @{}
+    $unique = @()
+    foreach ($f in $all) { if (-not $seen.ContainsKey($f)) { $seen[$f] = $true; $unique += $f } }
+    return $unique
   }
 
   Write-Host "==> PowerShell fallback template check"
@@ -293,8 +305,27 @@ function Invoke-NativeTemplateCheck {
 
   foreach ($syncFile in $syncFiles) {
     Require-File $syncFile
-    if ($syncFile -like "*.md") {
+    # VERSION 是纯版本号，豁免（其“会被覆盖”语义由 template-sync.json description 承载）
+    if ($syncFile -eq "VERSION") { continue }
+    if ($syncFile -like "*.md" -or $syncFile -like "*.mdc" -or $syncFile -like "*.sh" -or $syncFile -like "*.ps1") {
       Require-Contains $syncFile "Sync notice" ($syncFile + " contains sync notice")
+    }
+  }
+
+  # --- Structural: files_domain 非重叠（领域文件不得跨组重复，v1.60.0）---
+  $syncJson = Get-Content (Join-Path $Root "template-sync.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+  $syncKeys = $syncJson.PSObject.Properties.Name
+  if ($syncKeys -contains "files_domain" -and @($syncJson.files_domain).Count -gt 0) {
+    $otherFiles = @()
+    if ($syncKeys -contains "files_all") { $otherFiles += @($syncJson.files_all) }
+    elseif ($syncKeys -contains "files") { $otherFiles += @($syncJson.files) }
+    if ($syncKeys -contains "files_ordinary") { $otherFiles += @($syncJson.files_ordinary) }
+    foreach ($df in @($syncJson.files_domain)) {
+      if ($otherFiles -contains $df) {
+        Fail ($df + " appears in files_domain and another group (must be exclusive)")
+      } else {
+        Pass ($df + " only in files_domain (no overlap)")
+      }
     }
   }
 

@@ -33,7 +33,7 @@
 执行要求：
 
 1. 用 registry 的 `Project` / `Aliases` / `Status` 解析用户目标；用户说“全部 / 4 派生”时，列出 active 项，并区分 `Path status=verified`、missing、stale-risk。
-2. 对 `Path status=verified` 的目标，逐个进入 `Local path` 做只读预检：路径存在、是 git 仓、工作区干净、`TEMPLATE-BASE.md` lineage 与 registry 的 `Sync mode` 不冲突。
+2. 对 `Path status=verified` 的目标，逐个进入 `Local path` 做**两阶段只读预检、逐项输出 `pass / fail / not-checked`、按失败域隔离**：A 阶段（身份与安全事实）——路径存在、是 git 仓、工作区干净、`TEMPLATE-BASE.md` lineage 与 registry 的 `Sync mode` 不冲突，任一关键项失败即停仅报告；B 阶段（同步能力）——`scripts/sync-template.*` / `check-derived-sync.*` / `template-sync.json` / 运行入口是否存在，记缺项不抹 A 阶段结果。已知文件存在性用精确路径查询（PowerShell：`Test-Path -LiteralPath <path> -PathType Leaf`；Bash：`test -f <path>`），不得把目录枚举或输出格式开关（如 `Get-ChildItem -Name`）当筛选机制。
 3. 对 missing / stale-risk 目标，先停下列待确认项，不得改用全盘递归猜路径继续同步。
 4. 输出逐项目同步计划，说明每个项目的同步模式：普通派生 `--preserve-project-version`，领域模板 `--domain-template`。
 5. 用户确认后，再在每个派生项目内按下方标准 SOP 执行 A13 闭环。
@@ -51,6 +51,9 @@
 先说明本次标准闭环计划：同步预检 → dry-run → 同步提交 → `check-derived-sync` 边界验证 → `post-sync-cleanup` 整理计划 → `docs-system-audit` 同步后审计 → 项目验证建议 → `sync-records/template-sync/` 同步报告。每一步说明是否只读、是否会写文件；写入前等待确认。若用户明确说已同步但只需补后续，或 Git 显示最近已有 `sync template vX.Y.Z from ai-project-template` 同步提交，则进入“同步后续接模式”：不要重新执行 dry-run / commit，先核对同步提交、`VERSION`、`TEMPLATE-BASE.md`（若存在）、工作区和既有同步记录，再从 `check-derived-sync` 边界验证开始补完后续闭环。
 
 执行要求：
+
+预检两阶段契约（失败域隔离）：只读预检分 A/B 两阶段，逐项输出 pass / fail / not-checked、按失败域隔离、不共用 all-or-nothing 聚合——B 阶段辅助检查失败不得掩盖 A 阶段已取得的关键事实。已知文件存在性用精确路径查询（PowerShell：Test-Path -LiteralPath <path> -PathType Leaf；Bash：test -f <path>），不得把目录枚举或输出格式开关（如 Get-ChildItem -Name）当筛选机制。A 阶段（身份与安全事实）：Git 仓 / 分支与工作区 / stash / VERSION / TEMPLATE-BASE.md lineage / registry Sync mode，任一关键项失败或冲突即停，仅报告、不进入 dry-run。B 阶段（同步能力）：scripts/sync-template.* / check-derived-sync.* / template-sync.json / 必要运行入口，记录缺项和原因、不抹 A 阶段结果；缺项即停或转旧项目 bootstrap 路径。
+
 1. 先阅读 ai/index.md 及其列出的全部规则文件。
 2. 检查 git status；若有未提交改动，立即停止并说明，不要覆盖。
 3. 判断是否为同步后续接模式：
@@ -78,10 +81,10 @@
 8. 如果是 v1.6.8+ 后续同步：
    - 运行：powershell -ExecutionPolicy Bypass -File scripts/sync-template.ps1 --dry-run
    - 大批量同步（跨多版本 / 首次同步）输出可能很长并含大量 `LF will be replaced by CRLF` 噪音；建议重定向到 log（`> sync.log 2>&1`）并用更长超时（300s+）。CRLF warning 不等于失败（见 git-guide §5.8）。
-9. 检查 dry-run 输出，确认只涉及模板方法论同步文件；普通派生项目双版本模式允许出现 `TEMPLATE-BASE.md`，但不应出现 README.md、ai/project-rules.md、docs/00-09、frontend/、backend/、tests/、docker/ 或业务代码。大同步时优先 grep 摘要而非完整输出：`grep -nE 'README\.md|ai/project-rules\.md|docs/00-09|frontend/|backend/|tests/|docker/' sync.log` 查项目专属误触及；`grep -nE 'VERSION|CHANGELOG|TEMPLATE-BASE|preserve-project-version|domain-template' sync.log` 查版本机制；EXIT 与变化文件数作摘要，成功不回灌完整列表。
+9. 检查 dry-run 输出，确认只涉及模板方法论同步文件；普通派生项目双版本模式允许出现 `TEMPLATE-BASE.md`，但不应出现 README.md、ai/project-rules.md、docs/00-09、frontend/、backend/、tests/、docker/ 或业务代码。大同步时优先 grep 摘要而非完整输出：`grep -nE 'README\.md|ai/project-rules\.md|ai/doc-standards/domain-rules\.md|docs/00-09|frontend/|backend/|tests/|docker/' sync.log` 查项目专属 / 领域专属误触及（普通派生不应出现 domain-rules standards）；`grep -nE 'VERSION|CHANGELOG|TEMPLATE-BASE|preserve-project-version|domain-template' sync.log` 查版本机制；EXIT 与变化文件数作摘要，成功不回灌完整列表。
 10. 如果 dry-run 合理，执行同步：
    - 普通派生项目若已有或准备采用 `TEMPLATE-BASE.md` 双版本模式，优先追加 `--preserve-project-version`，使 `VERSION` / `CHANGELOG.md` 保持项目自身版本，继承模板版本写入 `TEMPLATE-BASE.md`；若仓库已存在 `TEMPLATE-BASE.md`，新版脚本会自动启用该模式。
-   - 领域模板（如 `agent-system-template`，仓库存在领域版 `TEMPLATE-BASE.md`：`Lineage type: domain template`）从母模板 sync 时改用 `--domain-template`（与 `--preserve-project-version` 互斥），保留领域模板自身 `VERSION` / `CHANGELOG.md`，并把继承母模板版本写入领域版 `TEMPLATE-BASE.md`（含 `Domain standards scope`）；仓库已存在领域版 `TEMPLATE-BASE.md` 时自动启用。普通派生项目不要用 `--domain-template`，反之领域模板不要用 `--preserve-project-version`，二者冲突时脚本会停止并提示。
+   - 领域模板（如 `agent-system-template`，仓库存在领域版 `TEMPLATE-BASE.md`：`Lineage type: domain template`）从母模板 sync 时改用 `--domain-template`（与 `--preserve-project-version` 互斥），保留领域模板自身 `VERSION` / `CHANGELOG.md`，并把继承母模板版本写入领域版 `TEMPLATE-BASE.md`（含 `Domain standards scope`）；仓库已存在领域版 `TEMPLATE-BASE.md` 时自动启用。领域路线会额外同步 `files_domain` 组（含 `ai/doc-standards/domain-rules.md` 领域 rules 规范基线）；领域仓的 `ai/domain-rules.md` 种子不入清单、不同步、受 `check-derived-sync` 保护。普通派生项目不要用 `--domain-template`，反之领域模板不要用 `--preserve-project-version`，二者冲突时脚本会停止并提示。
    - 旧派生项目首次同步：运行 & "C:\Program Files\Git\bin\bash.exe" scripts/sync-template.sh --commit --preserve-project-version
    - v1.6.8+ 后续同步：运行 powershell -ExecutionPolicy Bypass -File scripts/sync-template.ps1 --commit --preserve-project-version
    - 若维护者明确要求继续沿用旧语义（`VERSION` = 继承模板版本），才不加 `--preserve-project-version`；需在同步报告说明。
@@ -95,7 +98,7 @@
    - 普通 PR 不应运行 `scripts/check-template.sh` 或 `scripts/check-template.ps1`。
    - 若存在 `.github/workflows/template-check.yml`，说明它通常是模板仓自检入口，提示迁移为 `.github/workflows/project-check.yml`。
    - 派生项目版 workflow 应保留 `git diff --check`，并仅在提交信息匹配 `sync template vX.Y.Z from ai-project-template` 时运行 `scripts/check-derived-sync.sh HEAD`。
-13. 如本次同步引入新的项目专属骨架项，不要直接覆盖 ai/project-rules.md；列出需要人工迁移的字段，例如 `§2.5 运行环境与资源约束`。
+13. 如本次同步引入新的项目专属骨架项，不要直接覆盖 ai/project-rules.md；列出需要人工迁移的字段，例如 `§2.1 运行环境与资源约束`。领域模板仓的 `ai/domain-rules.md` 种子不在同步清单、不会被覆盖；如本次同步刷新了 `ai/doc-standards/domain-rules.md` 规范基线，对照它维护领域种子（§0-§4）。
 14. 如项目已同步到含 `scripts/collect-env.ps1` 的模板版本，但尚无 `docs/env/local-env.md`，提示运行：powershell -ExecutionPolicy Bypass -File scripts/collect-env.ps1，并补齐人工确认项。
 15. 做提案回流收口检查：
    - 扫描本项目 `_proposals/TEMPLATE-UPGRADE-*.md`、`.ai/session-handoff.md`、最近 `sync-records/template-sync/` 运行记录（旧路径 `docs/archive/template-sync/` 兼容读取），找出本项目曾提交到模板仓的 issue 链接、待处理提案和已生成回流提案。
