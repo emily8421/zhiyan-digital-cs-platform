@@ -134,6 +134,8 @@ cd ../ai-tpl-wt2          # B 在这里改 / 提交 / 推送，完全不碰 A �
 cd /path/ai-project-template && git worktree remove ../ai-tpl-wt2
 ```
 
+**worktree 建 / 删登记责任**：创建 worktree 的会话应把路径 / 分支 / 主题登记到 `.ai/session-handoff.md` 的「活跃 worktree」段（不登记 = 其他会话 / CLI 看不见）；合并进 main 或明确废弃后移除 worktree 并从续接文件清除登记。worktree 内被动中断（改动未提交）时，接手会话靠 `git worktree list` + 续接文件登记发现它，按 `ai/session-rules.md` §1 以该 worktree 的 Git 事实重建上下文。
+
 > 详见 `ai/session-rules.md` §8（多会话并发操作）。
 
 ## 5. 场景 C：派生项目同步模板（使用者）
@@ -258,9 +260,9 @@ powershell -ExecutionPolicy Bypass -File scripts/check-template.ps1       # 仅�
 - 新版 `sync-template.sh` 会在 fetch 后对比远端自身版本；若本地脚本不是最新版，会停止并提示先更新脚本。
 - `--dry-run` 只预览差异，不修改工作区、不 stage。
 - `--commit` 会覆盖同步清单中的文件并自动提交；普通派生项目建议追加 `--preserve-project-version`，保留项目自身 `VERSION` / `CHANGELOG.md`，并用 `TEMPLATE-BASE.md` 记录继承模板版本；领域模板（如 `agent-system-template`）改用 `--domain-template`（与 `--preserve-project-version` 互斥），保留领域模板自身 `VERSION` / `CHANGELOG.md`，并用领域版 `TEMPLATE-BASE.md` 记录继承母模板版本；若仓库已存在对应角色的 `TEMPLATE-BASE.md`，新版脚本会自动启用相应模式；提交信息仍由脚本生成。
-- 根 `README.md` 是项目件，`ai/project-rules.md` 是项目专属规则，均不在 `template-sync.json` 中，不参与模板下行同步。
-- 被 `template-sync.json` 列入的 Markdown 方法论文档会在同步时被覆盖；派生项目不要直接修改这些文件，如需改进请在 `_proposals/` 起草提案并回流模板。
-- 同步文件清单以 `template-sync.json` 为准；`scripts/sync-template.sh` 会优先读取模板远端清单。
+- 根 `README.md` 是项目件，`ai/project-rules.md` 与领域模板仓的 `ai/domain-rules.md` 是项目 / 领域专属规则，均不在 `template-sync.json` 中，不参与模板下行同步。
+- 被 `template-sync.json` 列入的方法论文件（`.md` / `.mdc` / `.sh` / `.ps1`；`template-sync.json` 自身用 `description` 字段承载同等声明）会在同步时被覆盖；派生项目不要直接修改这些文件，如需改进请在 `_proposals/` 起草提案并回流模板。
+- 同步文件清单以 `template-sync.json` 为准（v1.60.0 起分 `files_all` / `files_ordinary` / `files_domain` 三组，按派生路线选组：领域 `files_all ∪ files_domain`，普通 `files_all ∪ files_ordinary`）；`scripts/sync-template.sh` 会优先读取模板远端清单。
 - 同步后若 `check-derived-sync` 失败，先修复同步边界问题，再 push / PR。
 - 若已经完成同步提交但不确定后续是否执行，使用 `/run sync-methodology` 的“同步后续接模式”：不要重新 dry-run / commit，先核对 `git log --oneline -8`、`VERSION`、`TEMPLATE-BASE.md`（若存在）、最近同步记录和工作区，再从 `check-derived-sync` 开始补完后续闭环。
 - 同步后进入标准闭环：`check-derived-sync` 边界验证 → `post-sync-cleanup` 整理计划 → `docs-system-audit` 同步后审计 → 项目验证建议 → 同步报告留痕。

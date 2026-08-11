@@ -89,6 +89,21 @@ Lean / 小工具项目可以采用最小验证包，但至少需要：一个可�
 
 验收还可按大纲层次组织（与测试等级矩阵正交的另一维度）：需求验收大纲 → 系统框架测试大纲 → 集成测试大纲 → 单元模块测试大纲；层次化结构见 `docs/09-verification.md`，等级矩阵保留为「等级维度」，不替代层次维度。
 
+### 6.1 破坏性测试数据库安全 guard
+
+跑数据库集成测试（`TRUNCATE` / 重建 schema / 批量删除等破坏性 fixture）时，**必须**防止误清开发 / 生产库。要求：
+
+1. **独立测试库**：集成测试用独立测试库（库名含 `_test` 后缀或等价明确测试标识），不与开发 / 生产库共用同一物理库。
+2. **三重 fail-closed guard**：破坏性操作前，测试侧 guard 校验三条件（**全部**满足才放行，任一不满足直接抛错且**不降级为 skip**）：
+   - 测试环境标记（如 `<PROJECT>_ENV=test` 精确匹配）；
+   - `DATABASE_URL` 指向测试库（库名 `_test` 后缀 + 正确 scheme）；
+   - 显式破坏性开关（如 `ALLOW_DESTRUCTIVE_TEST_DB=1` 精确匹配）。
+3. **guard 位置与形态**：guard 是**测试侧纯函数**（接收 URL 字符串校验，不连库、不 import 生产 engine / ORM 初始化），**不进生产 service 目录**；在连接 `try/except` **外**调用（避免被宽泛 `except Exception` 吞成 skip），破坏性 SQL 前应二次调用。
+4. **错误信息**：只列失败条件，**不含连接串 / 凭证 / 主机**（防日志与 CI 输出泄露）。
+5. **fail-closed 语义**：guard 不满足时**抛错不 skip**——skip 会让破坏性测试在配置错误时静默跳过保护，违背 guard 初衷；仅在 guard 已过、DB 连接 / 环境本身不可用时才 skip 连接类失败。
+
+> 口径：`ai/project-rules.md §3` 声明「有持久化存储」的项目，在首个 DB 集成测试 Sprint 前落地此 guard；guard 代码放 `tests/` 侧（如 `tests/<lang>/db_test_support.<ext>`），不进生产代码目录。无持久化项目豁免（`ai/project-rules.md §3` 声明）。验证方式：guard 纯单测（三条件全满足才过、缺任一即拒、非测试库 URL 拒）+ 负向 smoke（指向开发库时即使 DB 可达也在连接 / SQL 前拒）。
+
 ## 7. 验收与留痕
 
 1. Sprint 完成前必须对照 `docs/08-dev-plan.md` 或 `tasks/*` 的验收标准逐项核对。
