@@ -150,6 +150,7 @@ Checkpoint Mode 是非快速续接任务的执行中防跑飞协议；触发条�
 - 完成 Sprint / Phase 收口、或连续多轮文档修改后：可运行 `docs-health-review` 对文档体系做一次收尾梳理（识别臃肿 / 重复 / 结构退化 / 状态滞后），整理须遵守 `ai/global-rules.md` §8.4 整理例外。
 - 结束回复前：若仍有未完成任务，刷新“下次优先做”。
 - 结束回复前（hotspot 收尾自检）：若本轮命中 §4.1 任一触发条件，**默认写入本地 `.ai/token-hotspots/` 单条记录（不询问、不上传）**；若本地未汇总记录累计 ≥3 份，按 §4.2 提示 rollup。
+- 结束回复前（pitfall 收尾自检）：若本轮产生坑 / 问题 / 教训观察（bug、流程坑、低效行为导致返工或缺陷；纯 token 成本仍归 §4.1 hotspot），**默认写入本地 `.ai/pitfalls/` 单条记录（不询问、不上传）**；若本地未汇总记录累计 ≥3 条，按 §4.3 提示 rollup。
 - 结束回复前（handoff rollup 自检）：若续接文件 Latest checkpoint 达 §6.1 触发阈值（累计 ≥N 个或 ≥M 行），提示按 rollup 流程压缩旧 checkpoint + 归档原文到 `.ai/session-handoff-archive/`，避免续接文件无限膨胀。
 
 纯只读问答、一次性解释或没有形成后续任务的对话，可以不更新续接文件。
@@ -223,6 +224,55 @@ summary 最小结构（写入 `SUMMARY.md` 时参考）：
 ```
 
 > 上述“必填”为写入时的字段完整性要求（AI 自觉），**不引入 `scripts/check-template.sh` 自检断言或 CI 门禁**，与 `template-docs/rd-data-chain.md` §4「无自检门禁、避免过度治理」一致。
+
+### 4.3 坑 / 问题观察日志（pitfall observation log）
+
+pitfall observation log 是可选的 AI 协作观察记录，与 §4.1 token-hotspot 平行：**token-hotspot 管 AI 开发的上下文 / 成本热点，pitfall 管 AI 引入或踩到的坑 / 问题 / 教训**（bug、流程执行坑、低效行为导致的返工或缺陷）。它是定期审视的原始材料，不是项目事实文档，不替代 `.ai/session-handoff.md`、`docs/08-dev-plan.md`、`docs/09-verification.md` 或 `_proposals/`。
+
+**路径分层（v1.61.1 起）**：
+
+| 类型 | 路径 | Git 语义 |
+|---|---|---|
+| 单条原始记录（默认） | `.ai/pitfalls/YYYY-MM-DD-<short-name>.md` | gitignored，**纯本地、不询问、不上传** |
+| 阶段汇总（提炼后的有价值结论） | `ai-records/pitfalls/SUMMARY.md`、`ai-records/pitfalls/summaries/` | **入库**，需用户确认并走 PR；**默认不建**，只有提炼出值得跨会话 / 跨项目参考的脱敏结论时才创建 |
+
+单条记录是过程性材料，默认只留本地；只有被提炼进汇总、值得跨会话 / 跨项目参考的结论才入库。派生项目启用此机制时，需自行在 `.gitignore` 补 `.ai/pitfalls/`（`.gitignore` 不纳入下行同步，各项目自行维护）。
+
+**单条记录字段（最小，建议非必填）**：
+
+```markdown
+- 日期：
+- 项目 / 场景：
+- 现象：（发生了什么问题 / bug / 低效行为导致返工或缺陷）
+- 根因分类：AI 引入 / 流程坑 / 环境 / 模板缺口
+- 规避或修复：（怎么绕开或修掉的）
+- 是否可通用：是 / 否（换一个项目是否还会踩）
+- 已转提案：`_proposals/...` 或 issue 链接；未转为「待审视」
+```
+
+**触发与写入**：
+
+- 任务收尾自检（§4 触发点）顺带判断本次是否产生坑观察；有则写单条（1–3 行，不膨胀）。
+- **观察日志 ≠ 提案**：日志是原始材料，triage 后才转 `_proposals/TEMPLATE-UPGRADE-*.md`，避免提案收件箱噪音。
+- 定期审视复用既有触发点：`ai/global-rules.md` §9（模板优化反馈）的任务收尾审视；**C1（`ai/prompts/maintainers/11-template-proposal-summary.md`）只负责提案 triage，不承担坑日志计数**（与 token-hotspot 计数同源——计数在收尾自检，不在 C1）。
+- 记录不得包含 token、密钥、账号密码、客户敏感数据、完整对话正文或无法提交到仓库的隐私事实；只记录现象、根因分类、规避方式、可通用性与流转去向。
+
+**累计汇总触发（rollup，类比 §4.2）**：
+
+- 当本地 `.ai/pitfalls/` 有 **3 份及以上未被 summary 覆盖**的记录时，AI 在相关任务收尾前应提示“已有多份 pitfall 记录，建议生成 / 更新阶段性 summary”，并询问是否把提炼结论写入入库路径 `ai-records/pitfalls/SUMMARY.md`（单条仍留本地）。
+- summary（入库）的写入边界严于单条：默认识别并询问，不得静默创建 / 修改；首次创建或更新 `SUMMARY.md` 前需说明目标路径、内容类别和隐私过滤口径，并按 `ai/project-rules.md` §6 取得确认。
+- 可通用的归纳去向 `_proposals/TEMPLATE-UPGRADE-*.md` 回流模板；项目专属的留项目 `docs/decisions/` 或项目本地日志。已转提案的记录不重复作为同一问题的 summary 输入。
+
+**生命周期与清理（类比 §4.1 / §4.2 + §6.1）**：
+
+- 单条经 rollup 纳入 `SUMMARY.md` 或已转提案后，标注「已纳入 / 已转提案」；已覆盖的旧单条可归档到 `.ai/pitfalls-archive/`（gitignored）或清理，避免无限累积。**用归档而非删除**，保留可追溯。
+- 单条记录建议填写汇总状态字段（新记录建议填，非强制）：
+
+```text
+- 汇总状态：未汇总 / 已纳入 SUMMARY.md（<日期或范围>） / 已转提案 <path-or-url> / 本地保留不提交 / 已归档 <path>
+```
+
+> 上述字段为写入时的完整性建议（AI 自觉），**不引入 `scripts/check-template.*` 自检断言或 CI 门禁**，与 `template-docs/rd-data-chain.md` §4「无自检门禁、避免过度治理」一致；模板自检不守 `.ai/pitfalls/` 内容，路径忽略由 `.gitignore` + 规则自觉保证。
 
 ## 5. 写入确认边界
 
