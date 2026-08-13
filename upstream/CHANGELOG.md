@@ -9,6 +9,41 @@
 
 模板版本采用三段式 `vMAJOR.MINOR.PATCH`，以根目录 `VERSION` 为单一审计入口。版本是发布边界，不是提案数量边界；提案收件箱增长不触发版本递增，只有合并到同步范围内并改变模板行为或下游同步判断的 PR 才判断 `PATCH / MINOR / MAJOR`。`ai/global-rules.md` 顶部仅记录全局规则自身版本。
 
+## v1.61.4（2026-08-13）
+
+通用层代码一致性补充（PATCH）：落地 #332 退回重写稿——把 LUMEN 回流的三条跨项目通用代码一致性原则（CI 质量门 / 关键 secret 启动校验 / 多实现显式契约）从原稿「固定实现」改写为「原则 + 适用条件 + 项目化落地」，作为 `implementation-lifecycle-rules §6.2` 的应用说明补齐。来源：LUMEN_demo_T2.1（emily8421/LUMEN-DEMO）派生项目回流 issue #332；重写依据 `docs/research/2026-08-12-c1-proposal-triage-reassessment.md` §3 / §15.7；提案见 `_proposals/TEMPLATE-UPGRADE-code-consistency-general-layer.md`。
+
+- **`ai/implementation-lifecycle-rules.md §6.2` 末尾追加「应用说明」块（3 条）**：① 质量门常见形态对照（示例，非新增规则——有类型系统纳入 type、build 已覆盖则不重复跑、CLI / 脚本以 smoke / 手动验证替代、纯文档 / 纯配置豁免，与 §6.2 第 2 条适用性裁剪口径一致）；② 关键 secret 启动校验 fail-closed（生产 / 安全敏感运行态禁弱默认值、缺失或为默认值即启动失败；本地 / 测试 / Mock 允许受控替代，豁免时点写入 `docs/05-tech-spec.md` 与验证计划；具体实现由技术栈决定，模板不预置写法）；③ 多实现显式契约（同一接口的多个可替换实现须共享机器可检查契约或兼容性测试，禁仅靠 docstring + 鸭子类型；机制由技术栈决定；为 `global-rules §2.1` L0-12「先契约后实现」在多实现场景的应用说明）。不触碰 §6.2 现有 3 条归位准则与 blockquote 口径、§6 主节、§6.1 DB guard、L0 §2.1 正文。
+
+本版是 patch 级治理说明补强：在已纳入同步清单的规则文件内追加一段应用说明，不新增同步结构文件 / 目录、不新增必填入口、不新增强制 Gate 或 `check-template` 断言；默认行为与下游必做流程不变。派生项目同步后，质量门声明、secret 底线与多实现契约有统一适用口径。patch 豁免 L3 端到端回归。
+
+## v1.61.3（2026-08-12）
+
+去重声明必填 + 自动检查归位准则（PATCH）：把 #335 选 A 关闭时认可的两个真实 gap 落地——提案流程补"与既有规则关系（去重）"必填章节（gap A），实现层补"自动检查归位"统一准则（gap B）。来源：模板维护者基于 #335 评估（`docs/research/2026-08-12-c1-proposal-triage-reassessment.md` §6）+ handoff C-007；提案见 `_proposals/TEMPLATE-UPGRADE-rule-dedup-and-check-gate.md`。
+
+- **gap A 去重声明必填（5 文件）**：`_proposals/README.md` 新增「提案正文章节」小节，把 `## 1.1 与既有规则的关系（去重）` 列为必填并给范式（关系标签：对象不同 / 层级不同 / 机制不同 / 互补不重复 / 合并入 / 指向）；`CONTRIBUTING §3.1` 追加必填要求；`ai/commands/submit-proposal.md §2` + `ai/prompts/maintainers/17-submit-proposal.md` 校验清单追加"去重声明"项（command / Prompt 配对不漂移）；`ai/global-rules.md §9` 在提案去项目化字段后追加"/ 与既有规则关系（去重）"，下沉到通用层让派生项目 AI 也读到。把 LUMEN 回流批次的自觉范式（#312 / #314 / #320 / #322 / #332 / #333 / #334 §1.1）提升为流程必填。
+- **gap B 自动检查归位准则（1 文件）**：`ai/implementation-lifecycle-rules.md` 新增 §6.2「自动检查归位与质量门口径」，照 §6.1 结构——重申 §6 主节"按形态裁剪"口径；3 条归位准则（不与 L0 §2.1 重复定义 / 适用性裁剪显式说明不适用项 / 声明位置 `project-rules §5` 或 `05-tech-spec`）；blockquote「口径」列触发 / 豁免 / 验证。采 #335 立场（按适用性裁剪，不强制固定工具组合），定 #332 / #335 冲突口径；兑现 `web-fullstack-profile §9.4 → §6` 外部引用。
+
+本版是 patch 级治理说明补强：提案流程字段追加（现有五字段本就必填，追加一个并给范式）+ 规则文件内新增小节，不新增同步结构文件 / 目录、不新增必填入口、不新增强制 Gate 或 `check-template` 断言；默认行为与下游必做流程不变。派生项目同步后，新提案按 §1.1 写去重声明、自动检查按 §6.2 声明适用质量门。patch 豁免 L3 端到端回归。
+
+## v1.61.2（2026-08-12）
+
+Web Profile 代码层一致性基线（PATCH）：给 `template-docs/web-fullstack-profile.md` 新增 §9 Web 代码契约精简版，兑现 `ai/global-rules.md §2.1` L0 引言与 L0-8 口径对 `web-fullstack-profile §9/§9.4` 的前向引用（原为悬空引用）。来源：LUMEN_demo_T2.1（emily8421/LUMEN-DEMO）派生项目回流 issue #333；评估与裁剪见 `docs/research/2026-08-12-c1-proposal-triage-reassessment.md` §15。
+
+- **`template-docs/web-fullstack-profile.md` 新增 §9 代码层一致性基线（Web 形态）**：§9.1 错误与响应契约（机器可读错误标识、兜底异常 envelope 复用 L0-7、结构化客户端错误）；§9.2 传输边界（统一 API client / transport，禁裸 `fetch`）；§9.3 类型与契约同步（机器可校验契约源，禁手工双写漂移）；§9.4 工程化护栏（真实 HTTP 路径回归 + CI 必须跑测试复用 L0-8 + 质量门按形态裁剪指向 `implementation-lifecycle-rules §6`）。跨形态通用基本功指向 L0，具体栈写法留项目 `05-tech-spec` / `project-rules §5`；不引 R1-R7、不强制固定工具组合、不新增硬 Gate。部分采纳 #333——裁掉固定 envelope 结构 / 读写分层二选一 / barrel re-export / 端点后缀等项目特定或栈特定条目。
+
+本版是 patch 级治理说明补强：在已有同步清单文件内新增一节可选代码契约，兑现已有规则的前向引用，不新增同步结构文件 / 目录、不新增必填入口、不新增强制 Gate 或 `check-template` 断言；默认行为与下游必做流程不变。派生项目同步后按需在 `project-rules §5` / `05-tech-spec` 落地具体口径。patch 豁免 L3 端到端回归。
+
+## v1.61.1（2026-08-11）
+
+新增坑 / 问题观察日志（pitfall observation log）机制（PATCH）：与 `ai/session-rules.md` §4.1 token-hotspot 平行，提供 AI 引入或踩到的坑 / 问题 / 教训（bug、流程坑、低效行为导致返工或缺陷）的轻量记录载体，作为定期审视、归纳、转提案的原始材料。提案见 `_proposals/TEMPLATE-UPGRADE-pitfall-observation-log.md`。
+
+- **`ai/session-rules.md` 新增 §4.3**：与 §4.1 / §4.2 同构——载体分层（本地单条 `.ai/pitfalls/` gitignored + 可选入库 `ai-records/pitfalls/SUMMARY.md` 默认不建）、单条最小字段（建议非必填）、收尾自检触发与写入、rollup ≥3 提示、归档（`.ai/pitfalls-archive/`，归档不删除）、汇总状态字段、派生项目自行 `.gitignore` 提示；与 token-hotspot 边界划清（成本 / 上下文热点 → §4.1，问题 / 教训 → §4.3）；C1 只负责提案 triage，不承担坑日志计数。§4 触发点新增 pitfall 收尾自检条。
+- **`template-docs/rd-data-chain.md` 索引同步**：§2 辅助留痕表新增「AI 引入的问题 / 教训」类别行；§4「无门禁」枚举补 pitfalls，保持索引自洽。
+- **`.gitignore` 新增 `.ai/pitfalls/`**：本地单条记录纯本地、不询问、不上传。
+
+本版是 patch 级可选能力补强：新增一个与 token-hotspot 同构的本地观察载体 + 索引行 + 一条触发句，不改变同步结构、不加下游采用面、不新增 CI 门禁或 `check-template` 断言；派生项目按需采用。patch 豁免 L3 端到端回归。
+
 ## v1.61.0（2026-08-11）
 
 代码治理分层（MINOR）：把派生项目回流的三份代码治理提案聚合为一次 MINOR 发布，填补 Core 层「写代码基本功」与实现层「破坏性测试 DB 安全」两处空白，并补会话续接文件 rollup 机制。来源：LUMEN_demo_T2.1（emily8421/LUMEN-DEMO）派生项目回流，issue #322 / #320 / #314 镜像见 `_proposals/_remote-issues/`。
