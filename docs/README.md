@@ -35,6 +35,16 @@
 
 每个文档的完整生成关系（上游输入 / 输出职责 / 禁止项 / 下游影响）见 `ai/document-lifecycle-rules.md` §5 生成矩阵。
 
+### 方法论产物映射（可选）
+
+项目若遵循特定工程方法论（OO 分析设计五阶段、结构化分析设计、企业文档规范等），建议在本节登记「方法论期望产物 ↔ 本文档体系承载」映射与偏差，让方法论产物可点名、评审可对照；不设专文的产物显式登记分散承载方式。**下表为示例**（常见 OO 谱系），项目按自己实际遵循的方法论替换行内容：
+
+| 方法论产物（示例） | 本体系承载 | 备注 |
+|---|---|---|
+| 项目策划 / 立项说明 | `docs/vision/*`（立项叙事）+ `docs/research/*`（可行性）+ `docs/08-dev-plan.md`（计划） | 分散承载，无专文 |
+| 类代码 / 编码规格说明 | `docs/05-tech-spec.md` 编码基线 + `ai/project-rules.md` §5 | 分散承载，无专文 |
+| 方法论要求但本体系不设的产物 | 登记偏差与承接方式（或裁决不回补的理由） | 避免评审时反复重新讨论 |
+
 ## 3. 规范约束（写 docs/ 时必须遵守）
 
 - **编号固定**：`00-09` 编号不因项目而变；根目录只放 `README.md` 与 `00-09`，不堆其它文档（见 §4）。
@@ -66,6 +76,9 @@
 | `docs/research/` | 技术调研、竞品 / 参考分析、实验结论、技术环境评估报告、需求探索原型记录、视觉效果探索记录 | `topic-summary.md`、`YYYY-MM-DD-tech-env-evaluation-<scope>.md`、`YYYY-MM-DD-frontend-ui-reference-analysis.md`、`YYYY-MM-DD-ui-prototype-exploration.md`、`YYYY-MM-DD-ui-visual-exploration.md` |
 | `docs/env/` | 本机环境、资源约束、服务器预案、演示 SOP | `local-env.md`、`server-plan.md`、`local-demo-runbook.md` |
 | `docs/meetings/` | 会议纪要、访谈记录、评审记录 | `YYYY-MM-DD-topic.md` |
+| `docs/references/`（可选） | 外部参考资料库：外部产品调研、工程方法论参考、行业 / 企业文档模板等非本仓权威材料；**非权威规格区**——参考结论被采纳时须先经 `docs/research/` 评审或 `docs/decisions/` 裁决，再回填 `00-09` / `design/*`，不得直接以参考材料约束代码；建议建 `00-index.md` 登记（文件 / 类型 / 用途 / 状态风险）；含敏感信息的原件可 `.gitignore`，只入库脱敏副本并注明「以原件为准」 | `00-index.md`、`<topic>.md`、子目录按来源分组 |
+| `docs/diagrams/`（可选，生成式） | 图表镜像（`extract-diagrams` 类脚本从 `00-09` / `design/*` 正文抽取的 mermaid / plantuml 图块，每图一文件 + 索引）；**生成式产物、不手改、以源文档为唯一权威源**；启用前提 = CI 有同步校验（见 `ai/document-lifecycle-rules.md` §13） | `00-index.md`、`DIAG-*.md`（与源图 ID 同名） |
+| `docs/tables/`（可选，生成式） | 核心矩阵表镜像（REQ / MOD / API / TC 等稳定核心表抽取成单文件 + 索引）；增量日志型表（08 完成包 / 09 验收记录）只挂锚点链接不抽镜像；同样为生成式产物、不手改 | `00-index.md`、`<doc>-<matrix>.md` |
 | `docs/archive/` | 已废弃但需留痕的项目文档 | 保留原名或加日期前缀 |
 | `template-docs/web-fullstack-profile.md` | 复杂 Web / 全栈交互项目的可选结构 Profile 与 Walking Skeleton Gate；**人读参考、非项目事实、不直接落入 docs/** | 触发后把 App Shell、目录边界、vertical slice、文件膨胀阈值和 smoke 验证回填到 `04/05/08/09` |
 | `template-docs/docs-scaffold/` | 模板 `docs/inputs/*`、`docs/vision/*`、`docs/00-09`、`docs/design/*`、`docs/decisions/*`、`docs/research/*` 长期结构副本，保留原始大纲、占位表格和 `【撰写提要：...】`；**人读参考、非项目事实、不自动覆盖 `docs/` 项目事实** | 随模板同步；旧项目可能残留 `docs/_scaffold/` |
